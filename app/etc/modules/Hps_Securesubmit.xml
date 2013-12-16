@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Hps_Securesubmit>
+            <active>true</active>
+            <codePool>community</codePool>
+        </Hps_Securesubmit>
+    </modules>
+</config>
