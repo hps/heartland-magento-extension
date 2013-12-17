@@ -7,6 +7,7 @@ This extension allows Magento to use the Heartland Payment Systems Gateway. All 
 Use MagentoConnect to download the latest version of this extension.
 
 ## Usage
+Download the contents and extract to the root of your Magento install folder.
 
 ## Contributing
 
