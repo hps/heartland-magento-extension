@@ -1,4 +1,4 @@
-## SecureSubmit Magento Tokenized Payment Gateway
+## SecureSubmit Magento Payment Gateway
 
 This extension allows Magento to use the Heartland Payment Systems Gateway. All card data is tokenized using Heartland's SecureSubmit product.
 
