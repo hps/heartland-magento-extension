@@ -6,6 +6,13 @@
         </Hps_Securesubmit>
     </modules>
     <global>
+        <resources>
+            <hps_securesubmit>
+                <setup>
+                    <module>Hps_Securesubmit</module>
+                </setup>
+            </hps_securesubmit>
+        </resources>
         <models>
             <hps_securesubmit>
                 <class>Hps_Securesubmit_Model</class>
