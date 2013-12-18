@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <Hps_Securesubmit>
+            <version>1.0.0</version>
+        </Hps_Securesubmit>
+    </modules>
+    <global>
+        <models>
+            <hps_securesubmit>
+                <class>Hps_Securesubmit_Model</class>
+            </hps_securesubmit>
+        </models>
+        <helpers>
+            <hps_securesubmit>
+                <class>Hps_Securesubmit_Helper</class>
+            </hps_securesubmit>
+        </helpers>
+		<blocks>
+			<hps_securesubmit>
+				<class>HPS_SecureSubmit_Block</class>
+			</hps_securesubmit>
+		</blocks>
+    </global>
+    <default>
+        <payment>
+            <hps_securesubmit>
+            	<model>hps_securesubmit/payment</model>
+            	<payment_action>authorize_capture</payment_action>
+            	<title>Credit Card (SecureSubmit)</title>
+            	<cctypes>AE,VI,MC,DI,JCB</cctypes>
+            	<useccv>1</useccv>
+                <min_order_total>0.50</min_order_total>
+            </hps_securesubmit>
+        </payment>
+    </default>
+  <frontend>
+    <layout>
+      <updates>
+        <hps_securesubmit>
+          <file>securesubmit.xml</file>
+        </hps_securesubmit>
+      </updates>
+    </layout>
+    <routers>
+      <hps_securesubmit>
+        <use>standard</use>
+        <args>
+          <module>Hps_Securesubmit</module>
+          <frontName>securesubmit</frontName>
+        </args>
+      </hps_securesubmit>
+    </routers>
+  </frontend>
+</config>
