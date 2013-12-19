@@ -17,7 +17,7 @@ class HpsServicesConfig
     public $userName = "";
     public $password = "";
     public $siteTrace = "";
-	public $secretAPIKey = "";
+    public $secretAPIKey = "";
   
     function __construct($URL=NULL, $siteId=NULL, $deviceId=NULL, $developerId=NULL, $versionNbr=NULL, $licenseId=NULL, $userName=NULL, $password=NULL, $siteTrace=NULL, $secretAPIKey=NULL)
     {
@@ -28,22 +28,22 @@ class HpsServicesConfig
                 // Mimic overloading in case someone passes another HpsServicesConfig to the constructor
                 $temp = $URL;
                 $this->URL = $temp->URL;
-				$this->siteId = $temp->siteId;
-				$this->deviceId = $temp->deviceId;
-				$this->licenseId = $temp->licenseId;
-				$this->siteTrace = $temp->siteTrace;
+                $this->siteId = $temp->siteId;
+                $this->deviceId = $temp->deviceId;
+                $this->licenseId = $temp->licenseId;
+                $this->siteTrace = $temp->siteTrace;
                 $this->versionNbr = $temp->versionNbr;
-				$this->secretAPIKey = $temp->secretAPIKey;
-				
-				if ($temp->userName != NULL && $temp->userName != "")
-					$this->userName = $temp->userName;
-				
-				if ($temp->password != NULL && $temp->password != "")
-					$this->password = $temp->password;
-					
-				if ($temp->developerId != NULL && $temp->developerId != "")
-					$this->developerId = $temp->developerId;
-					
+                $this->secretAPIKey = $temp->secretAPIKey;
+
+                if ($temp->userName != NULL && $temp->userName != "")
+                    $this->userName = $temp->userName;
+
+                if ($temp->password != NULL && $temp->password != "")
+                    $this->password = $temp->password;
+
+                if ($temp->developerId != NULL && $temp->developerId != "")
+                    $this->developerId = $temp->developerId;
+
                 return;
             }
             else
@@ -51,25 +51,25 @@ class HpsServicesConfig
                 $this->URL = $URL;
             }
         }
-		
-		if ($siteId != NULL)
-			$this->siteId = $siteId;
-		if ($deviceId != NULL)
-			$this->deviceId = $deviceId;
-		if ($licenseId != NULL)
-			$this->licenseId = $licenseId;
-		if ($userName != NULL && $userName != "")
-			$this->userName = $userName;
-		if ($password != NULL && $password != "")
-			$this->password = $password;
-		if ($siteTrace != NULL)
-			$this->siteTrace = $siteTrace;		
-		if ($developerId != NULL && $developerId != "")
-			$this->developerId = $developerId;
+
+        if ($siteId != NULL)
+            $this->siteId = $siteId;
+        if ($deviceId != NULL)
+            $this->deviceId = $deviceId;
+        if ($licenseId != NULL)
+            $this->licenseId = $licenseId;
+        if ($userName != NULL && $userName != "")
+            $this->userName = $userName;
+        if ($password != NULL && $password != "")
+            $this->password = $password;
+        if ($siteTrace != NULL)
+            $this->siteTrace = $siteTrace;
+        if ($developerId != NULL && $developerId != "")
+            $this->developerId = $developerId;
         if ($versionNbr != NULL)
             $this->versionNbr = $versionNbr;
-		if ($secretAPIKey != NULL)
-			$this->secretAPIKey = $secretAPIKey;
+        if ($secretAPIKey != NULL)
+            $this->secretAPIKey = $secretAPIKey;
 
         date_default_timezone_set($this->TimeZone);
     }
