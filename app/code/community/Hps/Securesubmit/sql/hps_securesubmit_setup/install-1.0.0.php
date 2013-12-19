@@ -22,7 +22,7 @@ $table = $installer->getConnection()
         array('unsigned' => true, 'nullable' => false, 'default' => '0')
     )
     ->addColumn(
-        'transaction_id',
+        'token_value',
         Varien_Db_Ddl_Table::TYPE_VARCHAR,
         255,
         array('nullable' => false)
