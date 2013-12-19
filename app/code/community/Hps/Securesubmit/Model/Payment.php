@@ -17,6 +17,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_formBlockType = 'hps_securesubmit/form';
     protected $_infoBlockType = 'hps_securesubmit/info';
 
+    /**
+     * Fields that should be replaced in debug with '***'
+     *
+     * @var array
+     */
+    protected $_debugReplacePrivateDataKeys = array('SecretAPIKey');
+
     public function __construct()
     {
     }

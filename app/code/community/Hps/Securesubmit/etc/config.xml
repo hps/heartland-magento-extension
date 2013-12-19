@@ -40,6 +40,8 @@
                 <min_order_total>0.50</min_order_total>
                 <secretapikey backend_model="adminhtml/system_config_backend_encrypted" />
                 <publicapikey backend_model="adminhtml/system_config_backend_encrypted" />
+                <use_http_proxy>0</use_http_proxy>
+                <debug>0</debug>
             </hps_securesubmit>
         </payment>
     </default>

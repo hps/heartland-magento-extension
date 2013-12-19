@@ -73,7 +73,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </sort_order>
-                        <use_http_proxy>
+                        <use_http_proxy translate="label">
                             <label>Use HTTP Proxy</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
@@ -83,7 +83,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </use_http_proxy>
-                        <http_proxy_host>
+                        <http_proxy_host translate="label">
                             <label>HTTP Proxy Host</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>90</sort_order>
@@ -93,7 +93,7 @@
                             <depends><use_http_proxy>1</use_http_proxy></depends>
                             <comment>Example: example.com</comment>
                         </http_proxy_host>
-                        <http_proxy_port>
+                        <http_proxy_port translate="label">
                             <label>HTTP Proxy Port</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>100</sort_order>
@@ -103,6 +103,15 @@
                             <comment>Example: 8888</comment>
                             <depends><use_http_proxy>1</use_http_proxy></depends>
                         </http_proxy_port>
+                        <debug translate="label">
+                            <label>Debug</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>110</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </debug>
                     </fields>
                </hps_securesubmit>
            </groups>
