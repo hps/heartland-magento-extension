@@ -8,6 +8,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_canCapture                  = true;
     protected $_canCapturePartial           = true;
     protected $_canRefund                   = true;
+    protected $_canRefundInvoicePartial     = true;
     protected $_canAuthorize                = true;
 
     protected $_supportedCurrencyCodes = array('USD');
@@ -161,7 +162,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         $payment
-            ->setTransactionId($transactionId . '-' . Mage_Sales_Model_Order_Payment_Transaction::TYPE_REFUND)
+            ->setTransactionId($refundResponse->TransactionId)
             ->setParentTransactionId($transactionId)
             ->setIsTransactionClosed(1)
             ->setShouldCloseParentTransaction(1);
