@@ -110,7 +110,18 @@ class HpsChargeService
                 $this->CONFIG->URL = "https://posgateway.secureexchange.net/Hps.Exchange.PosGateway/PosGatewayService.asmx?wsdl";
         }
 
-        $client = new SoapClient($this->CONFIG->URL, array('trace'=>1, 'exceptions'=>1)); 
+        $options = array('trace' => 1, 'exceptions' => 1);
+
+        // Use HTTP proxy
+        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
+            $proxyOptions = array(
+                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
+                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
+            );
+            $options = array_merge($options, $proxyOptions);
+        }
+
+        $client = new SoapClient($this->CONFIG->URL, $options);
         
         try
         {
