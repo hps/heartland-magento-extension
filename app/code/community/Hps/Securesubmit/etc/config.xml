@@ -38,6 +38,8 @@
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <useccv>1</useccv>
                 <min_order_total>0.50</min_order_total>
+                <secretapikey backend_model="adminhtml/system_config_backend_encrypted" />
+                <publicapikey backend_model="adminhtml/system_config_backend_encrypted" />
             </hps_securesubmit>
         </payment>
     </default>
