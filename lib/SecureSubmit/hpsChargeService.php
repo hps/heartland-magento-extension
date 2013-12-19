@@ -122,7 +122,7 @@ class HpsChargeService
         }
 
         $client = new SoapClient($this->CONFIG->URL, $options);
-        
+        Mage::getSingleton('hps_securesubmit/payment')->debugData(array('REQUEST' => $request));
         try
         {
             $soapResponse = $client->__soapCall('DoTransaction', $request);
@@ -132,6 +132,7 @@ class HpsChargeService
             throw($e);
         }
         $response = new HpsTransactionResponse($soapResponse);
+        Mage::getSingleton('hps_securesubmit/payment')->debugData(array('RESPONSE' => $response));
         $response->Validate();  // Check for errors from gateway and issuer
         return $response;
     }
