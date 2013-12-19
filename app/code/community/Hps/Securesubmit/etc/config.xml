@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <modules>
-        <Hps_Securesubmit>
+        <Hps_SecureSubmit>
             <version>1.0.0</version>
-        </Hps_Securesubmit>
+        </Hps_SecureSubmit>
     </modules>
     <global>
         <resources>
             <hps_securesubmit>
                 <setup>
-                    <module>Hps_Securesubmit</module>
+                    <module>Hps_SecureSubmit</module>
                 </setup>
             </hps_securesubmit>
         </resources>
         <models>
             <hps_securesubmit>
-                <class>Hps_Securesubmit_Model</class>
+                <class>Hps_SecureSubmit_Model</class>
             </hps_securesubmit>
         </models>
         <helpers>
             <hps_securesubmit>
-                <class>Hps_Securesubmit_Helper</class>
+                <class>Hps_SecureSubmit_Helper</class>
             </hps_securesubmit>
         </helpers>
         <blocks>
             <hps_securesubmit>
-                <class>HPS_SecureSubmit_Block</class>
+                <class>Hps_SecureSubmit_Block</class>
             </hps_securesubmit>
         </blocks>
     </global>
@@ -53,7 +53,7 @@
             <hps_securesubmit>
                 <use>standard</use>
                 <args>
-                    <module>Hps_Securesubmit</module>
+                    <module>Hps_SecureSubmit</module>
                     <frontName>securesubmit</frontName>
                 </args>
             </hps_securesubmit>
