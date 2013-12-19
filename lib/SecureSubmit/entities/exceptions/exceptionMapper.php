@@ -9,7 +9,7 @@ class ExceptionMapper
 
     public function BuildSystemExceptions()
     {
-         $this->SystemExceptions = array(
+         self::$SystemExceptions = array(
          "-2" => new AuthenticationException(ExceptionMessages::AuthenticationError, ExceptionCodes::AuthenticationError),
          "1" => new HpsException("Gateway system error."),
          "2" => new HpsException("Duplicate transactions."),
@@ -27,7 +27,7 @@ class ExceptionMapper
     public function MapSystemException($responseCode, $transactionId)
     {
         // Note that this function returns one of four different types of exceptions
-        $SystemException = $this->SystemExceptions[$responseCode];
+        $SystemException = self::$SystemExceptions[$responseCode];
         if($SystemException == "")
         {
             $SystemException = new HpsException("Unknown system error."); 
@@ -38,7 +38,7 @@ class ExceptionMapper
 
     public function BuildIssuerExceptions()
     {
-         $this->IssuerExceptions = array(
+         self::$IssuerExceptions = array(
          "02" => new CardException(ExceptionMessages::CardDeclined, ExceptionCodes::CardDeclined),
          "03" => new CardException(ExceptionMessages::CardDeclined, ExceptionCodes::CardDeclined),
          "04" => new CardException(ExceptionMessages::CardDeclined, ExceptionCodes::CardDeclined),
@@ -83,7 +83,7 @@ class ExceptionMapper
     
     public function MapIssuerException($responseCode, $transactionId)
     {
-        $IssuerException = $this->IssuerExceptions[$responseCode];
+        $IssuerException = self::$IssuerExceptions[$responseCode];
         if($IssuerException == "")
         {
             $IssuerException = new CardException("Unknown error from issuer.");

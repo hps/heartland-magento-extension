@@ -13,9 +13,9 @@ var hps = (function ($) {
             CERT: "https://posgateway.cert.secureexchange.net/Hps.Exchange.PosGateway.Hpf.v1/api/token",
             PROD: "https://api.heartlandportico.com/SecureSubmit.v1/api/token"
         },
-				
-		tokenize: function (options) {			
-			var gateway_url, params, env, getter_impl;
+
+        tokenize: function (options) {
+            var gateway_url, params, env, getter_impl;
 
             // add additional service parameters
             params = $H({
@@ -40,39 +40,39 @@ var hps = (function ($) {
             }
 
             // request token
-			
-			getter_impl = Ajax.Response.prototype._getHeaderJSON;
-						
-			new Ajax.Request(gateway_url, {
-				method: "get",
-				parameters: params,	
-				onCreate: function(request){
-					Ajax.Response.prototype._getHeaderJSON = Prototype.emptyFunction;					
-				},
-				onComplete: function(response) {	
-									
-					Ajax.Response.prototype._getHeaderJSON = getter_impl;			
-		
-					var json = JSON.parse(response.responseText);				
 
-			        // Request failed, handle error
-			        if (response.status !== 200 || typeof json.error === 'object') {
-			            // call error handler if provided and valid
-			            if (typeof options.error === 'function') {
-			                options.error(json.error);
-			            }
-						else {
-			                // handle exception
-			                HPS.error(json.error.message);							
-						}
-			        }
-					else if(typeof options.success === 'function') {
-						options.success(json);
-					}
-				}
-			});
+            getter_impl = Ajax.Response.prototype._getHeaderJSON;
 
-		},
+            new Ajax.Request(gateway_url, {
+                method: "get",
+                parameters: params,
+                onCreate: function(request){
+                    Ajax.Response.prototype._getHeaderJSON = Prototype.emptyFunction;
+                },
+                onComplete: function(response) {
+
+                    Ajax.Response.prototype._getHeaderJSON = getter_impl;
+
+                    var json = JSON.parse(response.responseText);
+
+                    // Request failed, handle error
+                    if (response.status !== 200 || typeof json.error === 'object') {
+                        // call error handler if provided and valid
+                        if (typeof options.error === 'function') {
+                            options.error(json.error);
+                        }
+                        else {
+                            // handle exception
+                            HPS.error(json.error.message);
+                        }
+                    }
+                    else if(typeof options.success === 'function') {
+                        options.success(json);
+                    }
+                }
+            });
+
+        },
 
         empty: function (val) {
             return val === undefined || val.length === 0;
@@ -82,7 +82,7 @@ var hps = (function ($) {
             console.log([HPS.Tag, ": ", message].join(""));
         }
     };
-	
-	return HPS;
+
+    return HPS;
 
 }($));

@@ -1,7 +1,7 @@
 <?php
 set_include_path(get_include_path() . PATH_SEPARATOR . realpath(dirname(__FILE__) ));
 
-require_once("config/config.php");		//This is where you'll set all your merchant details
+require_once("config/config.php");        //This is where you'll set all your merchant details
 
 require_once("entities/cardInfo.php");
 require_once("entities/cardHolderInfo.php");
@@ -44,15 +44,15 @@ class HpsChargeService
     private function BuildHeader(POSGATEWAY &$processorEngine)
     {
         // Build standard header for messages. 
-		$processorEngine->Header->siteId = $this->CONFIG->siteId;
-		$processorEngine->Header->deviceId = $this->CONFIG->deviceId;
-		$processorEngine->Header->licenseId = $this->CONFIG->licenseId;
-		$processorEngine->Header->siteTrace = $this->CONFIG->siteTrace;
-		$processorEngine->Header->userName = $this->CONFIG->userName;
-		$processorEngine->Header->password = $this->CONFIG->password;
-		$processorEngine->Header->developerId = $this->CONFIG->developerId;		
+        $processorEngine->Header->siteId = $this->CONFIG->siteId;
+        $processorEngine->Header->deviceId = $this->CONFIG->deviceId;
+        $processorEngine->Header->licenseId = $this->CONFIG->licenseId;
+        $processorEngine->Header->siteTrace = $this->CONFIG->siteTrace;
+        $processorEngine->Header->userName = $this->CONFIG->userName;
+        $processorEngine->Header->password = $this->CONFIG->password;
+        $processorEngine->Header->developerId = $this->CONFIG->developerId;
         $processorEngine->Header->versionNbr = $this->CONFIG->versionNbr;
-		$processorEngine->Header->secretAPIKey = $this->CONFIG->secretAPIKey;
+        $processorEngine->Header->secretAPIKey = $this->CONFIG->secretAPIKey;
     }
 
     private function BuildCard(POSGATEWAY &$processorEngine, HpsCardInfo $card)
@@ -99,19 +99,30 @@ class HpsChargeService
     private function DoSoapTransaction($request)
     {
         $soapResponse = NULL;
-		
-		if ($this->CONFIG->secretAPIKey != NULL && $this->CONFIG->secretAPIKey != "")
-		{
-			if (strpos($this->CONFIG->secretAPIKey, '_uat_') !== false)
-				$this->CONFIG->URL = "https://posgateway.uat.secureexchange.net/Hps.Exchange.PosGateway/PosGatewayService.asmx?wsdl";
-			else if (strpos($this->CONFIG->secretAPIKey, '_cert_') !== false)
-				$this->CONFIG->URL = "https://posgateway.cert.secureexchange.net/Hps.Exchange.PosGateway/PosGatewayService.asmx?wsdl";
-			else
-				$this->CONFIG->URL = "https://posgateway.secureexchange.net/Hps.Exchange.PosGateway/PosGatewayService.asmx?wsdl";
-		}
 
-        $client = new SoapClient($this->CONFIG->URL, array('trace'=>1, 'exceptions'=>1)); 
-        
+        if ($this->CONFIG->secretAPIKey != NULL && $this->CONFIG->secretAPIKey != "")
+        {
+            if (strpos($this->CONFIG->secretAPIKey, '_uat_') !== false)
+                $this->CONFIG->URL = "https://posgateway.uat.secureexchange.net/Hps.Exchange.PosGateway/PosGatewayService.asmx?wsdl";
+            else if (strpos($this->CONFIG->secretAPIKey, '_cert_') !== false)
+                $this->CONFIG->URL = "https://posgateway.cert.secureexchange.net/Hps.Exchange.PosGateway/PosGatewayService.asmx?wsdl";
+            else
+                $this->CONFIG->URL = "https://posgateway.secureexchange.net/Hps.Exchange.PosGateway/PosGatewayService.asmx?wsdl";
+        }
+
+        $options = array('trace' => 1, 'exceptions' => 1);
+
+        // Use HTTP proxy
+        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
+            $proxyOptions = array(
+                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
+                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
+            );
+            $options = array_merge($options, $proxyOptions);
+        }
+
+        $client = new SoapClient($this->CONFIG->URL, $options);
+        Mage::getSingleton('hps_securesubmit/payment')->debugData(array('REQUEST' => $request));
         try
         {
             $soapResponse = $client->__soapCall('DoTransaction', $request);
@@ -121,6 +132,7 @@ class HpsChargeService
             throw($e);
         }
         $response = new HpsTransactionResponse($soapResponse);
+        Mage::getSingleton('hps_securesubmit/payment')->debugData(array('RESPONSE' => $response));
         $response->Validate();  // Check for errors from gateway and issuer
         return $response;
     }
@@ -295,7 +307,7 @@ class HpsChargeService
             throw($e);
         }
     }
-	
+
     public function AuthorizeWithToken($amount, $currency, HpsToken $token, HpsCardHolderInfo $cardHolder=null, $tokenize=false)
     {
         $processorEngine = new POSGATEWAY();
@@ -322,7 +334,7 @@ class HpsChargeService
 
         // Load token data
         $this->BuildToken($processorEngine, $token);
-		
+
         //$this->BuildCard($processorEngine, $card);
         if($tokenize)
         {

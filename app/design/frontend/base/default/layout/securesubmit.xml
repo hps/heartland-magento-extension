@@ -1,15 +1,14 @@
 <?xml version="1.0"?>
 
 <layout version="0.1.0">
-  <onestepcheckout_index_index>
-    <reference name="head">
-	  <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
-    </reference>
-  </onestepcheckout_index_index>
-  <checkout_onepage_index>
-    <reference name="head">
-	  <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
-    </reference>
-  </checkout_onepage_index>
+    <onestepcheckout_index_index>
+        <reference name="head">
+            <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
+        </reference>
+    </onestepcheckout_index_index>
+    <checkout_onepage_index>
+        <reference name="head">
+            <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
+        </reference>
+    </checkout_onepage_index>
 </layout>
-
