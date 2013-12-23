@@ -23,10 +23,10 @@ var hps = (function ($) {
                 "object": "token",
                 "token_type": "supt",
                 "_method": "post",
-                "card[number]": options.data.number,
-                "card[cvc]": options.data.cvc,
-                "card[exp_month]": options.data.exp_month,
-                "card[exp_year]": options.data.exp_year
+                "card[number]": options.data.number.trim(),
+                "card[cvc]": options.data.cvc.trim(),
+                "card[exp_month]": options.data.exp_month.trim(),
+                "card[exp_year]": options.data.exp_year.trim()
             });
 
             env = options.data.public_key.split("_")[1];
