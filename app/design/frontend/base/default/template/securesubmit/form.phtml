@@ -40,7 +40,15 @@
 
             <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>  
         </div>  
-    </li>  
+    </li>
+    <li>
+        <div class="input-box">
+            <div class="v-fix">
+                <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" />
+            </div>
+            <label for="<?php echo $_code ?>_cc_save_future">&nbsp;<?php echo $this->__('Save this card for future use') ?></label>
+        </div>
+    </li>
 </ul>
 </fieldset>
 
