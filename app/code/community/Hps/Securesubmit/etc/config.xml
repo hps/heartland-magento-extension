@@ -1,31 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <modules>
-        <Hps_SecureSubmit>
+        <Hps_Securesubmit>
             <version>1.0.0</version>
-        </Hps_SecureSubmit>
+        </Hps_Securesubmit>
     </modules>
     <global>
         <resources>
-            <hps_securesubmit>
+            <hps_securesubmit_setup>
                 <setup>
-                    <module>Hps_SecureSubmit</module>
+                    <module>Hps_Securesubmit</module>
+                    <class>Hps_Securesubmit_Model_Resource_Setup</class>
                 </setup>
-            </hps_securesubmit>
+            </hps_securesubmit_setup>
         </resources>
         <models>
             <hps_securesubmit>
-                <class>Hps_SecureSubmit_Model</class>
+                <class>Hps_Securesubmit_Model</class>
+                <resourceModel>hps_securesubmit_resource</resourceModel>
             </hps_securesubmit>
+            <hps_securesubmit_resource>
+                <class>Hps_Securesubmit_Model_Resource</class>
+                <entities>
+                    <storedcard>
+                        <table>storedcard</table>
+                    </storedcard>
+                </entities>
+            </hps_securesubmit_resource>
         </models>
         <helpers>
             <hps_securesubmit>
-                <class>Hps_SecureSubmit_Helper</class>
+                <class>Hps_Securesubmit_Helper</class>
             </hps_securesubmit>
         </helpers>
         <blocks>
             <hps_securesubmit>
-                <class>Hps_SecureSubmit_Block</class>
+                <class>Hps_Securesubmit_Block</class>
             </hps_securesubmit>
         </blocks>
     </global>
@@ -57,7 +67,7 @@
             <hps_securesubmit>
                 <use>standard</use>
                 <args>
-                    <module>Hps_SecureSubmit</module>
+                    <module>Hps_Securesubmit</module>
                     <frontName>securesubmit</frontName>
                 </args>
             </hps_securesubmit>
