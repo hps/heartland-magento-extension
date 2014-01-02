@@ -42,7 +42,7 @@
         </div>  
     </li>
     <li>
-        <div class="input-box">
+        <div class="input-box" id="cc_save_future">
             <div class="v-fix">
                 <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" />
             </div>
@@ -54,6 +54,16 @@
 
 <script type="text/javascript">
 //<![CDATA[
+
+function hideStoreCard(){
+    guest = document.getElementById('login:guest').checked;
+    if(guest){
+        document.getElementById("cc_save_future").style.display = 'none';
+    }
+}
+
+window.onload = hideStoreCard();
+
 function secureResponseHandler(response) {
     if (response.message) {
         alert(response.message);
