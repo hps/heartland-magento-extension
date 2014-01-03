@@ -60,9 +60,13 @@
 //<![CDATA[
 
 function hideStoreCard(){
-    guest = document.getElementById('login:guest').checked;
-    if(guest){
-        document.getElementById("cc_save_future").style.display = 'none';
+    var guest = "";
+    if(document.getElementById('login:guest') != null){
+        guest = document.getElementById('login:guest').checked;
+
+        if(guest != "" && guest){
+            document.getElementById("cc_save_future").style.display = 'none';
+        }
     }
 }
 
