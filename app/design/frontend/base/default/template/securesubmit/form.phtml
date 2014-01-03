@@ -1,4 +1,8 @@
-<?php 
+<?php
+    //GET SESSION DATA
+    Mage::getSingleton('core/session', array('name'=>'frontend'));
+    $session = Mage::getSingleton('customer/session');
+
     $_code=$this->getMethodCode();
     $_model = Mage::getModel('hps_securesubmit/payment');
     $public_key = $_model->getConfigData('publicapikey');
