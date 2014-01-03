@@ -75,6 +75,9 @@ function secureResponseHandler(response) {
     } else {
         $('<?php echo $_code ?>_token').value = response.token_value;
 
+        if(document.getElementById('<?php echo $_code ?>_cc_save_future').checked){
+            saveToken(response);
+        }
 
         var request = new Ajax.Request(
              payment.saveUrl,
