@@ -65,18 +65,30 @@
 <script type="text/javascript">
 //<![CDATA[
 
-function hideStoreCard(){
-    var guest = "";
-    if(document.getElementById('login:guest') != null){
-        guest = document.getElementById('login:guest').checked;
+function useStoredCard(){
+    var cardInput = document.getElementsByClassName('stored_cards_selected');
+    var cardSelect = document.getElementById('<?php echo $_code ?>_stored_cards');
+    var updateDisplay = '';
 
-        if(guest != "" && guest){
-            document.getElementById("cc_save_future").style.display = 'none';
-        }
+    if(cardSelect.style.display == 'none'){
+        cardSelect.style.display = '';
+        updateDisplay = 'none';
+    }else{
+        cardSelect.style.display = 'none';
     }
-}
 
-window.onload = hideStoreCard();
+    for(var i = 0; i < cardInput.length; i++){
+        cardInput[i].style.display = updateDisplay;
+    }
+    $("<?php echo $_code ?>_cc_number").toggleClassName('validate-cc-number');
+}
+<?php
+if($_loggedIn){
+?>
+    window.onload = document.getElementById("<?php echo $_code ?>_stored_card_checkbox").addEventListener('click',useStoredCard,true);
+<?php
+}
+?>
 
 function secureResponseHandler(response) {
     if (response.message) {
