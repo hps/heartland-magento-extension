@@ -141,49 +141,5 @@ Object.extend(Payment.prototype, {
         }
     }
 });
-
-function saveToken(tokenData){
-    var baseUrl = "<?php echo Mage::getUrl('');?>";
-    var url = baseUrl + "securesubmit/saveToken/saveToken";
-    var token = tokenData.token_value;
-    var customer_id = <?php echo $session->getCustomer()->getId(); ?>;
-    var last_four = tokenData.card.number;
-    var month_selector = document.getElementById('<?php echo $_code ?>_expiration');
-    var exp_month = month_selector.options[month_selector.selectedIndex].text.substr(0,2);
-    var exp_year = document.getElementById('<?php echo $_code ?>_expiration_yr').value;
-    var card_type = "";
-
-    var card_types = {Amex: /^3[47][0-9]{13}$/,
-                MasterCard: /^5[1-5][0-9]{14}$/,
-                Visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
-                DinersClub: /^3(?:0[0-5]|[68][0-9])[0-9]{11}$/,
-                EnRoute: /^(2014|2149)/,
-                Discover: /^6(?:011|5[0-9]{2})[0-9]{12}$/,
-                Jcb: /^(?:2131|1800|35\d{3})\d{11}$/};
-
-    if(document.getElementById('<?php echo $_code ?>_cc_number') != null){
-        card = document.getElementById('<?php echo $_code ?>_cc_number').value;
-        for(key in card_types){
-            if(card.match(card_types[key]) != null){
-                card_type = key;
-            }
-        }
-    }
-
-    new Ajax.Request(url, {
-        method: "post",
-        parameters: {customer_id: customer_id,
-                    token: token,
-                    card_last_four:last_four.substr(-4),
-                    card_exp_month:exp_month,
-                    card_exp_year:exp_year,
-                    card_type: card_type},
-        onFailure: function(response){
-            var json = JSON.parse(response.responseText);
-            console.log(json.error.message);
-            HPS.error(json.error.message);
-        }
-    });
-}
 //]]>
 </script>
