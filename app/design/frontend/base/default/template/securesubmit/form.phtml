@@ -1,7 +1,11 @@
 <?php
     //GET SESSION DATA
     Mage::getSingleton('core/session', array('name'=>'frontend'));
-    $session = Mage::getSingleton('customer/session');
+    $_session = Mage::getSingleton('customer/session');
+    $_loggedIn = $_session->isLoggedIn();
+    if($_loggedIn){
+        $_customerId = $_session->getCustomer()->getId();
+    }
 
     $_code=$this->getMethodCode();
     $_model = Mage::getModel('hps_securesubmit/payment');
