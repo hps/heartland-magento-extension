@@ -155,7 +155,33 @@ function secureResponseHandler(response) {
 Object.extend(Payment.prototype, {
     save: function() {
         if (this.currentMethod == "hps_securesubmit") {
-            if (checkout.loadWaiting!=false)
+            if($("<?php echo $_code ?>_stored_card_checkbox") != null && $("<?php echo $_code ?>_stored_card_checkbox").checked){
+                var baseUrl = "<?php echo Mage::getUrl('');?>";
+                var url = baseUrl + "securesubmit/saveToken/getTokenData";
+                var token = new Object();
+
+                token.token_value = document.getElementById('<?php echo $_code ?>_stored_card_select').value;
+
+                new Ajax.Request(url, {
+                    method: "post",
+                    parameters: {token_value: token.token_value},
+                    onSuccess: function(response){
+                        token.token_type = response.cc_type;
+                        token.token_expire = new Date().toISOString();
+                        token.card = {number: response.cc_last4};
+                        $("<?php echo $_code ?>_cc_last_four").value = response.cc_last4;
+                        $("<?php echo $_code ?>_expiration").value = response.cc_exp_month;
+                        $("<?php echo $_code ?>_expiration_yr").value = response.cc_exp_year;
+                    },
+                    onFailure: function(response){
+                        var json = JSON.parse(response.responseText);
+                        HPS.error(json.error.message);
+                    }
+                });
+
+                secureResponseHandler(token);
+                return;
+            }else if (checkout.loadWaiting!=false)
                 return;
             var validator = new Validation(this.form);
             if (this.validate() && validator.validate()) {
