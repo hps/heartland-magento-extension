@@ -137,21 +137,21 @@ class HpsChargeService
         return $response;
     }
 
-    public function Charge($amount, $currency, $cardOrToken, $cardHolder=null)
+    public function Charge($amount, $currency, $cardOrToken, $cardHolder=null, $tokenize=false)
     {
         // Route the charge to appropriate function based on parameters (HpsCardInfo or HpsToken)
         if (get_class($cardOrToken) == "HpsCardInfo") 
         {
-            return $this->ChargeManualEntry($amount, $currency, $cardOrToken, $cardHolder);
+            return $this->ChargeManualEntry($amount, $currency, $cardOrToken, $cardHolder, $tokenize);
         }
         else
         {
-            return $this->ChargeWithToken($amount, $currency, $cardOrToken, $cardHolder);
+            return $this->ChargeWithToken($amount, $currency, $cardOrToken, $cardHolder, $tokenize);
         }
         
     }
 
-    public function ChargeManualEntry($amount, $currency, HpsCardInfo $card, HpsCardHolderInfo $cardHolder=null)
+    public function ChargeManualEntry($amount, $currency, HpsCardInfo $card, HpsCardHolderInfo $cardHolder=null, $tokenize=false)
     {
         $processorEngine = new POSGATEWAY();
 
@@ -178,7 +178,11 @@ class HpsChargeService
 
         // Load card data
         $this->BuildCard($processorEngine, $card);
-        
+        if($tokenize)
+        {
+            $processorEngine->Transaction->Item->CardData->TokenRequest = "Y";
+        }
+
         // If included, define cardHolder
         if ($cardHolder != null)
         {
@@ -197,7 +201,7 @@ class HpsChargeService
         }
     }
 
-    public function ChargeWithToken($amount, $currency, HpsToken $token, HpsCardHolderInfo $cardHolder=NULL)
+    public function ChargeWithToken($amount, $currency, HpsToken $token, HpsCardHolderInfo $cardHolder=NULL, $tokenize=false )
     {
         $processorEngine = new POSGATEWAY();
 
@@ -223,6 +227,10 @@ class HpsChargeService
 
         // Load token data
         $this->BuildToken($processorEngine, $token);
+        if($tokenize)
+        {
+            $processorEngine->Transaction->Item->CardData->TokenRequest = "Y";
+        }
 
         // If included, define cardHolder
         if ($cardHolder != null)
