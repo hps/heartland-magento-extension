@@ -12,7 +12,39 @@
     $public_key = $_model->getConfigData('publicapikey');
 ?>
 <fieldset class="form-list">
-<ul id="payment_form_<?php echo $_code ?>" style="display:none">  
+<ul id="payment_form_<?php echo $_code ?>" style="display:none">
+    <?php
+        if($_loggedIn){
+            $cards = Mage::helper(hps_securesubmit)->getStoredCards($_customerId);
+            if(count($cards) > 0){
+                $spacing = "************";
+                $select  = "<select id='".$_code ."_stored_card_select'>";
+                foreach($cards as $key=>$card){
+                    $select .= "<option value='".$card['token_value']."'>". $card['cc_type']." -- ".$spacing.$card['cc_last4'] . "</option>";
+                }
+                $select .= "</select>";
+                ?>
+                <li>
+                    <div id="<?php echo $_code ?>_saved_cards_checkbox">
+                            <div class="v-fix">
+                                <input type="checkbox" id="<?php echo $_code ?>_stored_card_checkbox" />
+                            </div>
+                            <label for="<?php echo $_code ?>_cc_stored_checkbox">&nbsp;<?php echo $this->__('Click here to use a stored Card') ?></label>
+                    </div>
+                <li>
+                </li>
+                    <div id="<?php echo $_code ?>_stored_cards" style="display: none">
+                        <label for="<?php echo $_code ?>_stored_cards">&nbsp;<?php echo $this->__('Select a Stored Card Below') ?></label>
+                        <br/>
+                        <div id="<?php echo $_code ?>_stored_cards_select" class="form-list" >
+                            <?php echo $select; ?>
+                        </div>
+                    </div>
+                </li>
+                <?php
+            }
+        }
+    ?>
     <li>  
         <div class="input-box">  
             <label for="<?php echo $_code ?>_cc_number"><?php echo $this->__('Credit Card Number') ?> <span class="required">*</span></label><br>  
