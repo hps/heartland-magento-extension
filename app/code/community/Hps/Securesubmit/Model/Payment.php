@@ -53,11 +53,22 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $order = $payment->getOrder();
         $billing = $order->getBillingAddress();
+        $multiToken = false;
+        $cardData = null;
+        $cardType = null;
 
         try {
             if (isset($_POST['payment']['securesubmit_token']) && $_POST['payment']['securesubmit_token'])
             {
                 $secureToken = $_POST['payment']['securesubmit_token'];
+            }
+
+            if (isset($_POST['payment']['cc_save_future']) && $_POST['payment']['cc_save_future']){
+                $multiToken = true;
+                $cardData = new HpsCardInfo(
+                    $_POST['payment']['cc_last_four'],
+                    $_POST['payment']['cc_exp_year'],
+                    $_POST['payment']['cc_exp_month']);
             }
 
             $config = new HpsServicesConfig();
@@ -101,7 +112,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                             $amount,
                             strtolower($order->getBaseCurrencyCode()),
                             $token,
-                            $cardHolder);
+                            $cardHolder,
+                            $multiToken);
                     }
                 }
                 else
@@ -110,7 +122,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                         $amount,
                         strtolower($order->getBaseCurrencyCode()),
                         $token,
-                        $cardHolder);
+                        $cardHolder,
+                        $multiToken);
                 }
             }
             catch (CardException $e)
@@ -121,7 +134,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         } catch (Exception $e) {
             Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
         }
-
         if ($response->TransactionDetails->RspCode == '00' || $response->TransactionDetails->RspCode == '0')
         {
             $this->setStore($payment->getOrder()->getStoreId());
@@ -131,6 +143,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $payment->setCcTransId($response->TransactionId);
             $payment->setTransactionId($response->TransactionId);
             $payment->setIsTransactionClosed(0);
+            if($multiToken){
+                Mage::helper(hps_securesubmit)->saveMultiToken($response->TokenData->TokenValue,$cardData,$response->TransactionDetails->CardType);
+            }
         }
         else
         {
