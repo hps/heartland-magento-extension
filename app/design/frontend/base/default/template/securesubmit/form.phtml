@@ -46,12 +46,18 @@
         </div>  
     </li>
     <li>
-        <div class="input-box" id="cc_save_future">
-            <div class="v-fix">
-                <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" />
+        <?php
+        if($_loggedIn){
+        ?>
+            <div class="input-box stored_cards_selected" id="cc_save_future">
+                <div class="v-fix">
+                    <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" />
+                </div>
+                <label for="<?php echo $_code ?>_cc_save_future">&nbsp;<?php echo $this->__('Save this card for future use') ?></label>
             </div>
-            <label for="<?php echo $_code ?>_cc_save_future">&nbsp;<?php echo $this->__('Save this card for future use') ?></label>
-        </div>
+        <?php
+        }
+        ?>
     </li>
 </ul>
 </fieldset>
