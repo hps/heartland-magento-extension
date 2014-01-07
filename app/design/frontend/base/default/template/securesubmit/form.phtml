@@ -122,7 +122,13 @@ function useStoredCard(){
 <?php
 if($_loggedIn){
 ?>
-    window.onload = document.getElementById("<?php echo $_code ?>_stored_card_checkbox").addEventListener('click',useStoredCard,true);
+    function addListener(element){
+        if (element != null){
+            element.addEventListener('click',useStoredCard,true);
+        }
+    }
+    window.onload = addListener($("<?php echo $_code ?>_stored_card_checkbox"));
+
 <?php
 }
 ?>
