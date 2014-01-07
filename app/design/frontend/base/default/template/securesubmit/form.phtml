@@ -97,8 +97,9 @@ function secureResponseHandler(response) {
     } else {
         $('<?php echo $_code ?>_token').value = response.token_value;
 
-        if(document.getElementById('<?php echo $_code ?>_cc_save_future').checked){
-            saveToken(response);
+        if($('<?php echo $_code ?>_cc_save_future') != null && $('<?php echo $_code ?>_cc_save_future').checked){
+//            Sets the last_four so that it can be saved
+            document.getElementById('<?php echo $_code ?>_cc_last_four').value = response.card.number.substr(-4);
         }
 
         var request = new Ajax.Request(
