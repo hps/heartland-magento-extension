@@ -163,7 +163,7 @@ Object.extend(Payment.prototype, {
         if (this.currentMethod == "hps_securesubmit") {
             if($("<?php echo $_code ?>_stored_card_checkbox") != null && $("<?php echo $_code ?>_stored_card_checkbox").checked){
                 var baseUrl = "<?php echo Mage::getUrl('');?>";
-                var url = baseUrl + "securesubmit/saveToken/getTokenData";
+                var url = baseUrl + "securesubmit/storedcard/getTokenData";
                 var token = new Object();
 
                 token.token_value = document.getElementById('<?php echo $_code ?>_stored_card_select').value;

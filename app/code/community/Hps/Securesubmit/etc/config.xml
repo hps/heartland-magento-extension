@@ -58,7 +58,7 @@
     <frontend>
         <layout>
             <updates>
-                <hps_securesubmit>
+                <hps_securesubmit module="Hps_Securesubmit">
                     <file>securesubmit.xml</file>
                 </hps_securesubmit>
             </updates>
