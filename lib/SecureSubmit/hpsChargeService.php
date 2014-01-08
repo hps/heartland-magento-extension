@@ -18,6 +18,7 @@ class HpsChargeService
 
     public function __construct($config=NULL)
     {
+        $this->exceptionMapper = new HpsExceptionMapper();
         $this->CONFIG = new HpsServicesConfig($config);
     }
 
@@ -25,7 +26,7 @@ class HpsChargeService
     {
         if ($amount <= 0)
         {
-            throw new InvalidRequestException(ExceptionMessages::ChargeAmount);
+            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$invalidAmount);
         }
     }
 
@@ -33,11 +34,11 @@ class HpsChargeService
     {
         if ($currency == null or $currency == "")
         {
-            throw new InvalidRequestException(ExceptionMessages::ArgumentNull);
+            throw $this->exceptionMapper(HpsSdkCodes::$missingCurrency);
         }
         if (strtolower($currency) != "usd")
         {
-            throw new InvalidRequestException(ExceptionMessages::InvalidCurrency);
+            throw $this->exceptionMapper(HpsSdkCodes::$invalidCurrency);
         }
     }
 
@@ -129,7 +130,7 @@ class HpsChargeService
         }
         catch(Exception $e)
         {
-            throw($e);
+            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$unableToProcessTransaction,$e->getMessage());
         }
         $response = new HpsTransactionResponse($soapResponse);
         Mage::getSingleton('hps_securesubmit/payment')->debugData(array('RESPONSE' => $response));
@@ -191,14 +192,7 @@ class HpsChargeService
 
         //Gather Request
         $request = $processorEngine->getData();
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
     public function ChargeWithToken($amount, $currency, HpsToken $token, HpsCardHolderInfo $cardHolder=NULL, $tokenize=false )
@@ -241,14 +235,7 @@ class HpsChargeService
         //Gather Request
         $request = $processorEngine->getData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
     public function Authorize($amount, $currency, $cardOrToken, $cardHolder=null, $tokenize=false)
@@ -306,14 +293,7 @@ class HpsChargeService
         //Gather Request
         $request = $processorEngine->getData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
     public function AuthorizeWithToken($amount, $currency, HpsToken $token, HpsCardHolderInfo $cardHolder=null, $tokenize=false)
@@ -359,14 +339,7 @@ class HpsChargeService
         //Gather Request
         $request = $processorEngine->getData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
     public function ToUtc($dateTime)
@@ -378,6 +351,13 @@ class HpsChargeService
 
     public function ListTransactions($startDateTime, $endDateTime, $filter = NULL)
     {
+        if($startDateTime > date("Y-m-d H:i:s")){
+            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$invalidStartDate);
+        }
+        else if($startDateTime > date("Y-m-d H:i:s")){
+		    throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$invalidEndDate);
+        }
+
         $processorEngine = new POSGATEWAY();
         
         //Define Header
@@ -397,16 +377,16 @@ class HpsChargeService
         //Gather Request
         $request = $processorEngine->getData();
 
-        try
-        {
-            $resp = $this->DoSoapTransaction($request);
-            $resp = $resp->TransactionDetails->AdditionalFields['Transactions'];
-            return $resp;
+        $response = $this->DoSoapTransaction($request);
+        if($response->ResponseCode !=0){
+            $transactionId = $response->TransactionId;
+            $responseCode = $response->ResponseCode;
+            $responseText = $response->ResponseMessage;
+            throw $this->exceptionMapper->map_gateway_exception($transactionId,$responseCode,$responseText);
         }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        $response = $response->TransactionDetails->AdditionalFields['Transactions'];
+        return $response;
+
     }
 
 
@@ -436,14 +416,11 @@ class HpsChargeService
         //Gather Request
         $request = $processorEngine->getData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
+        $response = $this->DoSoapTransaction($request);
+        if($response->ResponseCode != 0){
+            throw $this->exceptionMapper->map_gateway_exception($response->TransactionId,$response->ResponseCode,$response->ResponseMessage);
         }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $response;
     }
 
     public function Capture($transactionId, $amount=NULL)
@@ -466,14 +443,12 @@ class HpsChargeService
 
         //Gather Request
         $request = $processorEngine->getData();
-        try
-        {
-            return $this->DoSoapTransaction($request);
+
+        $response = $this->DoSoapTransaction($request);
+        if($response->ResponseCode != 0){
+            throw $this->exceptionMapper->map_gateway_exception($response->TransactionId,$response->ResponseCode,$response->ResponseMessage);
         }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $response;
     }
 
     public function Reverse($amount, $currency, $cardOrTransactionId)
@@ -515,17 +490,10 @@ class HpsChargeService
 
         $request = $processorEngine->GetData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
-    public function ReverseWithTransactionId($amount, $transactionId)
+    public function ReverseWithTransactionId($amount, $currency, $transactionId)
     {   
         $this->CheckCurrency($currency);
         $response = NULL;
@@ -547,14 +515,7 @@ class HpsChargeService
 
         $request = $processorEngine->GetData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
     public function Refund($amount, $currency, $cardOrTransactionId, $cardHolder=NULL)
@@ -596,14 +557,7 @@ class HpsChargeService
         
         $request = $processorEngine->GetData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
     public function RefundWithCard($amount, $currency, HpsCardInfo $card, HpsCardHolderInfo $cardHolder=null)
@@ -640,14 +594,7 @@ class HpsChargeService
 
         $request = $processorEngine->GetData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
     public function BatchClose()
@@ -663,14 +610,7 @@ class HpsChargeService
         //Build Request
         $request = $processorEngine->GetData();
 
-        try
-        {
-            return $this->DoSoapTransaction($request);
-        }
-        catch(Exception $e)
-        {
-            throw($e);
-        }
+        return $this->DoSoapTransaction($request);
     }
 
 } // End class HpsChargeService 
