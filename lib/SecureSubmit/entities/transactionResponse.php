@@ -11,9 +11,11 @@ class HpsTransactionResponse
     public $ResponseType;    // Example: CreditAuth, CreditSale, etc
     public $TransactionDetails;
     public $TokenData = NULL;
+    public $exceptionMapper;
 
     function __construct($response=NULL, $config=NULL)
     {
+        $this->exceptionMapper = new HpsExceptionMapper();
         if ($response != NULL)
         {
             $this->BuildTransactionResponse($response, $config);
@@ -58,8 +60,7 @@ class HpsTransactionResponse
         if ($this->ResponseCode != "0" or $this->ResponseCode != 0)
         {
             // This indicates a system error
-            $Mapper = new ExceptionMapper();
-            throw $Mapper->MapSystemException($this->ResponseCode, $this->TransactionId);
+            throw $this->exceptionMapper->map_gateway_exception($this->TransactionId,$this->ResponseCode,$this->ResponseMessage);
         } 
 
         // Validate response code from Issuer 
