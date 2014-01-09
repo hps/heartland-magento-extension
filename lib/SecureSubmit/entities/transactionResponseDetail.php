@@ -39,8 +39,9 @@ class HpsTransactionResponseDetail
         // $transactionId is passed in from HpsTransactionResponse for better error messages
         if ($this->RspCode != NULL and $this->RspCode != "00" and $this->RspCode != "85")
         {
-            $Mapper = new ExceptionMapper();
-            throw $Mapper->MapIssuerException($this->RspCode, $transactionId);
+
+            throw $this->exceptionMapper->map_gateway_exception($transactionId,$this->RspCode,$this->RspText);
+
         }
     }
 
@@ -49,7 +50,8 @@ class HpsTransactionResponseDetail
         if($responseDetail!=NULL)
         {
             $this->BuildResponseDetail($responseDetail);
-        }    
+        }
+        $this->exceptionMapper = new HpsExceptionMapper();
     }
 }
 

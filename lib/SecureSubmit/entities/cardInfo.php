@@ -16,6 +16,7 @@ class HpsCardInfo
         $this->ExpYear = $expYear;
         $this->ExpMonth = $expMonth;
         $this->CVV2 = $CVV2;
+        $this->exceptionMapper = new HpsExceptionMapper();
     }
 
     public function CardType()
@@ -47,7 +48,7 @@ class HpsCardInfo
         // Throw exception if CardType() can not match to a known type regex
         if ($this->CardType() == self::UNKNOWN)
         {
-            throw new CardException(ExceptionMessages::IncorrectNumber);
+            throw $this->exceptionMapper->map_issuer_exception(0,14,"Card Type Unknown");
         } 
     }
 
@@ -56,9 +57,9 @@ class HpsCardInfo
         // Validate that required properties are set
         // If $strict, verify that the card number is valid (experimental)
         if($this->CardNbr == NULL)
-            throw new CardException(ExceptionMessages::ArgumentNull);
+            throw $this->exceptionMapper->map_issuer_exception(0,14,"Invalid Card Number");
         if($this->ExpYear == NULL or $this->ExpMonth == NULL)
-            throw new CardException(ExceptionMessages::ArgumentNull);
+            throw $this->exceptionMapper->map_issuer_exception(0,80,"Card expiration date is invalid.");
         if($strict)
         {
             $this->ValidateNumber();
