@@ -4,8 +4,7 @@ class HpsExceptionMapper{
     public  $exceptions = null;
 
     public function __construct(){
-        //this is releative to hpsChargeService.php
-        $fileName = './infrastructure/Exceptions.json';
+        $fileName = '../infrastructure/Exceptions.json';
         $fh = fopen($fileName,'r');
         $jsonString = fread($fh, filesize($fileName));
         $this->exceptions = json_decode($jsonString);
@@ -20,7 +19,7 @@ class HpsExceptionMapper{
 
         if(isset($mapping)){
             $message = $this->message_for_mapping($mapping, $response_text);
-            $code = $mapping['mapping_code'];
+            $code = $mapping->mapping_code;
             return new CardException($transaction_id, $code, $message);
         }else{
             return new CardException($transaction_id, 'unknown_card_exception', $response_text);
@@ -32,15 +31,15 @@ class HpsExceptionMapper{
         $message = $this->message_for_mapping($mapping, $response_text);
 
         if(isset($mapping)){
-            $code = $mapping['mapping_code'];
-            $exception_type = $mapping['mapping_type'];
+            $code = $mapping->exception_codes[0];
+            $exception_type = $mapping->mapping_type;
 
             if($exception_type == 'AuthenticationException'){
                 return new AuthenticationException($message);
             }else if($exception_type == "CardException"){
                 return new CardException($transaction_id, $code, $message);
             }else if($exception_type == "InvalidRequestException"){
-                return new InvalidRequestException($message, $mapping['param'], $code);
+                return new InvalidRequestException($message, $mapping->param, $code);
             }else if(isset($code)){
                 return new HpsException($response_text,$code);
             }
@@ -91,12 +90,14 @@ class HpsExceptionMapper{
     }
 
     private function message_for_mapping($mapping, $original_message){
-        if(isset($mapping)){
-            $message = $mapping->mapping_message;
-            if(isset($message)){
-                foreach($this->exceptions->exception_messages as $key=>$exception_mapping){
-                    if($exception_mapping->code == $message){
-                        return $exception_mapping->message;
+        if(isset($mapping) && $mapping != null && $mapping != ""){
+            if(isset($mapping->mapping_message)){
+                $message = $mapping->mapping_message;
+                if(isset($message)){
+                    foreach($this->exceptions->exception_messages as $key=>$exception_mapping){
+                        if($exception_mapping->code == $message){
+                            return $exception_mapping->message;
+                        }
                     }
                 }
             }
