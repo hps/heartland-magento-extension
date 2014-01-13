@@ -66,6 +66,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         $config = new HpsServicesConfig();
+        // Use HTTP proxy
+        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
+            $config->useproxy = true;
+            $config->proxyOptions = array(
+                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
+                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
+            );
+        }
         $config->secretAPIKey = $this->getConfigData('secretapikey');
         $config->versionNbr = '1509';
         $config->developerId = '002914';

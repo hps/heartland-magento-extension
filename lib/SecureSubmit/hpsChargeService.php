@@ -113,17 +113,12 @@ class HpsChargeService
 
         $options = array('trace' => 1, 'exceptions' => 1);
 
-        // Use HTTP proxy
-        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
-            $proxyOptions = array(
-                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
-                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
-            );
+        if($this->CONFIG->useproxy == true ){
+            $proxyOptions = $this->CONFIG->proxyOptions;
             $options = array_merge($options, $proxyOptions);
         }
 
         $client = new SoapClient($this->CONFIG->URL, $options);
-        Mage::getSingleton('hps_securesubmit/payment')->debugData(array('REQUEST' => $request));
         try
         {
             $soapResponse = $client->__soapCall('DoTransaction', $request);
@@ -133,7 +128,6 @@ class HpsChargeService
             throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$unableToProcessTransaction,$e->getMessage());
         }
         $response = new HpsTransactionResponse($soapResponse);
-        Mage::getSingleton('hps_securesubmit/payment')->debugData(array('RESPONSE' => $response));
         $response->Validate();  // Check for errors from gateway and issuer
         return $response;
     }
