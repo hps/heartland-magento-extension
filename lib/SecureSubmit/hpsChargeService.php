@@ -7,14 +7,16 @@ require_once("entities/cardInfo.php");
 require_once("entities/cardHolderInfo.php");
 require_once("entities/token.php");
 require_once("entities/transactionResponse.php");
-require_once("entities/exceptions/exceptions.php");
 
 require("infrastructure/posgateway_lib.php");
 require("infrastructure/transactions_lib.php");
 
+require_once("Hps.php");
+
 class HpsChargeService
 {
     private $CONFIG;
+    private $exceptionMapper;
 
     public function __construct($config=NULL)
     {
