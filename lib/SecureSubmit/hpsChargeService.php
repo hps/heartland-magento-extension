@@ -380,7 +380,7 @@ class HpsChargeService
             $responseText = $response->ResponseMessage;
             throw $this->exceptionMapper->map_gateway_exception($transactionId,$responseCode,$responseText);
         }
-        $response = $response->TransactionDetails->AdditionalFields['Transactions'];
+        $response = $response->TransactionDetails->Transactions;
         return $response;
 
     }
