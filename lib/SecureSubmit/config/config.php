@@ -18,6 +18,8 @@ class HpsServicesConfig
     public $password = "";
     public $siteTrace = "";
     public $secretAPIKey = "";
+    public $useproxy = "";
+    public $proxyOptions = "";
   
     function __construct($URL=NULL, $siteId=NULL, $deviceId=NULL, $developerId=NULL, $versionNbr=NULL, $licenseId=NULL, $userName=NULL, $password=NULL, $siteTrace=NULL, $secretAPIKey=NULL)
     {
