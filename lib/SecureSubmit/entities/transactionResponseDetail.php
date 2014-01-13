@@ -40,7 +40,7 @@ class HpsTransactionResponseDetail
         if ($this->RspCode != NULL and $this->RspCode != "00" and $this->RspCode != "85")
         {
 
-            throw $this->exceptionMapper->map_gateway_exception($transactionId,$this->RspCode,$this->RspText);
+            throw $this->exceptionMapper->map_issuer_exception($transactionId,$this->RspCode,$this->RspText);
 
         }
     }

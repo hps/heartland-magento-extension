@@ -7,14 +7,16 @@ require_once("entities/cardInfo.php");
 require_once("entities/cardHolderInfo.php");
 require_once("entities/token.php");
 require_once("entities/transactionResponse.php");
-require_once("entities/exceptions/exceptions.php");
 
 require("infrastructure/posgateway_lib.php");
 require("infrastructure/transactions_lib.php");
 
+require_once("Hps.php");
+
 class HpsChargeService
 {
     private $CONFIG;
+    private $exceptionMapper;
 
     public function __construct($config=NULL)
     {
@@ -34,11 +36,11 @@ class HpsChargeService
     {
         if ($currency == null or $currency == "")
         {
-            throw $this->exceptionMapper(HpsSdkCodes::$missingCurrency);
+            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$missingCurrency);
         }
         if (strtolower($currency) != "usd")
         {
-            throw $this->exceptionMapper(HpsSdkCodes::$invalidCurrency);
+            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$invalidCurrency);
         }
     }
 
@@ -349,11 +351,11 @@ class HpsChargeService
             throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$invalidStartDate);
         }
         else if($startDateTime > date("Y-m-d H:i:s")){
-		    throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$invalidEndDate);
+            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$invalidEndDate);
         }
 
         $processorEngine = new POSGATEWAY();
-        
+
         //Define Header
         $this->BuildHeader($processorEngine);
 
@@ -378,7 +380,7 @@ class HpsChargeService
             $responseText = $response->ResponseMessage;
             throw $this->exceptionMapper->map_gateway_exception($transactionId,$responseCode,$responseText);
         }
-        $response = $response->TransactionDetails->AdditionalFields['Transactions'];
+        $response = $response->TransactionDetails->Transactions;
         return $response;
 
     }

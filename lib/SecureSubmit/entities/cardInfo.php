@@ -1,5 +1,4 @@
 <?php
-require_once("exceptions/exceptions.php");
 
 class HpsCardInfo
 {
