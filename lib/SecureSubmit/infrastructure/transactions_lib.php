@@ -61,12 +61,20 @@
         public $TokenValue;
         public $ExpMonth;
         public $ExpYear;
+        public $str;
 
         public function getData()
         {
 
-            return array("TokenData" => array("TokenValue" =>  $this->TokenValue, "ExpMonth" => $this->ExpMonth,
+            $this->str = array("TokenData" => array("TokenValue" =>  $this->TokenValue, "ExpMonth" => $this->ExpMonth,
                 "ExpYear" => $this->ExpYear));
+
+            foreach($this->str['TokenData'] as $key=>$value){
+                if($value == null || $value == ""){
+                    unset($this->str['TokenData'][$key]);
+                }
+            }
+            return $this->str;
         }
     }
 
