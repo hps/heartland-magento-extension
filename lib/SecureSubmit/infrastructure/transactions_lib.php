@@ -25,6 +25,12 @@
                 "ExpYear" => $this->ExpYear, "CardPresent" => $this->CardPresent,
                 "ReaderPresent" => $this->ReaderPresent, "CVV2" => $this->CVV2));
 
+            foreach($this->str['ManualEntry'] as $key=>$value){
+                if($value == null || $value == ""){
+                    unset($this->str['ManualEntry'][$key]);
+                }
+            }
+
             return $this->str;
         }
     }
@@ -165,7 +171,13 @@
                 "CardHolderAddr" => $this->CardHolderAddress, "CardHolderCity" => $this->CardHolderCity, "CardHolderState" => $this->CardHolderState,
                 "CardHolderZip" => $this->CardHolderZip, "CardHolderPhone" => $this->CardHolderPhone, "CardHolderEmail" =>  $this->CardHolderEmail));
 
-            return $this->str;
+            foreach($this->str['CardHolderData'] as $key=>$value){
+                if($value == null || $value == ""){
+                    unset($this->str['CardHolderData'][$key]);
+                }
+            }
+
+                return $this->str;
         }
     }
 
@@ -183,7 +195,12 @@
             $this->str = array("CPCDataType" => array("CardHolderPONbr" => $this->CardHolderPONbr, "TaxType" =>  $this->TaxType,
                 "TaxAmt" => $this->TaxAmt));
 
-            return $this->str;
+            foreach($this->str['CPCDataType'] as $key=>$value){
+                if($value == null || $value == ""){
+                    unset($this->str['CPCDataType'][$key]);
+                }
+            }
+                return $this->str;
         }
     }
 
@@ -200,6 +217,12 @@
             $this->str = array("DirectMktDataType" => array("DirectMktInvoiceNbr" =>  $this->DirectMktInvoiceNbr,
                 "DirectMktShipMonth" => $this->DirectMktShipMonth, "DirectMktShipDay" => $this->DirectMktShipDay));
 
+            foreach($this->str['DirectMktDataType'] as $key=>$value){
+                if($value == null || $value == ""){
+                    unset($this->str['DirectMktDataType'][$key]);
+                }
+            }
+
             return $this->str;
         }
     }
@@ -215,6 +238,11 @@
         {
             $this->str = array($v => array("AmtType" => $this->AmtType, "Amt" => $this->Amt));
 
+            foreach($this->str as $key=>$value){
+                if($value == null || $value == ""){
+                    unset($this->str[$key]);
+                }
+            }
             return $this->str;
         }
     }
@@ -266,6 +294,11 @@
                 $this->FourthAdditionalAmt->getData("FourthAdditionalAmt")), "MerchantVerification" =>  $this->MerchantVerification,
                 "RealTimeSubstantiation" => $this->RealTimeSubstantiation));
 
+            foreach($this->str['AutoSubstantiationType'] as $key=>$value){
+                if($value == null || $value == ""){
+                    unset($this->str['AutoSubstantiationType'][$key]);
+                }
+            }
 
             return $this->str;
         }
@@ -291,7 +324,11 @@
         }
         public function getData() {
 
-                $a1 = array_merge($this->CardData->getData(), array("Amt" => $this->Amt));
+                if($this->Amt != null && $this->Amt != ""){
+                    $a1 = array_merge($this->CardData->getData(), array("Amt" => $this->Amt));
+                }else{
+                    $a1 = $this->CardData->getData();
+                }
 
                 if($this->GratuityAmtInfo != NULL)
                 { $a1 = array_merge($a1,  array("GratuityAmtInfo" => $this->GratuityAmtInfo)); }
@@ -345,8 +382,11 @@
         }
         public function getData() {
 
-
-                $a1 = array_merge($this->CardData->getData(), array("Amt" => $this->Amt));
+                if($this->Amt != null && $this->Amt != ""){
+                    $a1 = array_merge($this->CardData->getData(), array("Amt" => $this->Amt));
+                }else{
+                    $a1 = $this->CardData->getData();
+                }
 
                 if($this->CardHolderData != NULL )
                     { $a1 = array_merge($a1,  $this->CardHolderData->getData()); }
@@ -371,9 +411,17 @@
 
         public function getData()
         {
+            $this->str = array();
+            if($this->GatewayTxnId != null || $this->GatewayTxnId != ""){
+                $this->str['GatewayTxnid'] = $this->GatewayTxnId;
+            }
+            if($this->Amt != null || $this->Amt != ""){
+                $this->str['Amt'] = $this->Amt;
+            }
+            $this->str[] = $this->LodgingData->getData();
 
-            $this->str = array("GatewayTxnId" => $this->GatewayTxnId, "Amt" => $this->Amt,
-                $this->LodgingData->getData());
+            //$this->str = array("GatewayTxnId" => $this->GatewayTxnId, "Amt" => $this->Amt,
+            //    $this->LodgingData->getData());
 
 
             return $this->str;
@@ -464,7 +512,7 @@
 
             $a1 = array("GatewayTxnId" => $this->GatewayTxnId);
 
-            if($this->Amt != NULL )
+            if($this->Amt != NULL && $this->Amt != "")
                 { $a1 = array_merge($a1, array("Amt" => $this->Amt)); }
 
             $a1 = array("CreditAddToBatch" => $a1);
