@@ -131,7 +131,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         catch (Exception $e)
         {
             if($e instanceof CardException || $e instanceof AuthenticationException || $e instanceof HpsException){
-                Mage::throwException(Mage::helper('paygate')->__($e->Message()));
+                Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
             }else{
                 Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
             }
