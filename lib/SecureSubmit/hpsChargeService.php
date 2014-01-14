@@ -122,7 +122,7 @@ class HpsChargeService
 
         try
         {
-            if( class_exists("SOAPClient") == true){
+            if( class_exists("SOAP_Client") == true){
                 require_once("SOAP/Client.php");
                 require_once('infrastructure/WebService_PosGatewayService_PosGatewayInterface.php');
                 $url = substr($this->CONFIG->URL,0,-5);
@@ -390,7 +390,7 @@ class HpsChargeService
             throw $this->exceptionMapper->map_gateway_exception($transactionId,$responseCode,$responseText);
         }
 
-        if( class_exists("SOAPClient") == true){
+        if( class_exists("SOAP_Client") == true){
             $response = $response->TransactionDetails->AdditionalFields;
         }else{
             $response = $response->TransactionDetails->Transactions;
