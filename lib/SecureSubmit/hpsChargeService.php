@@ -120,10 +120,19 @@ class HpsChargeService
             $options = array_merge($options, $proxyOptions);
         }
 
-        $client = new SoapClient($this->CONFIG->URL, $options);
         try
         {
-            $soapResponse = $client->__soapCall('DoTransaction', $request);
+            if( class_exists("SOAPClient") == true){
+                require_once("SOAP/Client.php");
+                require_once('infrastructure/WebService_PosGatewayService_PosGatewayInterface.php');
+                $url = substr($this->CONFIG->URL,0,-5);
+                $client = new WebService_PosGatewayService_PosGatewayInterface($url, $options);
+                $request = $request['PosRequest'];
+                $soapResponse = $client->DoTransaction( $request);
+            }else{
+                $client = new SoapClient($this->CONFIG->URL, $options);
+                $soapResponse = $client->__soapCall('DoTransaction', $request);
+            }
         }
         catch(Exception $e)
         {
@@ -380,7 +389,12 @@ class HpsChargeService
             $responseText = $response->ResponseMessage;
             throw $this->exceptionMapper->map_gateway_exception($transactionId,$responseCode,$responseText);
         }
-        $response = $response->TransactionDetails->Transactions;
+
+        if( class_exists("SOAPClient") == true){
+            $response = $response->TransactionDetails->AdditionalFields;
+        }else{
+            $response = $response->TransactionDetails->Transactions;
+        }
         return $response;
 
     }

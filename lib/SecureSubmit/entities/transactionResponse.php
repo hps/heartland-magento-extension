@@ -30,8 +30,10 @@ class HpsTransactionResponse
     {
         $CONFIG = new HpsServicesConfig($config);
         $ver = $CONFIG->Version;
-        
-        $response = $response->$ver;  // Strip out the added level of "Ver1.0" 
+
+        if( class_exists("SOAPClient") != true){
+            $response = $response->$ver;  // Strip out the added level of "Ver1.0"
+        }
 
         $this->TransactionId = $response->Header->GatewayTxnId;
         $this->ResponseCode = $response->Header->GatewayRspCode; 
