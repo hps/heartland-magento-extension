@@ -4,7 +4,8 @@ class HpsExceptionMapper{
     public  $exceptions = null;
 
     public function __construct(){
-        $fileName = '../infrastructure/Exceptions.json';
+        $path = realpath(dirname(__FILE__));
+        $fileName = $path .'/Exceptions.json';
         $fh = fopen($fileName,'r');
         $jsonString = fread($fh, filesize($fileName));
         $this->exceptions = json_decode($jsonString);
