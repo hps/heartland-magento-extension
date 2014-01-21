@@ -50,7 +50,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $multiToken = false;
         $cardData = null;
         $cardType = null;
-
+        $secureToken = null;
 
         if (isset($_POST['payment']['securesubmit_token']) && $_POST['payment']['securesubmit_token'])
         {
