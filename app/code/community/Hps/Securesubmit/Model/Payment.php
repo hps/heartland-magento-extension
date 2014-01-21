@@ -147,7 +147,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $payment->setTransactionId($response->TransactionId);
             $payment->setIsTransactionClosed(0);
             if($multiToken){
-                Mage::helper(hps_securesubmit)->saveMultiToken($response->TokenData->TokenValue,$cardData,$response->TransactionDetails->CardType);
+                Mage::helper('hps_securesubmit')->saveMultiToken($response->TokenData->TokenValue,$cardData,$response->TransactionDetails->CardType);
             }
         }
         else
