@@ -34,9 +34,9 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
                 $storedCard->save();
             }catch (Exception $e){
                 if($e->getCode() == '23000'){
-                    Mage::ThrowError("Customer Not Found  : Card could not be saved.");
+                    Mage::throwException($this->__('Customer Not Found  : Card could not be saved.'));
                 }
-                Mage::ThrowError(print_r($e, true));
+                Mage::throwException($e->getMessage());
             }
         }
         return $storedCard;
