@@ -31,7 +31,7 @@ class HpsTransactionResponse
         $CONFIG = new HpsServicesConfig($config);
         $ver = $CONFIG->Version;
 
-        if( class_exists("SOAP_Client") != true){
+        if ( ! stream_resolve_include_path('SOAP/Client.php')) {
             $response = $response->$ver;  // Strip out the added level of "Ver1.0"
         }
 

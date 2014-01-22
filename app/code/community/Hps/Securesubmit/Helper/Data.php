@@ -19,11 +19,8 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
         if($_loggedIn){
             $_customerId = $_session->getCustomer()->getId();
 
-            $currentTimestamp = Mage::getModel('core/date')->timestamp(time());
-            $currentDate = date('Y-m-d H:i:s', $currentTimestamp);
-
             $storedCard = Mage::getModel('hps_securesubmit/storedcard');
-            $storedCard->setDt($currentDate)
+            $storedCard->setDt(Varien_Date::now())
                 ->setCustomerId($_customerId)
                 ->setTokenValue($token)
                 ->setCcType($cardType)
@@ -34,9 +31,9 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
                 $storedCard->save();
             }catch (Exception $e){
                 if($e->getCode() == '23000'){
-                    Mage::ThrowError("Customer Not Found  : Card could not be saved.");
+                    Mage::throwException($this->__('Customer Not Found  : Card could not be saved.'));
                 }
-                Mage::ThrowError(print_r($e, true));
+                Mage::throwException($e->getMessage());
             }
         }
         return $storedCard;

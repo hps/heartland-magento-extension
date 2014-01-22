@@ -122,7 +122,7 @@ class HpsChargeService
 
         try
         {
-            if( class_exists("SOAP_Client") == true){
+            if (stream_resolve_include_path('SOAP/Client.php')) {
                 require_once("SOAP/Client.php");
                 require_once('infrastructure/WebService_PosGatewayService_PosGatewayInterface.php');
                 $url = substr($this->CONFIG->URL,0,-5);

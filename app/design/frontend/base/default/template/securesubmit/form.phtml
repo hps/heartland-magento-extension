@@ -15,7 +15,7 @@
 <ul id="payment_form_<?php echo $_code ?>" style="display:none">
     <?php
         if($_loggedIn){
-            $cards = Mage::helper(hps_securesubmit)->getStoredCards($_customerId);
+            $cards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId);
             if(count($cards) > 0){
                 $spacing = "************";
                 $select  = "<select id='".$_code ."_stored_card_select'>";

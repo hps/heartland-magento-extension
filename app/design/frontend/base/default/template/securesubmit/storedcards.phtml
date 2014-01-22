@@ -5,7 +5,7 @@ $_loggedIn = $_session->isLoggedIn();
 if($_loggedIn){
     $_customerId = $_session->getCustomer()->getId();
     $_params = $this->getRequest()->getParams();
-    $_storedCards = Mage::helper(hps_securesubmit)->getStoredCards($_customerId);
+    $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId);
 
     if(isset($_params['success']) && $_params != ""){
         if($_params['success']){
