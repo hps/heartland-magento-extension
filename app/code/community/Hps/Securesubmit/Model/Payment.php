@@ -50,19 +50,17 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $multiToken = false;
         $cardData = null;
         $cardType = null;
-        $secureToken = null;
+        $additionalData = new Varien_Object($payment->getAdditionalData() ? unserialize($payment->getAdditionalData()) : null);
+        $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
+        $saveCreditCard = !! $additionalData->getCcSaveFuture();
 
-        if (isset($_POST['payment']['securesubmit_token']) && $_POST['payment']['securesubmit_token'])
-        {
-            $secureToken = $_POST['payment']['securesubmit_token'];
-        }
-
-        if (isset($_POST['payment']['cc_save_future']) && $_POST['payment']['cc_save_future']){
+        if ($saveCreditCard) {
             $multiToken = true;
             $cardData = new HpsCardInfo(
-                $_POST['payment']['cc_last_four'],
-                $_POST['payment']['cc_exp_year'],
-                $_POST['payment']['cc_exp_month']);
+                $payment->getCcLast4(),
+                $payment->getCcExpYear(),
+                $payment->getCcExpMonth()
+            );
         }
 
         $config = new HpsServicesConfig();
@@ -220,6 +218,33 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         return true;
+    }
+
+    public function assignData($data)
+    {
+        parent::assignData($data);
+
+        if ( ! ($data instanceof Varien_Object)) {
+            $data = new Varien_Object($data);
+        }
+        $info = $this->getInfoInstance();
+
+        if ( ! $info->getCcLast4() && $data->getCcLastFour()) {
+            $info->setCcLast4($data->getCcLastFour());
+        }
+
+        $details = array();
+        if ($data->getData('cc_save_future')) {
+            $details['cc_save_future'] = 1;
+        }
+        if ($data->getData('securesubmit_token')) {
+            $details['securesubmit_token'] = $data->getData('securesubmit_token');
+        }
+        if ( ! empty($details)) {
+            $this->getInfoInstance()->setAdditionalData(serialize($details));
+        }
+
+        return $this;
     }
 
 }
