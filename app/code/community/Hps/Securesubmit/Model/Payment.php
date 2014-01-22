@@ -53,8 +53,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $additionalData = new Varien_Object($payment->getAdditionalData() ? unserialize($payment->getAdditionalData()) : null);
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
         $saveCreditCard = !! $additionalData->getCcSaveFuture();
+        $useCreditCard = !! $additionalData->getUseCreditCard();
 
-        if ($saveCreditCard) {
+        if ($saveCreditCard && ! $useCreditCard) {
             $multiToken = true;
             $cardData = new HpsCardInfo(
                 $payment->getCcLast4(),
@@ -92,10 +93,18 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $billing->getData('email'),
             $address);
 
-        $token = new HpsToken(
-            $secureToken,
-            null,
-            null);
+        if ($useCreditCard) {
+            $cardOrToken = new HpsCardInfo(
+                $payment->getCcNumber(),
+                $payment->getCcExpYear(),
+                $payment->getCcExpMonth(),
+                $payment->getCcCid());
+        } else {
+            $cardOrToken = new HpsToken(
+                $secureToken,
+                null,
+                null);
+        }
 
         try
         {
@@ -111,7 +120,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $response = $chargeService->Charge(
                         $amount,
                         strtolower($order->getBaseCurrencyCode()),
-                        $token,
+                        $cardOrToken,
                         $cardHolder,
                         $multiToken);
                 }
@@ -121,7 +130,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $response = $chargeService->Authorize(
                     $amount,
                     strtolower($order->getBaseCurrencyCode()),
-                    $token,
+                    $cardOrToken,
                     $cardHolder,
                     $multiToken);
             }
@@ -239,6 +248,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         if ($data->getData('securesubmit_token')) {
             $details['securesubmit_token'] = $data->getData('securesubmit_token');
+        }
+        if ($data->getData('use_credit_card')) {
+            $details['use_credit_card'] = 1;
         }
         if ( ! empty($details)) {
             $this->getInfoInstance()->setAdditionalData(serialize($details));

@@ -1,5 +1,6 @@
 <?php $_code=$this->getMethodCode() ?>
 <ul id="payment_form_<?php echo $_code ?>" style="display:none">
+    <input type="hidden" name="payment[use_credit_card]" value="1" />
     <li>
         <div class="input-box">
             <label for="<?php echo $_code ?>_cc_number"><?php echo Mage::helper('payment')->__('Credit Card Number') ?> <span class="required">*</span></label><br/>
