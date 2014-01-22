@@ -5,4 +5,10 @@ class Hps_Securesubmit_Model_Storedcard  extends Mage_Core_Model_Abstract{
     {
         $this->_init('hps_securesubmit/storedcard');
     }
-} 
+
+    public function removeDuplicates()
+    {
+        $this->getResource()->removeDuplicates($this);
+        return $this;
+    }
+}
