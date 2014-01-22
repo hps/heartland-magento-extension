@@ -17,6 +17,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_formBlockType = 'hps_securesubmit/form';
     protected $_infoBlockType = 'hps_securesubmit/info';
 
+    protected $_customMessage = '';
+
     /**
      * Fields that should be replaced in debug with '***'
      *
@@ -26,6 +28,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
     public function __construct()
     {
+        $this->_customMessage = $this->getConfigData('custom_message');
     }
 
     public function validate()
@@ -137,12 +140,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         catch (Exception $e)
         {
-            if($e instanceof CardException || $e instanceof AuthenticationException || $e instanceof HpsException){
-                Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
-            }else{
-                Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
-            }
-            return;
+            $error = Mage::helper('hps_securesubmit')->__($e->getMessage());
+            Mage::throwException(sprintf($this->_customMessage, $error));
         }
         if ($response->TransactionDetails->RspCode == '00' || $response->TransactionDetails->RspCode == '0')
         {
@@ -167,7 +166,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             {
                 $this->setStore($payment->getOrder()->getStoreId());
                 $payment->setStatus(self::STATUS_ERROR);
-                Mage::throwException(Mage::helper('paygate')->__($response->TransactionDetails->ResponseMessage));
+                $error = Mage::helper('hps_securesubmit')->__($response->TransactionDetails->ResponseMessage);
+                Mage::throwException(sprintf($this->_customMessage, $error));
             }
         }
 
@@ -194,11 +194,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $transactionId);
 
         } catch (Exception $e) {
-            if($e instanceof ApiConnectionException || $e instanceof InvalidRequestException || $e instanceof HpsException){
-                Mage::throwException(Mage::helper('paygate')->__($e->Message()));
-            }else{
-                Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
-            }
+            $error = Mage::helper('hps_securesubmit')->__($e->getMessage());
+            Mage::throwException(sprintf($this->_customMessage, $error));
         }
 
         $payment
