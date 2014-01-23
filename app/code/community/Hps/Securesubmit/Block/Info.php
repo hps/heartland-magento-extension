@@ -1,6 +1,6 @@
 <?php
 
-class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
+class HPS_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
 {
     protected function _prepareSpecificInformation($transport = null)
     {
