@@ -75,7 +75,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             );
         }
         $config->secretAPIKey = $this->getConfigData('secretapikey');
-        $config->versionNbr = '1509';
+        $config->versionNbr = '1573';
         $config->developerId = '002914';
 
         $chargeService = new HpsChargeService($config);
@@ -174,7 +174,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         $config = new HpsServicesConfig();
         $config->secretAPIKey = $this->getConfigData('secretapikey');
-        $config->versionNbr = '1509';
+        $config->versionNbr = '1573';
         $config->developerId = '002914';
 
         try {
