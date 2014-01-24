@@ -140,8 +140,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         catch (Exception $e)
         {
-            $error = Mage::helper('hps_securesubmit')->__($e->getMessage());
-            Mage::throwException(sprintf($this->_customMessage, $error));
+            $this->throwUserError($e->getMessage());
         }
         if ($response->TransactionDetails->RspCode == '00' || $response->TransactionDetails->RspCode == '0')
         {
@@ -166,8 +165,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             {
                 $this->setStore($payment->getOrder()->getStoreId());
                 $payment->setStatus(self::STATUS_ERROR);
-                $error = Mage::helper('hps_securesubmit')->__($response->TransactionDetails->ResponseMessage);
-                Mage::throwException(sprintf($this->_customMessage, $error));
+                $this->throwUserError($response->TransactionDetails->ResponseMessage);
             }
         }
 
@@ -194,8 +192,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $transactionId);
 
         } catch (Exception $e) {
-            $error = Mage::helper('hps_securesubmit')->__($e->getMessage());
-            Mage::throwException(sprintf($this->_customMessage, $error));
+            $this->throwUserError($e->getMessage());
         }
 
         $payment
@@ -255,5 +252,12 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         return $this;
     }
-
+    
+    public function throwUserError($error)
+    {
+        $error = Mage::helper('hps_securesubmit')->__($error);
+        Mage::unregister('payment_detailed_error');
+        Mage::register('payment_detailed_error', $error);
+        Mage::throwException(sprintf($this->_customMessage, $error)); 
+    }    
 }
