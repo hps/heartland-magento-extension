@@ -86,7 +86,7 @@
         {
                 $this->CONFIG = new HpsServicesConfig($config);
                 $this->Header = new HEADER($config);  // create a Header object
-                $this->Transaction = new TRANSACTION();  // create a Header object
+                $this->Transaction = new TRANSACTION();  // create a Transaction object
             }
 
         public function getData()
@@ -109,7 +109,7 @@
         {
             $this->Request = "<?xml version='1.0' encoding='utf-8'?>";
             $this->Request = $this->Request . "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/' ";
-            $this->Request = $this-Request . "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' ";
+            $this->Request = $this->Request . "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' ";
             $this->Request = $this->Request . "xmlns:xsd='http://www.w3.org/2001/XMLSchema'><soap:Body>";
 
             $this->Request = $this->Request . $this->getData();
