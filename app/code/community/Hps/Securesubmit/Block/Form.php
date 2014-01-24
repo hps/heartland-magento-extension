@@ -1,5 +1,5 @@
 <?php
-class Hps_Securesubmit_Block_Form extends Mage_Payment_Block_Form_Ccsave
+class HPS_SecureSubmit_Block_Form extends Mage_Payment_Block_Form_Ccsave
 {
     protected function _construct()
     {
