@@ -357,7 +357,7 @@
                     { $a1 = array_merge($a1,  $this->LodgingData->getData()); }
 
                 if($this->AutoSubstantiation != NULL )
-                    { $arr1 = array_merge($arr1,  $this->AutoSubstantiation->getData()); }
+                    { $a1 = array_merge($a1,  $this->AutoSubstantiation->getData()); }
 
                 if($this->AllowPartialAuth != NULL)
                     {$a1 = array_merge($a1, array("AllowPartialAuth" => $this->AllowPartialAuth)); }
@@ -606,7 +606,7 @@
                     { $a1 = array_merge($a1,  $this->LodgingData->getData()); }
 
                 if($this->AutoSubstantiation != NULL )
-                    { $arr1 = array_merge($arr1,  $this->AutoSubstantiation->getData()); }
+                    { $a1 = array_merge($a1,  $this->AutoSubstantiation->getData()); }
 
                 if($this->AllowPartialAuth != NULL)
                     {$a1 = array_merge($a1, array("AllowPartialAuth" => $this->AllowPartialAuth)); }
@@ -665,7 +665,7 @@
                     { $a1 = array_merge($a1,  $this->LodgingData->getData()); }
 
             if($this->AutoSubstantiation != NULL )
-                    { $arr1 = array_merge($arr1,  $this->AutoSubstantiation->getData()); }
+                    { $a1 = array_merge($a1,  $this->AutoSubstantiation->getData()); }
 
             $a1 = array("Block1" => $a1);
             $a1 = array("CreditOfflineAuth" => $a1);
@@ -721,7 +721,7 @@
                     { $a1 = array_merge($a1,  $this->LodgingData->getData()); }
 
             if($this->AutoSubstantiation != NULL )
-                    { $arr1 = array_merge($arr1,  $this->AutoSubstantiation->getData()); }
+                    { $a1 = array_merge($a1,  $this->AutoSubstantiation->getData()); }
 
             $a1 = array("Block1" => $a1);
             $a1 = array("CreditOfflineSale" => $a1);
