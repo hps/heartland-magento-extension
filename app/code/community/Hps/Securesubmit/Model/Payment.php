@@ -9,6 +9,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_canCapturePartial           = true;
     protected $_canRefund                   = true;
     protected $_canRefundInvoicePartial     = true;
+    protected $_canVoid                     = true;
     protected $_canAuthorize                = true;
 
     protected $_supportedCurrencyCodes = array('USD');
@@ -171,8 +172,56 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         return $this;
     }
-    
+
     public function refund(Varien_Object $payment, $amount)
+    {
+        if ($this->canVoid($payment)) {
+            // First try to void the payment and if the batch is already closed - try to refund the payment.
+            try {
+                $this->void($payment);
+            } catch (Mage_Core_Exception $e) {
+                $this->_refund($payment, $amount);
+            }
+        } else {
+            $this->_refund($payment, $amount);
+        }
+        return $this;
+    }
+
+    /**
+     * Void payment abstract method
+     *
+     * @param Varien_Object $payment
+     *
+     * @return Hps_Securesubmit_Model_Payment
+     */
+    public function void(Varien_Object $payment)
+    {
+        $transactionId = $payment->getCcTransId();
+
+        $config = new HpsServicesConfig();
+        $config->secretAPIKey = $this->getConfigData('secretapikey');
+        $config->versionNbr = '1509';
+        $config->developerId = '002914';
+
+        try {
+            $chargeService = new HpsChargeService($config);
+            $voidResponse = $chargeService->Void($transactionId);
+        } catch (Exception $e) {
+            $error = Mage::helper('hps_securesubmit')->__($e->getMessage());
+            Mage::throwException(sprintf($this->_customMessage, $error));
+        }
+
+        $payment
+            ->setTransactionId($voidResponse->TransactionId)
+            ->setParentTransactionId($transactionId)
+            ->setIsTransactionClosed(1)
+            ->setShouldCloseParentTransaction(1);
+
+        return $this;
+    }
+
+    protected function _refund(Varien_Object $payment, $amount)
     {
         $transactionId = $payment->getCcTransId();
         $order = $payment->getOrder();

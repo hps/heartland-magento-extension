@@ -476,6 +476,23 @@
         }
     }
 
+    //CreditVoidReqType
+    class CreditVoidReqType
+    {
+        public $GatewayTxnId = NULL;
+        private $str;
+
+        public function __construct() {}
+
+        public function getData()
+        {
+            $a1 = array("GatewayTxnId" => $this->GatewayTxnId);
+            $a1 = array("CreditVoid" => $a1);
+            $this->str = $a1;
+            return $this->str;
+        }
+    }
+
     //FindTransactionsReqBlock1Type
     class FindTransactionsReqBlock1Type
     {
