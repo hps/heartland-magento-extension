@@ -65,6 +65,18 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </payment_action>
+                        <custom_message>
+                            <label>Custom Error Message</label>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>65</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[
+                                To use the default Secure Submit error message use %s in the custom message text, ex.
+                                My message. %s -> will be displayed as: My message. Original Secure Submit message.]]>
+                            </comment>
+                        </custom_message>
                         <sort_order translate="label">
                             <label>Sort Order</label>
                             <frontend_type>text</frontend_type>

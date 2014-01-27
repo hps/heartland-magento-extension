@@ -28,6 +28,7 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
                 ->setCcExpMonth(str_pad($cardData->ExpMonth, 2, '0', STR_PAD_LEFT))
                 ->setCcExpYear($cardData->ExpYear);
             try{
+                $storedCard->removeDuplicates();
                 $storedCard->save();
             }catch (Exception $e){
                 if($e->getCode() == '23000'){

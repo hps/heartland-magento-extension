@@ -543,6 +543,29 @@ class HpsChargeService
 
     }
 
+    public function Void($transactionId)
+    {
+
+        $processorEngine = new POSGATEWAY();
+
+        //Define Header
+        $this->BuildHeader($processorEngine);
+
+        //Define Transaction
+        $processorEngine->Transaction->ItemName = "CreditVoid";
+        $processorEngine->Transaction->Item  = new CreditVoidReqBlock1Type();
+
+        //Configure Encryption
+        $this->SetEncryption($processorEngine);
+
+        //Build Request
+        $processorEngine->Transaction->Item->GatewayTxnId = $transactionId;
+
+        $request = $processorEngine->GetData();
+
+        return $this->DoSoapTransaction($request);
+    }
+
     public function RefundWithTransactionId($amount, $currency, $transactionId)
     {   
         $processorEngine = new POSGATEWAY();
