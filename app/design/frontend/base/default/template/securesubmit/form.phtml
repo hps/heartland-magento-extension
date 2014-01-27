@@ -1,13 +1,10 @@
-<?php
-    //GET SESSION DATA
-    Mage::getSingleton('core/session', array('name'=>'frontend'));
-    $_session = Mage::getSingleton('customer/session');
-    $_loggedIn = $_session->isLoggedIn();
-    $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId);
-
-    $_code=$this->getMethodCode();
-    $_model = Mage::getModel('hps_securesubmit/payment');
-    $public_key = $_model->getConfigData('publicapikey');
+<?php /* @var $this Hps_Securesubmit_Block_Form */
+$_code = $this->getMethodCode();
+$public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey');
+$_loggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
+if ($_loggedIn) {
+    $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
+}
 ?>
 <ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none">
     <?php if($_loggedIn && count($customerStoredCards)): ?>

@@ -1,35 +1,11 @@
 <?php
-Mage::getSingleton('core/session', array('name'=>'frontend'));
-$_session = Mage::getSingleton('customer/session');
-$_loggedIn = $_session->isLoggedIn();
-if($_loggedIn){
-    $_customerId = $_session->getCustomer()->getId();
-    $_params = $this->getRequest()->getParams();
-    $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId);
-
-    if(isset($_params['success']) && $_params != ""){
-        if($_params['success']){
-            $message = "Success : ";
-        }else{
-            $message = "An Error Occurred : ";
-        }
-        $message = $_params['message'];
-    }
-}
-
+$_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingleton('customer/session')->getCustomerId());
 ?>
 
 <h1><?php echo $this->__('Manage Saved Cards') ?></h1>
-
-<?php
-
-    if(isset($message)){
-        echo "<h1>" .$this->__($message) ."</h1>";
-    }
-?>
 <div class="box-account">
     <div class="box-head">
-        <h2><?php echo $this->__('Credit Cards') ?></h2>
+        <h2><?php echo $this->__('Saved Credit Cards') ?></h2>
     </div>
     <?php if (count($_storedCards)): ?>
         <table class="data-table" id="stored-cards-table">
@@ -51,10 +27,14 @@ if($_loggedIn){
                 <td class="a-center"><span class="nobr"><?php echo $card['cc_type'] ?></span></td>
                 <td class="a-center"><span class="nobr"><?php echo "************".$card['cc_last4'] ?></span></td>
                 <td class="a-center"><span class="nobr"><?php echo $card['cc_exp_month'] ."-".$card['cc_exp_year'] ?></span></td>
-                <td><a href="<?php echo Mage::getBaseUrl() ?>securesubmit/storedcard/delete?storedcard_id=<?php echo $card['storedcard_id'] ?>">Delete</a></td>
+                <td><a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'])) ?>">Delete</a></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
         </table>
+    <?php else: ?>
+        <p>
+            <?= $this->__('You do not have any saved credit cards.') ?>
+        </p>
     <?php endif; ?>
 </div>
