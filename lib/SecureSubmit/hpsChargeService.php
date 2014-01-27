@@ -120,16 +120,20 @@ class HpsChargeService
         try
         {
             $this->lastRequest = $request;
-            if (stream_resolve_include_path('SOAP/Client.php')) {
+            if (extension_loaded('soap')) {
+                $client = new SoapClient($this->CONFIG->URL, $options);
+                $soapResponse = $client->__soapCall('DoTransaction', $request);
+            }
+            else if (stream_resolve_include_path('SOAP/Client.php')) {
                 require_once('SOAP/Client.php');
                 require_once(dirname(__FILE__).DS.'infrastructure/WebService_PosGatewayService_PosGatewayInterface.php');
                 $url = substr($this->CONFIG->URL,0,-5);
                 $client = new WebService_PosGatewayService_PosGatewayInterface($url, $options);
                 $request = $request['PosRequest'];
                 $soapResponse = $client->DoTransaction( $request);
-            }else{
-                $client = new SoapClient($this->CONFIG->URL, $options);
-                $soapResponse = $client->__soapCall('DoTransaction', $request);
+            }
+            else {
+                throw new Exception('Could not find a SOAP library.');
             }
         }
         catch(Exception $e)
