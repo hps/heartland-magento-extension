@@ -17,5 +17,3 @@ class HpsAddressInfo
         $this->Country = $country;
     }
 }
-
-?>

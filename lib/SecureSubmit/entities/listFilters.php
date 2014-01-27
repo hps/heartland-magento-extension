@@ -13,5 +13,3 @@ class ListFilters
     const CheckSale = "CheckSale";
     const CheckVoid = "CheckVoid";
 }
-
-?>

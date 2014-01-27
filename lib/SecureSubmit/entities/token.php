@@ -13,5 +13,3 @@ class HpsToken
         $this->ExpMonth = $expMonth;
     }
 }
-
-?>

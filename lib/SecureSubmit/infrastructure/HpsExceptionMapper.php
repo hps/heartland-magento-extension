@@ -71,11 +71,11 @@ class HpsExceptionMapper{
             $exception_type = $mapping->mapping_type;
 
             if($exception_type == "InvalidRequestException"){
-                return new InvalidRequestException($message, $mapping->param, $code);
+                return new InvalidRequestException($message, $mapping->param, $code, $inner_exception);
             }else if($exception_type == "ApiConnectionException"){
-                return new ApiConnectionException($message, $inner_exception, $code);
+                return new ApiConnectionException($message, $code, $inner_exception);
             }else if(isset($code)){
-                return new HpsException($message, $code);
+                return new HpsException($message, $code, $inner_exception);
             }
         }
 

@@ -1,6 +1,5 @@
 <?php
-    require_once("config/config.php");
-    
+
     //Header object for request
     //Contains data elements for transaction routing and authnication
     class HEADER
@@ -20,7 +19,7 @@
 
         public function __construct($config = NULL)
         {
-            $this->CONFIG = new HpsServicesConfig($config); 
+            $this->CONFIG = new HpsServicesConfig($config);
             $this->siteId          = $this->CONFIG->siteId;
             $this->deviceId        = $this->CONFIG->deviceId;
             $this->developerId     = $this->CONFIG->developerId;
@@ -118,7 +117,3 @@
         }
 
     }
-
-
-
-?>

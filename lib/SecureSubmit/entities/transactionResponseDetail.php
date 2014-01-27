@@ -54,5 +54,3 @@ class HpsTransactionResponseDetail
         $this->exceptionMapper = new HpsExceptionMapper();
     }
 }
-
-?>

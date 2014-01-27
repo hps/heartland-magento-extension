@@ -1,4 +1,5 @@
 <?php
+
 require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'hpsChargeService.php';
 
 class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
@@ -18,8 +19,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_formBlockType = 'hps_securesubmit/form';
     protected $_infoBlockType = 'hps_securesubmit/info';
 
-    protected $_customMessage = '';
-
     /**
      * Fields that should be replaced in debug with '***'
      *
@@ -27,26 +26,44 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      */
     protected $_debugReplacePrivateDataKeys = array('SecretAPIKey');
 
-    public function __construct()
-    {
-        $this->_customMessage = $this->getConfigData('custom_message');
-    }
-
     public function validate()
     {
+        // TODO - validate when not using token
         return $this;
     }
 
+    /**
+     * Capture payment
+     *
+     * @param Varien_Object $payment
+     * @param float $amount
+     * @return  $this
+     */
     public function capture(Varien_Object $payment, $amount)
     {
         $this->_authorize($payment, $amount, true);
     }
 
+    /**
+     * Authorize payment
+     *
+     * @param Varien_Object $payment
+     * @param float $amount
+     * @return  $this
+     */
     public function authorize(Varien_Object $payment, $amount)
     {
         $this->_authorize($payment, $amount, false);
     }
 
+    /**
+     * Authorize or Capture payment
+     *
+     * @param Varien_Object $payment
+     * @param float $amount
+     * @param bool $capture
+     * @return  $this
+     */
     private function _authorize(Varien_Object $payment, $amount, $capture)
     {
         $order = $payment->getOrder();
@@ -139,8 +156,19 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $multiToken);
             }
         }
+        catch (HpsException $e)
+        {
+            if ($this->getDebugFlag()) {
+                $this->_debug(array(
+                      'exception' => "$e",
+                      'last_request' => $chargeService->lastRequest,
+                ));
+            }
+            $this->throwUserError($e->getMessage());
+        }
         catch (Exception $e)
         {
+            Mage::logException($e);
             $this->throwUserError($e->getMessage());
         }
         if ($response->TransactionDetails->RspCode == '00' || $response->TransactionDetails->RspCode == '0')
@@ -240,7 +268,16 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 strtolower($order->getBaseCurrencyCode()),
                 $transactionId);
 
-        } catch (Exception $e) {
+        }
+        catch (HpsException $e)
+        {
+            if ($this->getDebugFlag()) {
+                $this->_debug(array('exception' => "$e"));
+            }
+            $this->throwUserError($e->getMessage());
+        }
+        catch (Exception $e) {
+            Mage::logException($e);
             $this->throwUserError($e->getMessage());
         }
 
@@ -301,12 +338,19 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         return $this;
     }
-    
+
+    /**
+     * @param string $error
+     * @throws Mage_Core_Exception
+     */
     public function throwUserError($error)
     {
         $error = Mage::helper('hps_securesubmit')->__($error);
         Mage::unregister('payment_detailed_error');
         Mage::register('payment_detailed_error', $error);
-        Mage::throwException(sprintf($this->_customMessage, $error)); 
+        if ($customMessage = $this->getConfigData('custom_message')) {
+            $error = sprintf($customMessage, $error);
+        }
+        Mage::throwException($error);
     }    
 }

@@ -1,6 +1,6 @@
 <?php
 
-require_once("transactionResponseDetail.php");
+require_once(dirname(__FILE__).DS.'transactionResponseDetail.php');
 
 class HpsTransactionResponse
 {
@@ -70,5 +70,3 @@ class HpsTransactionResponse
     }
 
 }
-
-?>

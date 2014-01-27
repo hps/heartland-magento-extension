@@ -11,93 +11,71 @@
     $_model = Mage::getModel('hps_securesubmit/payment');
     $public_key = $_model->getConfigData('publicapikey');
 ?>
-<fieldset class="form-list">
-<ul id="payment_form_<?php echo $_code ?>" style="display:none">
-    <?php
-        if($_loggedIn){
-            $cards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId);
-            if(count($cards) > 0){
-                $spacing = "************";
-                $select  = "<select id='".$_code ."_stored_card_select'>";
-                foreach($cards as $key=>$card){
-                    $select .= "<option value='".$card['token_value']."'>". $card['cc_type']." -- ".$spacing.$card['cc_last4'] . "</option>";
-                }
-                $select .= "</select>";
-                ?>
-                <li>
-                    <div id="<?php echo $_code ?>_saved_cards_checkbox">
-                            <div class="v-fix">
-                                <input type="checkbox" id="<?php echo $_code ?>_stored_card_checkbox" />
-                            </div>
-                            <label for="<?php echo $_code ?>_cc_stored_checkbox">&nbsp;<?php echo $this->__('Click here to use a stored Card') ?></label>
-                    </div>
-                </li>
-                <li>
-                    <div id="<?php echo $_code ?>_stored_cards" style="display: none">
-                        <label for="<?php echo $_code ?>_stored_cards">&nbsp;<?php echo $this->__('Select a Stored Card Below') ?></label>
-                        <br/>
-                        <div id="<?php echo $_code ?>_stored_cards_select" class="form-list" >
-                            <?php echo $select; ?>
-                        </div>
-                    </div>
-                </li>
-                <?php
-            }
-        }
-    ?>
-    <li>  
-        <div class="input-box stored_cards_selected">
-            <label for="<?php echo $_code ?>_cc_number"><?php echo $this->__('Credit Card Number') ?> <span class="required">*</span></label><br>  
-            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="">
+<ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none">
+    <?php if($_loggedIn && ($cards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId))): ?>
+    <li>
+        <label for="<?php echo $_code ?>_stored_card_checkbox">&nbsp;<?php echo $this->__('Use a stored card') ?></label>
+        <div class="input-box">
+            <input type="checkbox" id="<?php echo $_code ?>_stored_card_checkbox" />
+        </div>
+    </li>
+    <li id="<?php echo $_code ?>_stored_cards" style="display: none">
+        <label for="<?php echo $_code ?>_stored_cards">&nbsp;<?php echo $this->__('Stored Card') ?></label>
+        <div class="input-box" id="<?php echo $_code ?>_stored_cards_select">
+            <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">
+            <?php foreach ($cards as $key => $card): ?>
+                <option value="<?= $card['token_value'] ?>"><?= $card['cc_type'].' -- ************'.$card['cc_last4'] ?></option>
+            <?php endforeach ?>
+            </select>
+        </div>
+    </li>
+    <?php endif ?>
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_cc_number"><?php echo $this->__('Credit Card Number') ?> <span class="required">*</span></label>
+        <div class="input-box">
+            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="" autocomplete="off" />
             <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="">
             <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="">
         </div>
     </li>  
-    <li>  
-        <div class="input-box stored_cards_selected">
-            <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">*</span></label><br>  
-            <div class="v-fix">  
-            <select id="<?php echo $_code ?>_expiration" name="payment[cc_exp_month]" class="month required-entry validate-cc-exp">
-            <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>  
-            <?php foreach ($this->getCcMonths() as $k=>$v): ?>  
-                <option value="<?php echo $k?$k:'' ?>" <?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>  
-            <?php endforeach ?>  
-            </select>
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">*</span></label>
+        <div class="input-box">
+            <div class="v-fix">
+                <select id="<?php echo $_code ?>_expiration" name="payment[cc_exp_month]" class="month required-entry validate-cc-exp"  autocomplete="off">
+                <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
+                <?php foreach ($this->getCcMonths() as $k=>$v): ?>
+                    <option value="<?php echo $k?$k:'' ?>" <?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                <?php endforeach ?>
+                </select>
             </div>  
             <div class="v-fix">  
-            <?php $_ccExpYear = $this->getInfoData('cc_exp_year') ?>  
-            <select id="<?php echo $_code ?>_expiration_yr" name="payment[cc_exp_year]" class="year required-entry">
-            <?php foreach ($this->getCcYears() as $k=>$v): ?>  
-                <option value="<?php echo $k?$k:'' ?>" <?php if($k==$_ccExpYear):?> selected="selected"<?php endif ?>><?php echo $v ?></option>  
-            <?php endforeach ?>  
-            </select>
+                <select id="<?php echo $_code ?>_expiration_yr" name="payment[cc_exp_year]" class="year required-entry"  autocomplete="off">
+                <?php foreach ($this->getCcYears() as $k=>$v): ?>
+                    <option value="<?php echo $k?$k:'' ?>" <?php if($k==$this->getInfoData('cc_exp_year')):?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                <?php endforeach ?>
+                </select>
             </div>  
         </div>  
     </li>  
-    <li>
-        <div class="input-box stored_cards_selected">
-            <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label><br>  
-            <div class="v-fix"><input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" value=""></div>  
-
-            <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>  
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label>
+        <div class="input-box">
+            <div class="v-fix">
+                <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" value="" autocomplete="off" />
+            </div>
+            <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
         </div>  
     </li>
-    <li>
-        <?php
-        if($_loggedIn){
-        ?>
-            <div class="input-box stored_cards_selected" id="cc_save_future">
-                <div class="v-fix">
-                    <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" />
-                </div>
-                <label for="<?php echo $_code ?>_cc_save_future">&nbsp;<?php echo $this->__('Save this card for future use') ?></label>
-            </div>
-        <?php
-        }
-        ?>
+    <?php if ($_loggedIn): ?>
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_cc_save_future"><?php echo $this->__('Save this card for future use?') ?></label>
+        <div class="input-box">
+            <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
+        </div>
     </li>
+    <?php endif ?>
 </ul>
-</fieldset>
 
 <script type="text/javascript">
 //<![CDATA[
