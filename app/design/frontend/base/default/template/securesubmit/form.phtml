@@ -92,25 +92,29 @@ Object.extend(Payment.prototype, {
             var storedCheckbox = $("<?php echo $_code ?>_stored_card_checkbox");
             if (storedCheckbox && storedCheckbox.checked) {
                 var storedcardId = $('<?php echo $_code ?>_stored_card_select').value;
+                checkout.setLoadWaiting('payment');
                 new Ajax.Request('<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData') ?>', {
                     method: 'post',
                     parameters: {storedcard_id: storedcardId},
                     onSuccess: function(response) {
-                        if (response.error) {
-                            alert(response.message);
-                            return;
+                        var data = response.responseJSON;
+                        if (data && data.token) {
+                            $("<?php echo $_code ?>_expiration").value = data.token.cc_exp_month;
+                            $("<?php echo $_code ?>_expiration_yr").value = data.token.cc_exp_year;
                         }
-                        $("<?php echo $_code ?>_expiration").value = response.token.cc_exp_month;
-                        $("<?php echo $_code ?>_expiration_yr").value = response.token.cc_exp_year;
                         this.secureSubmitResponseHandler({
-                            token_value:  response.token.token_value,
+                            token_value:  data.token.token_value,
                             token_type:   null, // 'supt'?
                             token_expire: new Date().toISOString(),
                             card:         {
-                                number: response.token.cc_last4
+                                number: data.token.cc_last4
                             }
                         });
-                    }.bind(this)
+                    }.bind(this),
+                    onFailure: function() {
+                        alert('Unknown error. Please try again.');
+                        checkout.setLoadWaiting(false);
+                    }
                 });
             }
             // Use stored card not checked, get new token
