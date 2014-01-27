@@ -15,11 +15,11 @@ if ($_loggedIn) {
         </div>
     </li>
     <li id="<?php echo $_code ?>_stored_cards" style="display: none">
-        <label for="<?php echo $_code ?>_stored_card_select">&nbsp;<?php echo $this->__('Stored Card') ?></label>
+        <label for="<?php echo $_code ?>_stored_card_select"><?php echo $this->__('Stored Card') ?></label>
         <div class="input-box">
             <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">
             <?php foreach ($customerStoredCards as $key => $card): ?>
-                <option value="<?= $card->getId() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpYear().'/'.$card->getCcExpMonth().')' ?></option>
+                <option value="<?= $card->getId() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></option>
             <?php endforeach ?>
             </select>
         </div>
@@ -99,7 +99,7 @@ Object.extend(Payment.prototype, {
                     onSuccess: function(response) {
                         var data = response.responseJSON;
                         if (data && data.token) {
-                            $("<?php echo $_code ?>_expiration").value = data.token.cc_exp_month;
+                            $("<?php echo $_code ?>_expiration").value = parseInt(data.token.cc_exp_month);
                             $("<?php echo $_code ?>_expiration_yr").value = data.token.cc_exp_year;
                         }
                         this.secureSubmitResponseHandler({
