@@ -54,7 +54,7 @@ class Hps_Securesubmit_StoredcardController extends Mage_core_Controller_Front_A
     {
         try {
             $storedCard = Mage::getModel('hps_securesubmit/storedcard');
-            $storedCard->load($this->getRequest()->getParam('token_value'), 'token_value');
+            $storedCard->load($this->getRequest()->getParam('storedcard_id'));
             if ( ! $storedCard->getId() || $storedCard->getCustomerId() != Mage::getSingleton('customer/session')->getCustomerId()) {
                 throw new Mage_Core_Exception($this->__('Stored card no longer exists.'));
             }

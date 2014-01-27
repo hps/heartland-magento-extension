@@ -9,7 +9,7 @@ if ($_loggedIn) {
 <ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none">
     <?php if($_loggedIn && count($customerStoredCards)): ?>
     <li>
-        <label for="<?php echo $_code ?>_stored_card_checkbox">&nbsp;<?php echo $this->__('Use a stored card') ?></label>
+        <label for="<?php echo $_code ?>_stored_card_checkbox"><?php echo $this->__('Use a stored card') ?></label>
         <div class="input-box">
             <input type="checkbox" id="<?php echo $_code ?>_stored_card_checkbox" />
         </div>
@@ -19,7 +19,7 @@ if ($_loggedIn) {
         <div class="input-box">
             <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">
             <?php foreach ($customerStoredCards as $key => $card): ?>
-                <option value="<?= $card->getTokenValue() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpYear().'/'.$card->getCcExpMonth().')' ?></option>
+                <option value="<?= $card->getId() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpYear().'/'.$card->getCcExpMonth().')' ?></option>
             <?php endforeach ?>
             </select>
         </div>
@@ -91,20 +91,23 @@ Object.extend(Payment.prototype, {
             // Use stored card checked, get existing token data
             var storedCheckbox = $("<?php echo $_code ?>_stored_card_checkbox");
             if (storedCheckbox && storedCheckbox.checked) {
-                var url = "<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData') ?>";
-                var tokenValue = $('<?php echo $_code ?>_stored_card_select').value;
-                new Ajax.Request(url, {
+                var storedcardId = $('<?php echo $_code ?>_stored_card_select').value;
+                new Ajax.Request('<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData') ?>', {
                     method: 'post',
-                    parameters: {token_value: tokenValue},
-                    onSuccess: function(response){
-                        $("<?php echo $_code ?>_expiration").value = response.cc_exp_month;
-                        $("<?php echo $_code ?>_expiration_yr").value = response.cc_exp_year;
+                    parameters: {storedcard_id: storedcardId},
+                    onSuccess: function(response) {
+                        if (response.error) {
+                            alert(response.message);
+                            return;
+                        }
+                        $("<?php echo $_code ?>_expiration").value = response.token.cc_exp_month;
+                        $("<?php echo $_code ?>_expiration_yr").value = response.token.cc_exp_year;
                         this.secureSubmitResponseHandler({
-                            token_value:  tokenValue,
-                            token_type:   'supt',
+                            token_value:  response.token.token_value,
+                            token_type:   null, // 'supt'?
                             token_expire: new Date().toISOString(),
                             card:         {
-                                number: response.cc_last4
+                                number: response.token.cc_last4
                             }
                         });
                     }.bind(this)
