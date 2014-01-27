@@ -3,16 +3,14 @@
     Mage::getSingleton('core/session', array('name'=>'frontend'));
     $_session = Mage::getSingleton('customer/session');
     $_loggedIn = $_session->isLoggedIn();
-    if($_loggedIn){
-        $_customerId = $_session->getCustomer()->getId();
-    }
+    $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId);
 
     $_code=$this->getMethodCode();
     $_model = Mage::getModel('hps_securesubmit/payment');
     $public_key = $_model->getConfigData('publicapikey');
 ?>
 <ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none">
-    <?php if($_loggedIn && ($cards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId))): ?>
+    <?php if($_loggedIn && count($customerStoredCards)): ?>
     <li>
         <label for="<?php echo $_code ?>_stored_card_checkbox">&nbsp;<?php echo $this->__('Use a stored card') ?></label>
         <div class="input-box">
@@ -20,11 +18,11 @@
         </div>
     </li>
     <li id="<?php echo $_code ?>_stored_cards" style="display: none">
-        <label for="<?php echo $_code ?>_stored_cards">&nbsp;<?php echo $this->__('Stored Card') ?></label>
-        <div class="input-box" id="<?php echo $_code ?>_stored_cards_select">
+        <label for="<?php echo $_code ?>_stored_card_select">&nbsp;<?php echo $this->__('Stored Card') ?></label>
+        <div class="input-box">
             <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">
-            <?php foreach ($cards as $key => $card): ?>
-                <option value="<?= $card['token_value'] ?>"><?= $card['cc_type'].' -- ************'.$card['cc_last4'] ?></option>
+            <?php foreach ($customerStoredCards as $key => $card): ?>
+                <option value="<?= $card->getTokenValue() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpYear().'/'.$card->getCcExpMonth().')' ?></option>
             <?php endforeach ?>
             </select>
         </div>
@@ -67,7 +65,7 @@
             <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
         </div>  
     </li>
-    <?php if ($_loggedIn): ?>
+    <?php if ($_loggedIn && $public_key): ?>
     <li class="stored_cards_selected">
         <label for="<?php echo $_code ?>_cc_save_future"><?php echo $this->__('Save this card for future use?') ?></label>
         <div class="input-box">
@@ -79,131 +77,85 @@
 
 <script type="text/javascript">
 //<![CDATA[
+<?php if($_loggedIn && count($customerStoredCards)): ?>
+    $('<?php echo $_code ?>_stored_card_checkbox').observe('click',function() {
+        $$('.stored_cards_selected').invoke('toggle');
+        $('<?php echo $_code ?>_stored_cards').toggle();
+        $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
+    });
+<?php endif ?>
 
-function useStoredCard(){
-    var cardInput = document.getElementsByClassName('stored_cards_selected');
-    var cardSelect = document.getElementById('<?php echo $_code ?>_stored_cards');
-    var updateDisplay = '';
-
-    if(cardSelect.style.display == 'none'){
-        cardSelect.style.display = '';
-        updateDisplay = 'none';
-    }else{
-        cardSelect.style.display = 'none';
-    }
-
-    for(var i = 0; i < cardInput.length; i++){
-        cardInput[i].style.display = updateDisplay;
-    }
-    $("<?php echo $_code ?>_cc_number").toggleClassName('validate-cc-number');
-}
-<?php
-if($_loggedIn){
-?>
-    function addListener(element){
-        if (element != null){
-            element.addEventListener('click',useStoredCard,true);
-        }
-    }
-    window.onload = addListener($("<?php echo $_code ?>_stored_card_checkbox"));
-
-<?php
-}
-?>
-
-function secureResponseHandler(response) {
-    if (response.message) {
-        alert(response.message);
-        checkout.setLoadWaiting(false);
-    } else {
-        $('<?php echo $_code ?>_token').value = response.token_value;
-
-        if($('<?php echo $_code ?>_cc_save_future') != null && $('<?php echo $_code ?>_cc_save_future').checked){
-//            Sets the last_four so that it can be saved
-            document.getElementById('<?php echo $_code ?>_cc_last_four').value = response.card.number.substr(-4);
-        }
-
-        var request = new Ajax.Request(
-             payment.saveUrl,
-             {
-                 method:'post',
-                 onComplete: payment.onComplete,
-                 onSuccess: payment.onSave,
-                 onFailure: checkout.ajaxFailure.bind(checkout),
-                 parameters: Form.serialize(payment.form)
-             }
-         );
-    }
-}
-
+Payment.prototype._secureSubmitOldSave = Payment.prototype.save;
 Object.extend(Payment.prototype, {
     save: function() {
-        if (this.currentMethod == "hps_securesubmit") {
-            if($("<?php echo $_code ?>_stored_card_checkbox") != null && $("<?php echo $_code ?>_stored_card_checkbox").checked){
-                var baseUrl = "<?php echo Mage::getUrl('');?>";
-                var url = baseUrl + "securesubmit/storedcard/getTokenData";
-                var token = new Object();
+        if (this.currentMethod == '<?php echo $_code ?>') {
+            if (checkout.loadWaiting != false) return;
 
-                token.token_value = document.getElementById('<?php echo $_code ?>_stored_card_select').value;
-
+            // Use stored card checked, get existing token data
+            var storedCheckbox = $("<?php echo $_code ?>_stored_card_checkbox");
+            if (storedCheckbox && storedCheckbox.checked) {
+                var url = "<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData') ?>";
+                var tokenValue = $('<?php echo $_code ?>_stored_card_select').value;
                 new Ajax.Request(url, {
-                    method: "post",
-                    parameters: {token_value: token.token_value},
+                    method: 'post',
+                    parameters: {token_value: tokenValue},
                     onSuccess: function(response){
-                        token.token_type = response.cc_type;
-                        token.token_expire = new Date().toISOString();
-                        token.card = {number: response.cc_last4};
-                        $("<?php echo $_code ?>_cc_last_four").value = response.cc_last4;
                         $("<?php echo $_code ?>_expiration").value = response.cc_exp_month;
                         $("<?php echo $_code ?>_expiration_yr").value = response.cc_exp_year;
-                    },
-                    onFailure: function(response){
-                        var json = JSON.parse(response.responseText);
-                        HPS.error(json.error.message);
-                    }
+                        this.secureSubmitResponseHandler({
+                            token_value:  tokenValue,
+                            token_type:   'supt',
+                            token_expire: new Date().toISOString(),
+                            card:         {
+                                number: response.cc_last4
+                            }
+                        });
+                    }.bind(this)
                 });
+            }
+            // Use stored card not checked, get new token
+            else {
+                var validator = new Validation(this.form);
+                if (this.validate() && validator.validate()) {
+                    checkout.setLoadWaiting('payment');
 
-                secureResponseHandler(token);
-                return;
-            }else if (checkout.loadWaiting!=false)
-                return;
-            var validator = new Validation(this.form);
-            if (this.validate() && validator.validate()) {
-                checkout.setLoadWaiting('payment');
-
-                hps.tokenize({
-                    data: {
-                        public_key: '<?php echo $public_key ?>',
-                        number: document.getElementById('<?php echo $_code ?>_cc_number').value,
-                        cvc: document.getElementById('<?php echo $_code ?>_cc_cid').value,
-                        exp_month: document.getElementById('<?php echo $_code ?>_expiration').value,
-                        exp_year: document.getElementById('<?php echo $_code ?>_expiration_yr').value
-                    },
-                    success: function(response) {
-                        secureResponseHandler(response);
-                    },
-                    error: function(response) {
-                        secureResponseHandler(response);
-                    }
-                });
+                    hps.tokenize({
+                        data: {
+                            public_key: '<?php echo $public_key ?>',
+                            number: $('<?php echo $_code ?>_cc_number').value,
+                            cvc: $('<?php echo $_code ?>_cc_cid').value,
+                            exp_month: $('<?php echo $_code ?>_expiration').value,
+                            exp_year: $('<?php echo $_code ?>_expiration_yr').value
+                        },
+                        success: this.secureSubmitResponseHandler.bind(this),
+                        error: this.secureSubmitResponseHandler.bind(this)
+                    });
+                }
             }
         } else {
-            if (checkout.loadWaiting != false)
-                return;
-            var validator = new Validation(this.form);
-            if (this.validate() && validator.validate()) {
-                checkout.setLoadWaiting('payment');
-                var request = new Ajax.Request(
-                    this.saveUrl,
-                    {
-                        method:'post',
-                        onComplete: this.onComplete,
-                        onSuccess: this.onSave,
-                        onFailure: checkout.ajaxFailure.bind(checkout),
-                        parameters: Form.serialize(this.form)
-                    }
-                );
+            this._secureSubmitOldSave();
+        }
+    },
+    secureSubmitResponseHandler: function (response) {
+        if (response && response.error) {
+            if (response.message) {
+                alert(response.message);
             }
+            checkout.setLoadWaiting(false);
+        } else if (response && response.token_value) {
+            $('<?php echo $_code ?>_token').value = response.token_value;
+            $('<?php echo $_code ?>_cc_last_four').value = response.card.number.substr(-4);
+
+            // Continue Magento checkout steps
+            new Ajax.Request(this.saveUrl, {
+                method:'post',
+                onComplete: this.onComplete,
+                onSuccess: this.onSave,
+                onFailure: checkout.ajaxFailure.bind(checkout),
+                parameters: Form.serialize(this.form)
+            });
+        } else {
+            alert('Unexpected error.')
         }
     }
 });

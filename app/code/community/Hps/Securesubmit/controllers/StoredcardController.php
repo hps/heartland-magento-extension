@@ -1,60 +1,83 @@
 <?php
 
-class Hps_Securesubmit_StoredcardController extends Mage_core_Controller_Front_Action{
-    public function preDispatch(){
-        parent::preDispatch();
-        $action = $this->getRequest()->getActionName();
-        $loginUrl = Mage::helper('customer')->getLoginUrl();
+class Hps_Securesubmit_StoredcardController extends Mage_core_Controller_Front_Action
+{
 
-        if (!Mage::getSingleton('customer/session')->authenticate($this, $loginUrl)) {
+    public function preDispatch()
+    {
+        parent::preDispatch();
+
+        if (!Mage::getSingleton('customer/session')->authenticate($this)) {
             $this->setFlag('', self::FLAG_NO_DISPATCH, true);
         }
     }
-    public function indexAction(){
+
+    /*
+     * Customer Account > Manage Cards
+     *
+     * Shows customer list of their stored cards
+     */
+    public function indexAction()
+    {
         $this->loadLayout();
         $this->renderLayout();
     }
-    public function deleteAction(){
-        $params = $this->getRequest()->getParams();
+
+    /*
+     * Customer can delete their stored cards
+     */
+    public function deleteAction()
+    {
         try{
-            $storedCard = Mage::getModel('hps_securesubmit/storedcard')
-                ->getCollection()
-                ->addFieldToFilter('storedcard_id',$params['storedcard_id']);
-            $storedCard->load();
-            $storedCard->getFirstItem()->delete();
-
-            $message = 'success/true/message/Delete was successful';
-        }catch (Exception $e){
-            $message = 'success/false/message/Delete was not successful';
-        }
-        Mage::app()->getResponse()->setRedirect(Mage::getUrl('')."/securesubmit/storedcard/index/".$message);
-    }
-
-    public function getTokenDataAction() {
-        if(!$this->getRequest()->isXmlHttpRequest()){
-            $result = array("error" => true, "message"=>"Unknown Error");
-        }else{
-
-            $params = $this->getRequest()->getParams();
-
-            try{
-                $storedCard = Mage::getModel('hps_securesubmit/storedcard')
-                    ->getCollection()
-                    ->addFieldToFilter('token_value',$params['token_value']);
-                $card = $storedCard->getData();
-                $card = $card[0];
-                $result = array("error"=>false,
-                    'token' => array(
-                        'cc_last4'=>$card['cc_last4'],
-                        'cc_exp_month'=>$card['cc_exp_month'],
-                        'cc_exp_year'=>$card['cc_exp_year'],
-                        'cc_type'=>$card['cc_type']
-                    )
-                );
-            }catch (Exception $e){
-                $result = array("error"=>true, "message"=>$e->getMessage());
+            $storedCard = Mage::getModel('hps_securesubmit/storedcard');
+            $storedCard->load($this->getRequest()->getParam('storedcard_id'));
+            if ( ! $storedCard->getId() || $storedCard->getCustomerId() != Mage::getSingleton('customer/session')->getCustomerId()) {
+                throw new Mage_Core_Exception($this->__('Stored card no longer exists.'));
             }
+            $storedCard->delete();
+            Mage::getSingleton('customer/session')->addSuccess($this->__('Stored card has been deleted.'));
         }
-        echo json_encode($result);
+        catch (Mage_Core_Exception $e) {
+            Mage::getSingleton('customer/session')->addError($e->getMessage());
+        }
+        catch (Exception $e) {
+            Mage::logException($e);
+            Mage::getSingleton('customer/session')->addError($this->__('An unexpected error occurred deleting your stored card. We apologize for the inconvenience, please contact us for further support.'));
+        }
+        $this->_redirect('*/*');
     }
+
+    /*
+     * Get token data during checkout
+     */
+    public function getTokenDataAction()
+    {
+        try {
+            $storedCard = Mage::getModel('hps_securesubmit/storedcard');
+            $storedCard->load($this->getRequest()->getParam('token_value'), 'token_value');
+            if ( ! $storedCard->getId() || $storedCard->getCustomerId() != Mage::getSingleton('customer/session')->getCustomerId()) {
+                throw new Mage_Core_Exception($this->__('Stored card no longer exists.'));
+            }
+            $result = array(
+                'error' => FALSE,
+                'token' => array(
+                    'token_value'  => $storedCard->getTokenValue(),
+                    'cc_last4'     => $storedCard->getCcLast4(),
+                    'cc_exp_month' => $storedCard->getCcExpMonth(),
+                    'cc_exp_year'  => $storedCard->getCcExpYear(),
+                    'cc_type'      => $storedCard->getCcType(),
+                )
+            );
+        }
+        catch (Mage_Core_Exception $e) {
+            $result = array('error' => TRUE, 'message' => $e->getMessage());
+        }
+        catch (Exception $e) {
+            Mage::logException($e);
+            $result = array('error' => TRUE, 'message' => $this->__('An unexpected error occurred retrieving your stored card. We apologize for the inconvenience, please contact us for further support.'));
+        }
+        $this->getResponse()->setHeader('Content-Type', 'application/json', TRUE);
+        $this->getResponse()->setBody(json_encode($result));
+    }
+
 }

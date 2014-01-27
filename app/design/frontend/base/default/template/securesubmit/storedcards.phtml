@@ -46,7 +46,7 @@ if($_loggedIn){
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($_storedCards as $card): ?>
+        <?php foreach ($_storedCards->getData() as $card): ?>
             <tr id="credit_cards">
                 <td class="a-center"><span class="nobr"><?php echo $card['cc_type'] ?></span></td>
                 <td class="a-center"><span class="nobr"><?php echo "************".$card['cc_last4'] ?></span></td>
