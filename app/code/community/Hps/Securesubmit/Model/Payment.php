@@ -110,7 +110,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $cardHolder = new HpsCardHolderInfo(
             $billing->getData('firstname'),
             $billing->getData('lastname'),
-            preg_replace("/[^0-9,.]/", "", $billing->getTelephone()),
+            preg_replace('/[^0-9]/', '', $billing->getTelephone()),
             $billing->getData('email'),
             $address);
 
