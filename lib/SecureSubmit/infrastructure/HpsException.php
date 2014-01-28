@@ -7,7 +7,7 @@ class HpsException extends Exception{
     }
 
     public function code(){
-        if($this->getCode() == null){
+        if($this->code == null){
             return "unknown";
         }else{
             return $this->code;
