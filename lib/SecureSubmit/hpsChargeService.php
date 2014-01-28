@@ -560,7 +560,7 @@ class HpsChargeService
 
         //Define Transaction
         $processorEngine->Transaction->ItemName = "CreditVoid";
-        $processorEngine->Transaction->Item  = new CreditVoidReqBlock1Type();
+        $processorEngine->Transaction->Item  = new CreditVoidReqType();
 
         //Configure Encryption
         $this->SetEncryption($processorEngine);
