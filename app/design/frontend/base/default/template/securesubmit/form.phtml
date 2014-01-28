@@ -1,231 +1,165 @@
-<?php
-    //GET SESSION DATA
-    Mage::getSingleton('core/session', array('name'=>'frontend'));
-    $_session = Mage::getSingleton('customer/session');
-    $_loggedIn = $_session->isLoggedIn();
-    if($_loggedIn){
-        $_customerId = $_session->getCustomer()->getId();
-    }
-
-    $_code=$this->getMethodCode();
-    $_model = Mage::getModel('hps_securesubmit/payment');
-    $public_key = $_model->getConfigData('publicapikey');
+<?php /* @var $this Hps_Securesubmit_Block_Form */
+$_code = $this->getMethodCode();
+$public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey');
+$_loggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
+if ($_loggedIn) {
+    $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
+}
 ?>
-<fieldset class="form-list">
-<ul id="payment_form_<?php echo $_code ?>" style="display:none">
-    <?php
-        if($_loggedIn){
-            $cards = Mage::helper('hps_securesubmit')->getStoredCards($_customerId);
-            if(count($cards) > 0){
-                $spacing = "************";
-                $select  = "<select id='".$_code ."_stored_card_select'>";
-                foreach($cards as $key=>$card){
-                    $select .= "<option value='".$card['token_value']."'>". $card['cc_type']." -- ".$spacing.$card['cc_last4'] . "</option>";
-                }
-                $select .= "</select>";
-                ?>
-                <li>
-                    <div id="<?php echo $_code ?>_saved_cards_checkbox">
-                            <div class="v-fix">
-                                <input type="checkbox" id="<?php echo $_code ?>_stored_card_checkbox" />
-                            </div>
-                            <label for="<?php echo $_code ?>_cc_stored_checkbox">&nbsp;<?php echo $this->__('Click here to use a stored Card') ?></label>
-                    </div>
-                </li>
-                <li>
-                    <div id="<?php echo $_code ?>_stored_cards" style="display: none">
-                        <label for="<?php echo $_code ?>_stored_cards">&nbsp;<?php echo $this->__('Select a Stored Card Below') ?></label>
-                        <br/>
-                        <div id="<?php echo $_code ?>_stored_cards_select" class="form-list" >
-                            <?php echo $select; ?>
-                        </div>
-                    </div>
-                </li>
-                <?php
-            }
-        }
-    ?>
-    <li>  
-        <div class="input-box stored_cards_selected">
-            <label for="<?php echo $_code ?>_cc_number"><?php echo $this->__('Credit Card Number') ?> <span class="required">*</span></label><br>  
-            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="">
+<ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none">
+    <?php if($_loggedIn && count($customerStoredCards)): ?>
+    <li>
+        <label for="<?php echo $_code ?>_stored_card_checkbox"><?php echo $this->__('Use a stored card') ?></label>
+        <div class="input-box">
+            <input type="checkbox" id="<?php echo $_code ?>_stored_card_checkbox" />
+        </div>
+    </li>
+    <li id="<?php echo $_code ?>_stored_cards" style="display: none">
+        <label for="<?php echo $_code ?>_stored_card_select"><?php echo $this->__('Stored Card') ?></label>
+        <div class="input-box">
+            <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">
+            <?php foreach ($customerStoredCards as $key => $card): ?>
+                <option value="<?= $card->getId() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></option>
+            <?php endforeach ?>
+            </select>
+        </div>
+    </li>
+    <?php endif ?>
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_cc_number"><?php echo $this->__('Credit Card Number') ?> <span class="required">*</span></label>
+        <div class="input-box">
+            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="" autocomplete="off" />
             <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="">
             <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="">
         </div>
     </li>  
-    <li>  
-        <div class="input-box stored_cards_selected">
-            <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">*</span></label><br>  
-            <div class="v-fix">  
-            <select id="<?php echo $_code ?>_expiration" name="payment[cc_exp_month]" class="month required-entry validate-cc-exp">
-            <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>  
-            <?php foreach ($this->getCcMonths() as $k=>$v): ?>  
-                <option value="<?php echo $k?$k:'' ?>" <?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>  
-            <?php endforeach ?>  
-            </select>
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">*</span></label>
+        <div class="input-box">
+            <div class="v-fix">
+                <select id="<?php echo $_code ?>_expiration" name="payment[cc_exp_month]" class="month required-entry validate-cc-exp"  autocomplete="off">
+                <?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
+                <?php foreach ($this->getCcMonths() as $k=>$v): ?>
+                    <option value="<?php echo $k?$k:'' ?>" <?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                <?php endforeach ?>
+                </select>
             </div>  
             <div class="v-fix">  
-            <?php $_ccExpYear = $this->getInfoData('cc_exp_year') ?>  
-            <select id="<?php echo $_code ?>_expiration_yr" name="payment[cc_exp_year]" class="year required-entry">
-            <?php foreach ($this->getCcYears() as $k=>$v): ?>  
-                <option value="<?php echo $k?$k:'' ?>" <?php if($k==$_ccExpYear):?> selected="selected"<?php endif ?>><?php echo $v ?></option>  
-            <?php endforeach ?>  
-            </select>
+                <select id="<?php echo $_code ?>_expiration_yr" name="payment[cc_exp_year]" class="year required-entry"  autocomplete="off">
+                <?php foreach ($this->getCcYears() as $k=>$v): ?>
+                    <option value="<?php echo $k?$k:'' ?>" <?php if($k==$this->getInfoData('cc_exp_year')):?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+                <?php endforeach ?>
+                </select>
             </div>  
         </div>  
     </li>  
-    <li>
-        <div class="input-box stored_cards_selected">
-            <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label><br>  
-            <div class="v-fix"><input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" value=""></div>  
-
-            <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>  
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label>
+        <div class="input-box">
+            <div class="v-fix">
+                <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" value="" autocomplete="off" />
+            </div>
+            <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
         </div>  
     </li>
-    <li>
-        <?php
-        if($_loggedIn){
-        ?>
-            <div class="input-box stored_cards_selected" id="cc_save_future">
-                <div class="v-fix">
-                    <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" />
-                </div>
-                <label for="<?php echo $_code ?>_cc_save_future">&nbsp;<?php echo $this->__('Save this card for future use') ?></label>
-            </div>
-        <?php
-        }
-        ?>
+    <?php if ($_loggedIn && $public_key): ?>
+    <li class="stored_cards_selected">
+        <label for="<?php echo $_code ?>_cc_save_future"><?php echo $this->__('Save this card for future use?') ?></label>
+        <div class="input-box">
+            <input type="checkbox" id="<?php echo $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
+        </div>
     </li>
+    <?php endif ?>
 </ul>
-</fieldset>
 
 <script type="text/javascript">
 //<![CDATA[
+<?php if($_loggedIn && count($customerStoredCards)): ?>
+    $('<?php echo $_code ?>_stored_card_checkbox').observe('click',function() {
+        $$('.stored_cards_selected').invoke('toggle');
+        $('<?php echo $_code ?>_stored_cards').toggle();
+        $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
+    });
+<?php endif ?>
 
-function useStoredCard(){
-    var cardInput = document.getElementsByClassName('stored_cards_selected');
-    var cardSelect = document.getElementById('<?php echo $_code ?>_stored_cards');
-    var updateDisplay = '';
-
-    if(cardSelect.style.display == 'none'){
-        cardSelect.style.display = '';
-        updateDisplay = 'none';
-    }else{
-        cardSelect.style.display = 'none';
-    }
-
-    for(var i = 0; i < cardInput.length; i++){
-        cardInput[i].style.display = updateDisplay;
-    }
-    $("<?php echo $_code ?>_cc_number").toggleClassName('validate-cc-number');
-}
-<?php
-if($_loggedIn){
-?>
-    function addListener(element){
-        if (element != null){
-            element.addEventListener('click',useStoredCard,true);
-        }
-    }
-    window.onload = addListener($("<?php echo $_code ?>_stored_card_checkbox"));
-
-<?php
-}
-?>
-
-function secureResponseHandler(response) {
-    if (response.message) {
-        alert(response.message);
-        checkout.setLoadWaiting(false);
-    } else {
-        $('<?php echo $_code ?>_token').value = response.token_value;
-
-        if($('<?php echo $_code ?>_cc_save_future') != null && $('<?php echo $_code ?>_cc_save_future').checked){
-//            Sets the last_four so that it can be saved
-            document.getElementById('<?php echo $_code ?>_cc_last_four').value = response.card.number.substr(-4);
-        }
-
-        var request = new Ajax.Request(
-             payment.saveUrl,
-             {
-                 method:'post',
-                 onComplete: payment.onComplete,
-                 onSuccess: payment.onSave,
-                 onFailure: checkout.ajaxFailure.bind(checkout),
-                 parameters: Form.serialize(payment.form)
-             }
-         );
-    }
-}
-
+Payment.prototype._secureSubmitOldSave = Payment.prototype.save;
 Object.extend(Payment.prototype, {
     save: function() {
-        if (this.currentMethod == "hps_securesubmit") {
-            if($("<?php echo $_code ?>_stored_card_checkbox") != null && $("<?php echo $_code ?>_stored_card_checkbox").checked){
-                var baseUrl = "<?php echo Mage::getUrl('');?>";
-                var url = baseUrl + "securesubmit/storedcard/getTokenData";
-                var token = new Object();
+        if (this.currentMethod == '<?php echo $_code ?>') {
+            if (checkout.loadWaiting != false) return;
 
-                token.token_value = document.getElementById('<?php echo $_code ?>_stored_card_select').value;
-
-                new Ajax.Request(url, {
-                    method: "post",
-                    parameters: {token_value: token.token_value},
-                    onSuccess: function(response){
-                        token.token_type = response.cc_type;
-                        token.token_expire = new Date().toISOString();
-                        token.card = {number: response.cc_last4};
-                        $("<?php echo $_code ?>_cc_last_four").value = response.cc_last4;
-                        $("<?php echo $_code ?>_expiration").value = response.cc_exp_month;
-                        $("<?php echo $_code ?>_expiration_yr").value = response.cc_exp_year;
-                    },
-                    onFailure: function(response){
-                        var json = JSON.parse(response.responseText);
-                        HPS.error(json.error.message);
-                    }
-                });
-
-                secureResponseHandler(token);
-                return;
-            }else if (checkout.loadWaiting!=false)
-                return;
-            var validator = new Validation(this.form);
-            if (this.validate() && validator.validate()) {
+            // Use stored card checked, get existing token data
+            var storedCheckbox = $("<?php echo $_code ?>_stored_card_checkbox");
+            if (storedCheckbox && storedCheckbox.checked) {
+                var storedcardId = $('<?php echo $_code ?>_stored_card_select').value;
                 checkout.setLoadWaiting('payment');
-
-                hps.tokenize({
-                    data: {
-                        public_key: '<?php echo $public_key ?>',
-                        number: document.getElementById('<?php echo $_code ?>_cc_number').value,
-                        cvc: document.getElementById('<?php echo $_code ?>_cc_cid').value,
-                        exp_month: document.getElementById('<?php echo $_code ?>_expiration').value,
-                        exp_year: document.getElementById('<?php echo $_code ?>_expiration_yr').value
-                    },
-                    success: function(response) {
-                        secureResponseHandler(response);
-                    },
-                    error: function(response) {
-                        secureResponseHandler(response);
+                new Ajax.Request('<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData') ?>', {
+                    method: 'post',
+                    parameters: {storedcard_id: storedcardId},
+                    onSuccess: function(response) {
+                        var data = response.responseJSON;
+                        if (data && data.token) {
+                            $("<?php echo $_code ?>_expiration").value = parseInt(data.token.cc_exp_month);
+                            $("<?php echo $_code ?>_expiration_yr").value = data.token.cc_exp_year;
+                        }
+                        this.secureSubmitResponseHandler({
+                            token_value:  data.token.token_value,
+                            token_type:   null, // 'supt'?
+                            token_expire: new Date().toISOString(),
+                            card:         {
+                                number: data.token.cc_last4
+                            }
+                        });
+                    }.bind(this),
+                    onFailure: function() {
+                        alert('Unknown error. Please try again.');
+                        checkout.setLoadWaiting(false);
                     }
                 });
+            }
+            // Use stored card not checked, get new token
+            else {
+                var validator = new Validation(this.form);
+                if (this.validate() && validator.validate()) {
+                    checkout.setLoadWaiting('payment');
+
+                    hps.tokenize({
+                        data: {
+                            public_key: '<?php echo $public_key ?>',
+                            number: $('<?php echo $_code ?>_cc_number').value,
+                            cvc: $('<?php echo $_code ?>_cc_cid').value,
+                            exp_month: $('<?php echo $_code ?>_expiration').value,
+                            exp_year: $('<?php echo $_code ?>_expiration_yr').value
+                        },
+                        success: this.secureSubmitResponseHandler.bind(this),
+                        error: this.secureSubmitResponseHandler.bind(this)
+                    });
+                }
             }
         } else {
-            if (checkout.loadWaiting != false)
-                return;
-            var validator = new Validation(this.form);
-            if (this.validate() && validator.validate()) {
-                checkout.setLoadWaiting('payment');
-                var request = new Ajax.Request(
-                    this.saveUrl,
-                    {
-                        method:'post',
-                        onComplete: this.onComplete,
-                        onSuccess: this.onSave,
-                        onFailure: checkout.ajaxFailure.bind(checkout),
-                        parameters: Form.serialize(this.form)
-                    }
-                );
+            this._secureSubmitOldSave();
+        }
+    },
+    secureSubmitResponseHandler: function (response) {
+        if (response && response.error) {
+            if (response.message) {
+                alert(response.message);
             }
+            checkout.setLoadWaiting(false);
+        } else if (response && response.token_value) {
+            $('<?php echo $_code ?>_token').value = response.token_value;
+            $('<?php echo $_code ?>_cc_last_four').value = response.card.number.substr(-4);
+
+            // Continue Magento checkout steps
+            new Ajax.Request(this.saveUrl, {
+                method:'post',
+                onComplete: this.onComplete,
+                onSuccess: this.onSave,
+                onFailure: checkout.ajaxFailure.bind(checkout),
+                parameters: Form.serialize(this.form)
+            });
+        } else {
+            alert('Unexpected error.')
         }
     }
 });

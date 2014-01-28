@@ -1,5 +1,5 @@
 <?php
-require_once('addressInfo.php');
+require_once(dirname(__FILE__).DS.'addressInfo.php');
 
 class HpsCardHolderInfo
 {
@@ -28,5 +28,3 @@ class HpsCardHolderInfo
         return true;
     }
 } // end class HpsCardInfo
-
-?>

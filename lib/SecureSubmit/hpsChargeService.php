@@ -1,22 +1,19 @@
 <?php
-set_include_path(get_include_path() . PATH_SEPARATOR . realpath(dirname(__FILE__) ));
 
-require_once("config/config.php");        //This is where you'll set all your merchant details
-
-require_once("entities/cardInfo.php");
-require_once("entities/cardHolderInfo.php");
-require_once("entities/token.php");
-require_once("entities/transactionResponse.php");
-
-require("infrastructure/posgateway_lib.php");
-require("infrastructure/transactions_lib.php");
-
-require_once("Hps.php");
+require_once(dirname(__FILE__).DS.'config/config.php');
+require_once(dirname(__FILE__).DS.'entities/cardInfo.php');
+require_once(dirname(__FILE__).DS.'entities/cardHolderInfo.php');
+require_once(dirname(__FILE__).DS.'entities/token.php');
+require_once(dirname(__FILE__).DS.'entities/transactionResponse.php');
+require_once(dirname(__FILE__).DS.'infrastructure/posgateway_lib.php');
+require_once(dirname(__FILE__).DS.'infrastructure/transactions_lib.php');
+require_once(dirname(__FILE__).DS.'Hps.php');
 
 class HpsChargeService
 {
     private $CONFIG;
     private $exceptionMapper;
+    public $lastRequest, $lastResponse;
 
     public function __construct($config=NULL)
     {
@@ -46,7 +43,7 @@ class HpsChargeService
 
     private function BuildHeader(POSGATEWAY &$processorEngine)
     {
-        // Build standard header for messages. 
+        // Build standard header for messages.
         $processorEngine->Header->siteId = $this->CONFIG->siteId;
         $processorEngine->Header->deviceId = $this->CONFIG->deviceId;
         $processorEngine->Header->licenseId = $this->CONFIG->licenseId;
@@ -79,7 +76,7 @@ class HpsChargeService
     private function BuildCardHolder(POSGATEWAY &$processorEngine, HpsCardHolderInfo $cardHolder)
     {
         $processorEngine->Transaction->Item->CardHolderData = new CardHolderDataType();
-        $processorEngine->Transaction->Item->CardHolderData->CardHolderFirstName = $cardHolder->FirstName; 
+        $processorEngine->Transaction->Item->CardHolderData->CardHolderFirstName = $cardHolder->FirstName;
         $processorEngine->Transaction->Item->CardHolderData->CardHolderLastName = $cardHolder->LastName;
         $processorEngine->Transaction->Item->CardHolderData->CardHolderAddress = $cardHolder->Address->Address;
         $processorEngine->Transaction->Item->CardHolderData->CardHolderState = $cardHolder->Address->State;
@@ -122,21 +119,31 @@ class HpsChargeService
 
         try
         {
-            if (stream_resolve_include_path('SOAP/Client.php')) {
-                require_once("SOAP/Client.php");
-                require_once('infrastructure/WebService_PosGatewayService_PosGatewayInterface.php');
+            $this->lastRequest = NULL;
+            $this->lastResponse = NULL;
+            if (extension_loaded('soap')) {
+                $this->lastRequest = $request;
+                $client = new SoapClient($this->CONFIG->URL, $options);
+                $soapResponse = $client->__soapCall('DoTransaction', $request);
+                $this->lastResponse = $soapResponse;
+            }
+            else if (stream_resolve_include_path('SOAP/Client.php')) {
+                $this->lastRequest = $request;
+                require_once('SOAP/Client.php');
+                require_once(dirname(__FILE__).DS.'infrastructure/WebService_PosGatewayService_PosGatewayInterface.php');
                 $url = substr($this->CONFIG->URL,0,-5);
                 $client = new WebService_PosGatewayService_PosGatewayInterface($url, $options);
                 $request = $request['PosRequest'];
                 $soapResponse = $client->DoTransaction( $request);
-            }else{
-                $client = new SoapClient($this->CONFIG->URL, $options);
-                $soapResponse = $client->__soapCall('DoTransaction', $request);
+                $this->lastResponse = $soapResponse;
+            }
+            else {
+                throw new Exception('Could not find a SOAP library.');
             }
         }
         catch(Exception $e)
         {
-            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$unableToProcessTransaction,$e->getMessage());
+            throw $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$unableToProcessTransaction, $e);
         }
         $response = new HpsTransactionResponse($soapResponse);
         $response->Validate();  // Check for errors from gateway and issuer
@@ -146,7 +153,7 @@ class HpsChargeService
     public function Charge($amount, $currency, $cardOrToken, $cardHolder=null, $tokenize=false)
     {
         // Route the charge to appropriate function based on parameters (HpsCardInfo or HpsToken)
-        if (get_class($cardOrToken) == "HpsCardInfo") 
+        if (get_class($cardOrToken) == "HpsCardInfo")
         {
             return $this->ChargeManualEntry($amount, $currency, $cardOrToken, $cardHolder, $tokenize);
         }
@@ -154,7 +161,7 @@ class HpsChargeService
         {
             return $this->ChargeWithToken($amount, $currency, $cardOrToken, $cardHolder, $tokenize);
         }
-        
+
     }
 
     public function ChargeManualEntry($amount, $currency, HpsCardInfo $card, HpsCardHolderInfo $cardHolder=null, $tokenize=false)
@@ -175,7 +182,7 @@ class HpsChargeService
 
         //Build Request
         $processorEngine->Transaction->Item->Amt = $amount;
-        
+
         //Configure Encryption
         $this->SetEncryption($processorEngine);
 
@@ -217,7 +224,7 @@ class HpsChargeService
 
         //Build Request
         $processorEngine->Transaction->Item->Amt = $amount;
-        
+
         //Configure Encryption
         $this->SetEncryption($processorEngine);
 
@@ -236,7 +243,7 @@ class HpsChargeService
         {
             $this->BuildCardHolder($processorEngine, $cardHolder);
         }
-        
+
         //Gather Request
         $request = $processorEngine->getData();
 
@@ -246,7 +253,7 @@ class HpsChargeService
     public function Authorize($amount, $currency, $cardOrToken, $cardHolder=null, $tokenize=false)
     {
         // Route the charge to appropriate function based on parameters (HpsCardInfo or HpsToken)
-        if (get_class($cardOrToken) == "HpsCardInfo") 
+        if (get_class($cardOrToken) == "HpsCardInfo")
         {
             return $this->AuthorizeManualEntry($amount, $currency, $cardOrToken, $cardHolder, $tokenize);
         }
@@ -254,7 +261,7 @@ class HpsChargeService
         {
             return $this->AuthorizeWithToken($amount, $currency, $cardOrToken, $cardHolder, $tokenize);
         }
-        
+
     }
 
     public function AuthorizeManualEntry($amount, $currency, HpsCardInfo $card, HpsCardHolderInfo $cardHolder=null, $tokenize=false)
@@ -275,7 +282,7 @@ class HpsChargeService
         //Build Request
         $processorEngine->Transaction->Item->Amt = $amount;
 
-        
+
         //Configure Encryption
         $this->SetEncryption($processorEngine);
 
@@ -319,7 +326,7 @@ class HpsChargeService
         //Build Request
         $processorEngine->Transaction->Item->Amt = $amount;
 
-        
+
         //Configure Encryption
         $this->SetEncryption($processorEngine);
 
@@ -403,7 +410,7 @@ class HpsChargeService
     public function Verify(HpsCardInfo $card, HpsCardHolderInfo $cardHolder=null)
     {
         $processorEngine = new POSGATEWAY();
-        
+
         //Define Header
         $this->BuildHeader($processorEngine);
 
@@ -436,7 +443,7 @@ class HpsChargeService
     public function Capture($transactionId, $amount=NULL)
     {
         $processorEngine = new POSGATEWAY();
-        
+
         //Define Header
         $this->BuildHeader($processorEngine);
 
@@ -478,11 +485,11 @@ class HpsChargeService
 
 
     public function ReverseWithCard($amount, $currency, $card)
-    {   
+    {
         $response = NULL;
         $this->CheckCurrency($currency);
         $processorEngine = new POSGATEWAY();
-        
+
         //Define Header
         $this->BuildHeader($processorEngine);
 
@@ -495,7 +502,7 @@ class HpsChargeService
 
         //Build Request
         $processorEngine->Transaction->Item->Amt = $amount;
-        
+
         $this->BuildCard($processorEngine, $card);
 
         $request = $processorEngine->GetData();
@@ -504,11 +511,11 @@ class HpsChargeService
     }
 
     public function ReverseWithTransactionId($amount, $currency, $transactionId)
-    {   
+    {
         $this->CheckCurrency($currency);
         $response = NULL;
         $processorEngine = new POSGATEWAY();
-        
+
         //Define Header
         $this->BuildHeader($processorEngine);
 
@@ -553,7 +560,7 @@ class HpsChargeService
 
         //Define Transaction
         $processorEngine->Transaction->ItemName = "CreditVoid";
-        $processorEngine->Transaction->Item  = new CreditVoidReqBlock1Type();
+        $processorEngine->Transaction->Item  = new CreditVoidReqType();
 
         //Configure Encryption
         $this->SetEncryption($processorEngine);
@@ -567,9 +574,9 @@ class HpsChargeService
     }
 
     public function RefundWithTransactionId($amount, $currency, $transactionId)
-    {   
+    {
         $processorEngine = new POSGATEWAY();
-        
+
         // Simple sanity checks
         $this->CheckAmount($amount);
         $this->CheckCurrency($currency);
@@ -587,16 +594,16 @@ class HpsChargeService
         //Build Request
         $processorEngine->Transaction->Item->Amt = $amount;
         $processorEngine->Transaction->Item->GatewayTxnId = $transactionId;
-        
+
         $request = $processorEngine->GetData();
 
         return $this->DoSoapTransaction($request);
     }
 
     public function RefundWithCard($amount, $currency, HpsCardInfo $card, HpsCardHolderInfo $cardHolder=null)
-    {   
+    {
         $processorEngine = new POSGATEWAY();
-        
+
         // Simple sanity checks
         $this->CheckAmount($amount);
         $this->CheckCurrency($currency);
@@ -613,7 +620,7 @@ class HpsChargeService
 
         //Build Request
         $processorEngine->Transaction->Item->Amt = $amount;
-        
+
         // Load card data
         $this->BuildCard($processorEngine, $card);
 
@@ -646,6 +653,4 @@ class HpsChargeService
         return $this->DoSoapTransaction($request);
     }
 
-} // End class HpsChargeService 
-    
-?>
+} // End class HpsChargeService

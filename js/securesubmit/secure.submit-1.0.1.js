@@ -2,9 +2,7 @@
 var hps = (function ($) {
     "use strict";
 
-    var HPS;
-
-    HPS = {
+    var HPS = {
 
         Tag: "SecureSubmit",
 
@@ -53,17 +51,17 @@ var hps = (function ($) {
 
                     Ajax.Response.prototype._getHeaderJSON = getter_impl;
 
-                    var json = JSON.parse(response.responseText);
+                    var json = response.responseText.evalJSON();
 
                     // Request failed, handle error
-                    if (response.status !== 200 || typeof json.error === 'object') {
+                    if (response.status !== 200) {
                         // call error handler if provided and valid
                         if (typeof options.error === 'function') {
-                            options.error(json.error);
+                            options.error(json);
                         }
                         else {
                             // handle exception
-                            HPS.error(json.error.message);
+                            HPS.error(json.message);
                         }
                     }
                     else if(typeof options.success === 'function') {
@@ -79,10 +77,11 @@ var hps = (function ($) {
         },
 
         error: function (message) {
-            console.log([HPS.Tag, ": ", message].join(""));
+            if (console && console.log) {
+                console.log([HPS.Tag, ": ", message].join(""));
+            }
         }
     };
 
     return HPS;
-
 }($));

@@ -1,13 +1,9 @@
 <?php
 class HpsException extends Exception{
-    public  $innerException    = null,
-        $responseCode      = null,
-        $responseText      = null;
 
-    public function __construct($message,$code, $innerException = null){
+    public function __construct($message, $code, $innerException = null){
         $this->code = $code;
-        $this->innerException = $innerException;
-        parent::__construct($message);
+        parent::__construct($message, 0, $innerException);
     }
 
     public function code(){
@@ -17,4 +13,4 @@ class HpsException extends Exception{
             return $this->code;
         }
     }
-} 
+}

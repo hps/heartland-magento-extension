@@ -72,10 +72,6 @@ class HpsServicesConfig
             $this->versionNbr = $versionNbr;
         if ($secretAPIKey != NULL)
             $this->secretAPIKey = $secretAPIKey;
-
-        date_default_timezone_set($this->TimeZone);
     }
 
 }
-
-?>

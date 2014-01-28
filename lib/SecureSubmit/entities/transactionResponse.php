@@ -1,6 +1,6 @@
 <?php
 
-require_once("transactionResponseDetail.php");
+require_once(dirname(__FILE__).DS.'transactionResponseDetail.php');
 
 class HpsTransactionResponse
 {
@@ -31,7 +31,7 @@ class HpsTransactionResponse
         $CONFIG = new HpsServicesConfig($config);
         $ver = $CONFIG->Version;
 
-        if ( ! stream_resolve_include_path('SOAP/Client.php')) {
+        if (isset($response->$ver) && is_object($response->$ver) && is_object($response->$ver->Header)) {
             $response = $response->$ver;  // Strip out the added level of "Ver1.0"
         }
 
@@ -40,8 +40,6 @@ class HpsTransactionResponse
         $this->ResponseMessage = $response->Header->GatewayRspMsg;
         if (isset($response->Header->RspDT))
             $this->DateTime = $response->Header->RspDT;
-        else
-            $this->Validate();
 
         if (isset($response->Header->TokenData))
             $this->TokenData = $response->Header->TokenData;
@@ -70,5 +68,3 @@ class HpsTransactionResponse
     }
 
 }
-
-?>
