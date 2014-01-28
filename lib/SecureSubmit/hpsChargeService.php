@@ -13,7 +13,7 @@ class HpsChargeService
 {
     private $CONFIG;
     private $exceptionMapper;
-    public $lastRequest;
+    public $lastRequest, $lastResponse;
 
     public function __construct($config=NULL)
     {
@@ -119,18 +119,23 @@ class HpsChargeService
 
         try
         {
-            $this->lastRequest = $request;
+            $this->lastRequest = NULL;
+            $this->lastResponse = NULL;
             if (extension_loaded('soap')) {
+                $this->lastRequest = $request;
                 $client = new SoapClient($this->CONFIG->URL, $options);
                 $soapResponse = $client->__soapCall('DoTransaction', $request);
+                $this->lastResponse = $soapResponse;
             }
             else if (stream_resolve_include_path('SOAP/Client.php')) {
+                $this->lastRequest = $request;
                 require_once('SOAP/Client.php');
                 require_once(dirname(__FILE__).DS.'infrastructure/WebService_PosGatewayService_PosGatewayInterface.php');
                 $url = substr($this->CONFIG->URL,0,-5);
                 $client = new WebService_PosGatewayService_PosGatewayInterface($url, $options);
                 $request = $request['PosRequest'];
                 $soapResponse = $client->DoTransaction( $request);
+                $this->lastResponse = $soapResponse;
             }
             else {
                 throw new Exception('Could not find a SOAP library.');

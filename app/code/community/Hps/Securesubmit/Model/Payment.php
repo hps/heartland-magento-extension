@@ -160,8 +160,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         {
             if ($this->getDebugFlag()) {
                 $this->_debug(array(
-                      'exception' => "$e",
-                      'last_request' => $chargeService->lastRequest,
+                    'exception' => "$e",
+                    'last_request' => $chargeService->lastRequest,
+                    'last_response' => $chargeService->lastResponse,
                 ));
             }
             $this->throwUserError($e->getMessage());
@@ -232,12 +233,24 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $config->versionNbr = '1509';
         $config->developerId = '002914';
 
+        $chargeService = new HpsChargeService($config);
         try {
-            $chargeService = new HpsChargeService($config);
             $voidResponse = $chargeService->Void($transactionId);
-        } catch (Exception $e) {
-            $error = Mage::helper('hps_securesubmit')->__($e->getMessage());
-            Mage::throwException(sprintf($this->_customMessage, $error));
+        }
+        catch (HpsException $e)
+        {
+            if ($this->getDebugFlag()) {
+                $this->_debug(array(
+                    'exception' => "$e",
+                    'last_request' => $chargeService->lastRequest,
+                    'last_response' => $chargeService->lastResponse,
+                ));
+            }
+            Mage::throwException($e->getMessage());
+        }
+        catch (Exception $e) {
+            Mage::logException($e);
+            Mage::throwException(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try again or contact a system administrator.'));
         }
 
         $payment
@@ -259,10 +272,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $config->versionNbr = '1573';
         $config->developerId = '002914';
 
+        $chargeService = new HpsChargeService($config);
         try {
-
-            $chargeService = new HpsChargeService($config);
-
             $refundResponse = $chargeService->RefundWithTransactionId(
                 $amount,
                 strtolower($order->getBaseCurrencyCode()),
@@ -272,7 +283,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         catch (HpsException $e)
         {
             if ($this->getDebugFlag()) {
-                $this->_debug(array('exception' => "$e"));
+                $this->_debug(array(
+                    'exception' => "$e",
+                    'last_request' => $chargeService->lastRequest,
+                    'last_response' => $chargeService->lastResponse,
+                ));
             }
             $this->throwUserError($e->getMessage());
         }

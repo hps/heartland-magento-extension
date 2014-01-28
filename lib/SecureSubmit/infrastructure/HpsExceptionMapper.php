@@ -29,9 +29,9 @@ class HpsExceptionMapper{
 
     public function map_gateway_exception($transaction_id, $response_code, $response_text){
         $mapping = $this->exception_for_category_and_code('gateway',$response_code);
-        $message = $this->message_for_mapping($mapping, $response_text);
 
         if(isset($mapping)){
+            $message = $this->message_for_mapping($mapping, $response_text);
             $code = $mapping->exception_codes[0];
             $exception_type = $mapping->mapping_type;
 
@@ -46,7 +46,7 @@ class HpsExceptionMapper{
             }
 
         }
-        return new HpsException($message,"unknown");
+        return new HpsException($response_text,"unknown");
     }
 
     public function map_sdk_exception($error_code, $inner_exception = null){
