@@ -156,22 +156,28 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $multiToken);
             }
         }
-        catch (HpsException $e)
-        {
-            if ($this->getDebugFlag()) {
-                $this->_debug(array(
-                    'exception' => "$e",
-                    'last_request' => $chargeService->lastRequest,
-                    'last_response' => $chargeService->lastResponse,
-                ));
-            }
-            $this->throwUserError($e->getMessage());
+        catch (CardException $e) {
+            $this->_debug(array(
+                'exception_message' => get_class($e).': '.$e->getMessage(),
+                'last_request' => $chargeService->lastRequest,
+                'last_response' => $chargeService->lastResponse,
+            ));
+            $this->throwUserError($e->getMessage(), $e->ResultText);
         }
         catch (Exception $e)
         {
+            $this->_debug(array(
+                'exception_message' => get_class($e).': '.$e->getMessage(),
+                'last_request' => $chargeService->lastRequest,
+                'last_response' => $chargeService->lastResponse,
+            ));
             Mage::logException($e);
             $this->throwUserError($e->getMessage());
         }
+        $this->_debug(array(
+            'last_request' => $chargeService->lastRequest,
+            'last_response' => $chargeService->lastResponse,
+        ));
         if ($response->TransactionDetails->RspCode == '00' || $response->TransactionDetails->RspCode == '0')
         {
             $this->setStore($payment->getOrder()->getStoreId());
@@ -356,13 +362,18 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
     /**
      * @param string $error
+     * @param string $detailedError
      * @throws Mage_Core_Exception
      */
-    public function throwUserError($error)
+    public function throwUserError($error, $detailedError = NULL)
     {
-        $error = Mage::helper('hps_securesubmit')->__($error);
+        // Register detailed error for error reporting elsewhere
+        $detailedError = $detailedError ?  $error.' ['.$detailedError.']' : $error;
         Mage::unregister('payment_detailed_error');
-        Mage::register('payment_detailed_error', $error);
+        Mage::register('payment_detailed_error', $detailedError);
+
+        // Replace gateway error with custom error message for customers
+        $error = Mage::helper('hps_securesubmit')->__($error);
         if ($customMessage = $this->getConfigData('custom_message')) {
             $error = sprintf($customMessage, $error);
         }

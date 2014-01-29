@@ -39,9 +39,14 @@ class HpsTransactionResponseDetail
         // $transactionId is passed in from HpsTransactionResponse for better error messages
         if ($this->RspCode != NULL and $this->RspCode != "00" and $this->RspCode != "85")
         {
-
-            throw $this->exceptionMapper->map_issuer_exception($transactionId,$this->RspCode,$this->RspText);
-
+            $resultText = "{$this->RspText} ({$this->RspCode})";
+            if ($this->AVSRsltCode) {
+                $resultText .= ", AVS Result: {$this->AVSRsltText} ({$this->AVSRsltCode})";
+            }
+            if ($this->CVVRsltCode) {
+                $resultText = ", CVV Result: {$this->CVVRsltText} ({$this->CVVRsltCode})";
+            }
+            throw $this->exceptionMapper->map_issuer_exception($transactionId,$this->RspCode,$this->RspText, $resultText);
         }
     }
 
