@@ -94,7 +94,7 @@ Object.extend(Payment.prototype, {
             if (storedCheckbox && storedCheckbox.checked) {
                 var storedcardId = $('<?php echo $_code ?>_stored_card_select').value;
                 checkout.setLoadWaiting('payment');
-                new Ajax.Request('<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData') ?>', {
+                new Ajax.Request('<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>', {
                     method: 'post',
                     parameters: {storedcard_id: storedcardId},
                     onSuccess: function(response) {

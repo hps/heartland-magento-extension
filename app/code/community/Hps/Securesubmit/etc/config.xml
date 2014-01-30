@@ -56,6 +56,9 @@
         </payment>
     </default>
     <frontend>
+        <secure_url>
+            <securesubmit>/securesubmit/</securesubmit>
+        </secure_url>
         <layout>
             <updates>
                 <hps_securesubmit module="Hps_Securesubmit">

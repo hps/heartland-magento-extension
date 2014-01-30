@@ -15,15 +15,15 @@ class HpsExceptionMapper{
         return $this->exceptions->version;
     }
 
-    public function map_issuer_exception($transaction_id, $response_code, $response_text){
+    public function map_issuer_exception($transaction_id, $response_code, $response_text, $result_text = null){
         $mapping = $this->exception_for_category_and_code('issuer', $response_code);
 
         if(isset($mapping)){
             $message = $this->message_for_mapping($mapping, $response_text);
             $code = $mapping->mapping_code;
-            return new CardException($transaction_id, $code, $message);
+            return new CardException($transaction_id, $code, $message, $result_text);
         }else{
-            return new CardException($transaction_id, 'unknown_card_exception', $response_text);
+            return new CardException($transaction_id, 'unknown_card_exception', $response_text, $result_text);
         }
     }
 
