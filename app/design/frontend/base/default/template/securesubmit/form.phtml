@@ -8,7 +8,7 @@ if ($_loggedIn && $allow_card_saving) {
 }
 ?>
 <ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none">
-    <?php if($_loggedIn && count($customerStoredCards)): ?>
+    <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
     <li>
         <label for="<?php echo $_code ?>_stored_card_checkbox"><?php echo $this->__('Use a stored card') ?></label>
         <div class="input-box">
