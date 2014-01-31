@@ -104,7 +104,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $billing->getStreet(1),
             $billing->getCity(),
             $billing->getRegion(),
-            str_replace('-', '', $billing->getPostcode()),
+            preg_replace('/[^0-9]/', '', $billing->getPostcode()),
             $billing->getCountry());
 
         $cardHolder = new HpsCardHolderInfo(
