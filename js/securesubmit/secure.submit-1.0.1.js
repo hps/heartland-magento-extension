@@ -21,10 +21,10 @@ var hps = (function ($) {
                 "object": "token",
                 "token_type": "supt",
                 "_method": "post",
-                "card[number]": options.data.number.trim(),
-                "card[cvc]": options.data.cvc.trim(),
-                "card[exp_month]": options.data.exp_month.trim(),
-                "card[exp_year]": options.data.exp_year.trim()
+                "card[number]": HPS.trim(options.data.number),
+                "card[cvc]": HPS.trim(options.data.cvc),
+                "card[exp_month]": HPS.trim(options.data.exp_month),
+                "card[exp_year]": HPS.trim(options.data.exp_year)
             });
 
             env = options.data.public_key.split("_")[1];
@@ -80,6 +80,10 @@ var hps = (function ($) {
             if (console && console.log) {
                 console.log([HPS.Tag, ": ", message].join(""));
             }
+        },
+
+        trim: function (string) {
+            return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
         }
     };
 
