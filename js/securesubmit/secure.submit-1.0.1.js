@@ -36,36 +36,33 @@ var hps = (function () {
                 gateway_url = HPS.Urls.PROD;
             }
 
-			new Ajax.JSONP(gateway_url, {
-				parameters: params,
-				onComplete: function(json) {
+            new Ajax.JSONP(gateway_url, {
+                parameters: params,
+                onComplete: function(json) {
 
-					// Request failed, handle error
-					if (typeof json.error === 'object') {
-						// call error handler if provided and valid
-						if (typeof options.error === 'function') {
-							options.error(json.error);
-						} else {
-							// handle exception
-							HPS.error(json.error.message);
-						}
-					} else if (typeof options.success === 'function') {
-						options.success(json);
-					}
-				}
-			});
+                    // Request failed, handle error
+                    if (typeof json.error === 'object') {
+                        // call error handler if provided and valid
+                        if (typeof options.error === 'function') {
+                            options.error(json.error);
+                        } else {
+                            // handle exception
+                            HPS.error(json.error.message);
+                        }
+                    } else if (typeof options.success === 'function') {
+                        options.success(json);
+                    }
+                }
+            });
 
         },
-		
-		trim: function (string) {	
-			
-			if (string !== undefined && typeof string === "string" ) {
-				
-				string = string.toString().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-			}
-			
-			return string;						
-		},
+        
+        trim: function (string) {
+            if (string !== undefined && typeof string === "string" ) {
+                string = string.toString().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+            }
+            return string;
+        },
 
         empty: function (val) {
             return val === undefined || val.length === 0;
@@ -75,10 +72,6 @@ var hps = (function () {
             if (console && console.log) {
                 console.log([HPS.Tag, ": ", message].join(""));
             }
-        },
-
-        trim: function (string) {
-            return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
         }
     };
 
@@ -86,37 +79,37 @@ var hps = (function () {
 }());
 
 Ajax.JSONP = Class.create(Ajax.Base, (function() {
-	var id = 0,
-		head = document.getElementsByTagName('head')[0];
+    var id = 0,
+        head = document.getElementsByTagName('head')[0];
 
-	return {
-		initialize: function($super, url, options) {
-			$super(options);
-			this.request(url);
-		},
+    return {
+        initialize: function($super, url, options) {
+            $super(options);
+            this.request(url);
+        },
 
-		request: function(url) {
-			var callbackName = '_prototypeJSONPCallback_' + (id++),
-				self = this,
-				script;
+        request: function(url) {
+            var callbackName = '_prototypeJSONPCallback_' + (id++),
+                self = this,
+                script;
 
-			this.options.parameters["callback"] = callbackName;
+            this.options.parameters["callback"] = callbackName;
 
-			url += (url.include('?') ? '&' : '?') + Object.toQueryString(this.options.parameters);
+            url += (url.include('?') ? '&' : '?') + Object.toQueryString(this.options.parameters);
 
-			window[callbackName] = function(json) {
-				script.remove();
-				script = null;
-				window[callbackName] = undefined;
-				if (self.options.onComplete) {
-					self.options.onComplete.call(self, json);
-				}
-			}
-			script = new Element('script', {
-				type: 'text/javascript',
-				src: url
-			});
-			head.appendChild(script);
-		}
-	};
+            window[callbackName] = function(json) {
+                script.remove();
+                script = null;
+                window[callbackName] = undefined;
+                if (self.options.onComplete) {
+                    self.options.onComplete.call(self, json);
+                }
+            }
+            script = new Element('script', {
+                type: 'text/javascript',
+                src: url
+            });
+            head.appendChild(script);
+        }
+    };
 })());
