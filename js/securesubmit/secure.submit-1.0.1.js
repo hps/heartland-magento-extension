@@ -1,5 +1,5 @@
 /*global $ */
-var hps = (function ($) {
+var hps = (function () {
     "use strict";
 
     var HPS = {
@@ -7,7 +7,6 @@ var hps = (function ($) {
         Tag: "SecureSubmit",
 
         Urls: {
-            UAT: "https://posgateway.uat.secureexchange.net/Hps.Exchange.PosGateway.Hpf.v1/api/token",
             CERT: "https://posgateway.cert.secureexchange.net/Hps.Exchange.PosGateway.Hpf.v1/api/token",
             PROD: "https://api.heartlandportico.com/SecureSubmit.v1/api/token"
         },
@@ -37,40 +36,38 @@ var hps = (function ($) {
                 gateway_url = HPS.Urls.PROD;
             }
 
-            // request token
+			new Ajax.JSONP(gateway_url, {
+				parameters: params,
+				onComplete: function(json) {
 
-            getter_impl = Ajax.Response.prototype._getHeaderJSON;
-
-            new Ajax.Request(gateway_url, {
-                method: "get",
-                parameters: params,
-                onCreate: function(request){
-                    Ajax.Response.prototype._getHeaderJSON = Prototype.emptyFunction;
-                },
-                onComplete: function(response) {
-
-                    Ajax.Response.prototype._getHeaderJSON = getter_impl;
-
-                    var json = response.responseText.evalJSON();
-
-                    // Request failed, handle error
-                    if (response.status !== 200) {
-                        // call error handler if provided and valid
-                        if (typeof options.error === 'function') {
-                            options.error(json);
-                        }
-                        else {
-                            // handle exception
-                            HPS.error(json.message);
-                        }
-                    }
-                    else if(typeof options.success === 'function') {
-                        options.success(json);
-                    }
-                }
-            });
+					// Request failed, handle error
+					if (typeof json.error === 'object') {
+						// call error handler if provided and valid
+						if (typeof options.error === 'function') {
+							options.error(json.error);
+						} else {
+							// handle exception
+							HPS.error(json.error.message);
+						}
+					} else if (typeof options.success === 'function') {
+						options.success(json);
+					}
+				}
+			});
 
         },
+		
+		trim: function (string) {	
+			
+			if (string !== undefined && typeof string === "string" ) {
+				
+				if (typeof string !== "string") {
+					string = string.toString().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+				}				
+			}
+			
+			return string;						
+		},
 
         empty: function (val) {
             return val === undefined || val.length === 0;
@@ -88,4 +85,40 @@ var hps = (function ($) {
     };
 
     return HPS;
-}($));
+}());
+
+Ajax.JSONP = Class.create(Ajax.Base, (function() {
+	var id = 0,
+		head = document.getElementsByTagName('head')[0];
+
+	return {
+		initialize: function($super, url, options) {
+			$super(options);
+			this.request(url);
+		},
+
+		request: function(url) {
+			var callbackName = '_prototypeJSONPCallback_' + (id++),
+				self = this,
+				script;
+
+			this.options.parameters["callback"] = callbackName;
+
+			url += (url.include('?') ? '&' : '?') + Object.toQueryString(this.options.parameters);
+
+			window[callbackName] = function(json) {
+				script.remove();
+				script = null;
+				window[callbackName] = undefined;
+				if (self.options.onComplete) {
+					self.options.onComplete.call(self, json);
+				}
+			}
+			script = new Element('script', {
+				type: 'text/javascript',
+				src: url
+			});
+			head.appendChild(script);
+		}
+	};
+})());
