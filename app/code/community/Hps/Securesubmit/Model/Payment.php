@@ -66,7 +66,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      */
     private function _authorize(Varien_Object $payment, $amount, $capture)
     {
-        $order = $payment->getOrder();
+        $order = $payment->getOrder(); /* @var $order Mage_Sales_Model_Order */
         $billing = $order->getBillingAddress();
         $multiToken = false;
         $cardData = null;
@@ -104,7 +104,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $billing->getStreet(1),
             $billing->getCity(),
             $billing->getRegion(),
-            str_replace('-', '', $billing->getPostcode()),
+            preg_replace('/[^0-9]/', '', $billing->getPostcode()),
             $billing->getCountry());
 
         $cardHolder = new HpsCardHolderInfo(
@@ -157,54 +157,33 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
         }
         catch (CardException $e) {
-            $this->_debug(array(
-                'exception_message' => get_class($e).': '.$e->getMessage(),
-                'last_request' => $chargeService->lastRequest,
-                'last_response' => $chargeService->lastResponse,
-            ));
+            $this->_debugChargeService($chargeService, $e);
+            $payment->setStatus(self::STATUS_DECLINED);
             $this->throwUserError($e->getMessage(), $e->ResultText);
         }
         catch (Exception $e)
         {
-            $this->_debug(array(
-                'exception_message' => get_class($e).': '.$e->getMessage(),
-                'last_request' => $chargeService->lastRequest,
-                'last_response' => $chargeService->lastResponse,
-            ));
+            $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
+            $payment->setStatus(self::STATUS_ERROR);
             $this->throwUserError($e->getMessage());
         }
-        $this->_debug(array(
-            'last_request' => $chargeService->lastRequest,
-            'last_response' => $chargeService->lastResponse,
-        ));
-        if ($response->TransactionDetails->RspCode == '00' || $response->TransactionDetails->RspCode == '0')
-        {
-            $this->setStore($payment->getOrder()->getStoreId());
-            $payment->setStatus(self::STATUS_APPROVED);
-            $payment->setAmount($amount);
-            $payment->setLastTransId($response->TransactionId);
-            $payment->setCcTransId($response->TransactionId);
-            $payment->setTransactionId($response->TransactionId);
-            $payment->setIsTransactionClosed(0);
-            if($multiToken){
-                if ($response->TokenData->TokenRspCode == '0') {
-                    Mage::helper('hps_securesubmit')->saveMultiToken($response->TokenData->TokenValue,$cardData,$response->TransactionDetails->CardType);
-                } else {
-                    Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->TransactionId), Zend_Log::WARN);
-                }
-            }
-        }
-        else
-        {
-            if (!$payment->getCcTransId())
-            {
-                $this->setStore($payment->getOrder()->getStoreId());
-                $payment->setStatus(self::STATUS_ERROR);
-                $this->throwUserError($response->TransactionDetails->ResponseMessage);
-            }
-        }
 
+        // No exception thrown so action was a success
+        $this->_debugChargeService($chargeService);
+        $payment->setStatus(self::STATUS_APPROVED);
+        $payment->setAmount($amount);
+        $payment->setLastTransId($response->TransactionId);
+        $payment->setCcTransId($response->TransactionId);
+        $payment->setTransactionId($response->TransactionId);
+        $payment->setIsTransactionClosed(0);
+        if($multiToken){
+            if ($response->TokenData->TokenRspCode == '0') {
+                Mage::helper('hps_securesubmit')->saveMultiToken($response->TokenData->TokenValue,$cardData,$response->TransactionDetails->CardType);
+            } else {
+                Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->TransactionId), Zend_Log::WARN);
+            }
+        }
         return $this;
     }
 
@@ -245,19 +224,15 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         catch (HpsException $e)
         {
-            if ($this->getDebugFlag()) {
-                $this->_debug(array(
-                    'exception' => "$e",
-                    'last_request' => $chargeService->lastRequest,
-                    'last_response' => $chargeService->lastResponse,
-                ));
-            }
+            $this->_debugChargeService($chargeService, $e);
             Mage::throwException($e->getMessage());
         }
         catch (Exception $e) {
+            $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
             Mage::throwException(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try again or contact a system administrator.'));
         }
+        $this->_debugChargeService($chargeService);
 
         $payment
             ->setTransactionId($voidResponse->TransactionId)
@@ -288,19 +263,15 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         catch (HpsException $e)
         {
-            if ($this->getDebugFlag()) {
-                $this->_debug(array(
-                    'exception' => "$e",
-                    'last_request' => $chargeService->lastRequest,
-                    'last_response' => $chargeService->lastResponse,
-                ));
-            }
+            $this->_debugChargeService($chargeService, $e);
             $this->throwUserError($e->getMessage());
         }
         catch (Exception $e) {
+            $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
             $this->throwUserError($e->getMessage());
         }
+        $this->_debugChargeService($chargeService);
 
         $payment
             ->setTransactionId($refundResponse->TransactionId)
@@ -378,5 +349,22 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $error = sprintf($customMessage, $error);
         }
         Mage::throwException($error);
-    }    
+    }
+
+    /**
+     * @param HpsChargeService $chargeService
+     * @param Exception|null $exception
+     */
+    public function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
+    {
+        if ($this->getDebugFlag()) {
+            $this->_debug(array(
+                'store' => Mage::app()->getStore($this->getStore())->getFrontendName(),
+                'exception_message' => $exception ? get_class($exception).': '.$exception->getMessage() : '',
+                'last_request' => $chargeService->lastRequest,
+                'last_response' => $chargeService->lastResponse,
+            ));
+        }
+    }
+
 }
