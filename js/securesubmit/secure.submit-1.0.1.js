@@ -61,9 +61,7 @@ var hps = (function () {
 			
 			if (string !== undefined && typeof string === "string" ) {
 				
-				if (typeof string !== "string") {
-					string = string.toString().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-				}				
+				string = string.toString().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 			}
 			
 			return string;						
