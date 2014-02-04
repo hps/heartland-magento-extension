@@ -35,7 +35,11 @@
         {
             if ($this->secretAPIKey != null && $this->secretAPIKey != "")
             {
-                $this->str = array("Header" => array("SecretAPIKey" => $this->secretAPIKey, "VersionNbr" => $this->versionNbr, "DeveloperID" => $this->developerId));
+                if ($this->developerId != null && $this->developerId != ""){
+                    $this->str = array("Header" => array("SecretAPIKey" => $this->secretAPIKey, "VersionNbr" => $this->versionNbr, "DeveloperID" => $this->developerId));
+                }else{
+                    $this->str = array("Header" => array("SecretAPIKey" => $this->secretAPIKey));
+                }
             }
             else
             {

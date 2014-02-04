@@ -20,6 +20,7 @@ class HpsServicesConfig
     public $secretAPIKey = "";
     public $useproxy = "";
     public $proxyOptions = "";
+    public $avsResponseErrors;
   
     function __construct($URL=NULL, $siteId=NULL, $deviceId=NULL, $developerId=NULL, $versionNbr=NULL, $licenseId=NULL, $userName=NULL, $password=NULL, $siteTrace=NULL, $secretAPIKey=NULL)
     {
@@ -36,6 +37,7 @@ class HpsServicesConfig
                 $this->siteTrace = $temp->siteTrace;
                 $this->versionNbr = $temp->versionNbr;
                 $this->secretAPIKey = $temp->secretAPIKey;
+                $this->avsResponseErrors = $temp->avsResponseErrors;
 
                 if ($temp->userName != NULL && $temp->userName != "")
                     $this->userName = $temp->userName;
