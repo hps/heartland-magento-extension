@@ -73,7 +73,19 @@ class HpsServicesConfig
         if ($versionNbr != NULL)
             $this->versionNbr = $versionNbr;
         if ($secretAPIKey != NULL)
-            $this->secretAPIKey = $secretAPIKey;
-    }
+          $this->secretAPIKey = $secretAPIKey;
 
+        $this->avsResponseErrors = array(
+          "B" => "Addr Match, Zip Not Verified",
+          "C" => "Addr and Zip Mismatch",
+          "D" => "Addr and Zip Match Intl",
+          "G" => "Addr Not Verified - Intl",
+          "I" => "AVS Not Verified -- Intl",
+          "N" => "Addr and Zip No Match",
+          "P" => "Addr and Zip Not Verified",
+          "R" => "Retry - No Response",
+          "S" => "AVS Not Supported",
+          "U" => "AVS Not Supported",
+        );
+    }
 }
