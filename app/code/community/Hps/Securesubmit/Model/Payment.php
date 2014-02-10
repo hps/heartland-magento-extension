@@ -159,7 +159,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         catch (CardException $e) {
             $this->_debugChargeService($chargeService, $e);
             $payment->setStatus(self::STATUS_DECLINED);
-            $this->throwUserError($e->getMessage(), $e->ResultText);
+            $this->throwUserError($e->getMessage(), $e->ResultText, TRUE);
         }
         catch (Exception $e)
         {
@@ -334,9 +334,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     /**
      * @param string $error
      * @param string $detailedError
+     * @param bool $goToPaymentSection
      * @throws Mage_Core_Exception
      */
-    public function throwUserError($error, $detailedError = NULL)
+    public function throwUserError($error, $detailedError = NULL, $goToPaymentSection = FALSE)
     {
         // Register detailed error for error reporting elsewhere
         $detailedError = $detailedError ?  $error.' ['.$detailedError.']' : $error;
@@ -348,7 +349,12 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         if ($customMessage = $this->getConfigData('custom_message')) {
             $error = sprintf($customMessage, $error);
         }
-        Mage::throwException($error);
+
+        // Send checkout session back to payment section to avoid double-attempt to charge single-use token
+        if ($goToPaymentSection && Mage::app()->getRequest()->getOriginalPathInfo() == '/checkout/onepage/saveOrder') {
+            Mage::getSingleton('checkout/session')->setGotoSection('payment');
+        }
+        throw new Mage_Core_Exception($error);
     }
 
     /**
