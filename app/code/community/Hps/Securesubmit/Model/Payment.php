@@ -28,7 +28,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
     public function validate()
     {
-        // TODO - validate when not using token
+        $info = $this->getInfoInstance();
+        $additionalData = new Varien_Object($info->getAdditionalData() ? unserialize($info->getAdditionalData()) : null);
+
+        // Only validate when not using token
+        if ($additionalData->getUseCreditCard()) {
+            parent::validate();
+        }
+
         return $this;
     }
 
