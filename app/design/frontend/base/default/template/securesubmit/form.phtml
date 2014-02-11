@@ -73,6 +73,10 @@ if ($_loggedIn && $allow_card_saving) {
     <?php endif ?>
 </ul>
 
+<?php if ( ! $this->getRequest()->isAjax()): ?>
+<script type="text/javascript" src="<?php echo $this->getJsUrl('securesubmit/checkout-form.js') ?>"></script>
+<?php endif ?>
+
 <script type="text/javascript">
 //<![CDATA[
 <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
@@ -82,87 +86,7 @@ if ($_loggedIn && $allow_card_saving) {
         $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
     });
 <?php endif ?>
-
-Payment.prototype._secureSubmitOldSave = Payment.prototype.save;
-Object.extend(Payment.prototype, {
-    save: function() {
-        if (this.currentMethod == '<?php echo $_code ?>') {
-            if (checkout.loadWaiting != false) return;
-
-            // Use stored card checked, get existing token data
-            var storedCheckbox = $("<?php echo $_code ?>_stored_card_checkbox");
-            if (storedCheckbox && storedCheckbox.checked) {
-                var storedcardId = $('<?php echo $_code ?>_stored_card_select').value;
-                checkout.setLoadWaiting('payment');
-                new Ajax.Request('<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>', {
-                    method: 'post',
-                    parameters: {storedcard_id: storedcardId},
-                    onSuccess: function(response) {
-                        var data = response.responseJSON;
-                        if (data && data.token) {
-                            $("<?php echo $_code ?>_expiration").value = parseInt(data.token.cc_exp_month);
-                            $("<?php echo $_code ?>_expiration_yr").value = data.token.cc_exp_year;
-                        }
-                        this.secureSubmitResponseHandler({
-                            token_value:  data.token.token_value,
-                            token_type:   null, // 'supt'?
-                            token_expire: new Date().toISOString(),
-                            card:         {
-                                number: data.token.cc_last4
-                            }
-                        });
-                    }.bind(this),
-                    onFailure: function() {
-                        alert('Unknown error. Please try again.');
-                        checkout.setLoadWaiting(false);
-                    }
-                });
-            }
-            // Use stored card not checked, get new token
-            else {
-                var validator = new Validation(this.form);
-                if (this.validate() && validator.validate()) {
-                    checkout.setLoadWaiting('payment');
-
-                    hps.tokenize({
-                        data: {
-                            public_key: '<?php echo $public_key ?>',
-                            number: $('<?php echo $_code ?>_cc_number').value,
-                            cvc: $('<?php echo $_code ?>_cc_cid').value,
-                            exp_month: $('<?php echo $_code ?>_expiration').value,
-                            exp_year: $('<?php echo $_code ?>_expiration_yr').value
-                        },
-                        success: this.secureSubmitResponseHandler.bind(this),
-                        error: this.secureSubmitResponseHandler.bind(this)
-                    });
-                }
-            }
-        } else {
-            this._secureSubmitOldSave();
-        }
-    },
-    secureSubmitResponseHandler: function (response) {
-        if (response && response.error) {
-            if (response.message) {
-                alert(response.message);
-            }
-            checkout.setLoadWaiting(false);
-        } else if (response && response.token_value) {
-            $('<?php echo $_code ?>_token').value = response.token_value;
-            $('<?php echo $_code ?>_cc_last_four').value = response.card.number.substr(-4);
-
-            // Continue Magento checkout steps
-            new Ajax.Request(this.saveUrl, {
-                method:'post',
-                onComplete: this.onComplete,
-                onSuccess: this.onSave,
-                onFailure: checkout.ajaxFailure.bind(checkout),
-                parameters: Form.serialize(this.form)
-            });
-        } else {
-            alert('Unexpected error.')
-        }
-    }
-});
+payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
+payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 //]]>
 </script>
