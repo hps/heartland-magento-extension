@@ -1,6 +1,6 @@
 <?php
 
-require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'hps.php';
+require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'Hps.php';
 
 class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 {
@@ -85,11 +85,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         if ($saveCreditCard && ! $useCreditCard) {
             $multiToken = true;
-            $cardData = new HpsCardInfo(
-                $payment->getCcLast4(),
-                $payment->getCcExpYear(),
-                $payment->getCcExpMonth()
-            );
+            $cardData = new HpsCreditCard();
+            $cardData->number = $payment->getCcLast4();
+            $cardData->expYear = $payment->getCcExpYear();
+            $cardData->expMonth = $payment->getCcExpMonth();
         }
 
         $config = new HpsConfiguration();
@@ -185,8 +184,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $payment->setTransactionId($response->transactionId);
         $payment->setIsTransactionClosed(0);
         if($multiToken){
-            if ($response->TokenData->TokenRspCode == '0') {
-                Mage::helper('hps_securesubmit')->saveMultiToken($response->TokenData->TokenValue,$cardData,$response->TransactionDetails->CardType);
+            if ($response->tokenData->tokenRspCode == '0') {
+                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
             } else {
                 Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->transactionId), Zend_Log::WARN);
             }
@@ -227,7 +226,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         $chargeService = new HpsChargeService($config);
         try {
-            $voidResponse = $chargeService->Void($transactionId);
+            $voidResponse = $chargeService->void($transactionId);
         }
         catch (HpsException $e)
         {
@@ -255,14 +254,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $transactionId = $payment->getCcTransId();
         $order = $payment->getOrder();
 
-        $config = new HpsServicesConfig();
-        $config->secretAPIKey = $this->getConfigData('secretapikey');
-        $config->versionNbr = '1573';
+        $config = new HpsConfiguration();
+        $config->secretApiKey = $this->getConfigData('secretapikey');
+        $config->versionNumber = '1573';
         $config->developerId = '002914';
 
         $chargeService = new HpsChargeService($config);
         try {
-            $refundResponse = $chargeService->RefundWithTransactionId(
+            $refundResponse = $chargeService->refundTransaction(
                 $amount,
                 strtolower($order->getBaseCurrencyCode()),
                 $transactionId);
@@ -281,7 +280,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $this->_debugChargeService($chargeService);
 
         $payment
-            ->setTransactionId($refundResponse->TransactionId)
+            ->setTransactionId($refundResponse->transactionId)
             ->setParentTransactionId($transactionId)
             ->setIsTransactionClosed(1)
             ->setShouldCloseParentTransaction(1);

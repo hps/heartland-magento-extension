@@ -1,6 +1,7 @@
 <?php
-define('DS', DIRECTORY_SEPARATOR);
-define('PS', PATH_SEPARATOR);
+
+if ( ! defined('DS')) define('DS', DIRECTORY_SEPARATOR);
+if ( ! defined('PS')) define('PS', PATH_SEPARATOR);
 
 // Infrastructure
 require_once(dirname(__FILE__).DS.'infrastructure/HpsConfiguration.php');
@@ -32,6 +33,7 @@ require_once(dirname(__FILE__).DS.'entities/HpsReversal.php');
 require_once(dirname(__FILE__).DS.'entities/HpsTokenData.php');
 require_once(dirname(__FILE__).DS.'entities/HpsTransactionDetails.php');
 require_once(dirname(__FILE__).DS.'entities/HpsTransactionHeader.php');
+require_once(dirname(__FILE__).DS.'entities/HpsVoid.php');
 
 
 // Services

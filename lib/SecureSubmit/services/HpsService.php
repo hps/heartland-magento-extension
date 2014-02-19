@@ -67,6 +67,11 @@ class HpsService {
             curl_setopt($soap_do, CURLOPT_POST, true);
             curl_setopt($soap_do, CURLOPT_POSTFIELDS, $xml->saveXML());
             curl_setopt($soap_do, CURLOPT_HTTPHEADER,     $header);
+
+            if($this->config->useProxy){
+                curl_setopt($soap_do, CURLOPT_PROXY, $this->config->proxyOptions['proxy_host']);
+                curl_setopt($soap_do, CURLOPT_PROXYPORT, $this->config->proxyOptions['proxy_port']);
+            }
             $curlResponse = curl_exec($soap_do);
             $curlInfo = curl_getinfo($soap_do);
 
