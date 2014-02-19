@@ -7,7 +7,6 @@ class AVSResponseCodeHandler {
     private $response;
     private $transaction;
     private $transactionId;
-    private $transactionType;
     private $ver;
 
     function __construct($response, $hpsCharge, $config=null)
@@ -17,10 +16,7 @@ class AVSResponseCodeHandler {
             return;
         }
         $ver = $this->config->Version;
-
-        if (extension_loaded('soap')) {
-            $this->response = $response->$ver;
-        }
+        $this->response = $response->$ver;
         $this->transaction = $this->response->Transaction;
         $this->transactionId = $this->response->Header->GatewayTxnId;
 
