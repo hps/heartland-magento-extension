@@ -21,6 +21,15 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </active>
+                        <order_status translate="label">
+                          <label>New order status</label>
+                          <frontend_type>select</frontend_type>
+                          <source_model>adminhtml/system_config_source_order_status_processing</source_model>
+                          <sort_order>4</sort_order>
+                          <show_in_default>1</show_in_default>
+                          <show_in_website>1</show_in_website>
+                          <show_in_store>0</show_in_store>
+                        </order_status>
                         <title translate="label">
                             <label>Title</label>
                             <frontend_type>text</frontend_type>
@@ -65,19 +74,19 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </payment_action>
-			<allow_card_saving translate="label">
-			    <label>Allow Card Saving</label>
-			    <frontend_type>select</frontend_type>
-			    <source_model>adminhtml/system_config_source_yesno</source_model>
-			    <sort_order>60</sort_order>
-			    <show_in_default>1</show_in_default>
-			    <show_in_website>1</show_in_website>
-			    <show_in_store>1</show_in_store>
-			    <comment><![CDATA[
-				Heartland Account must be configured for multi-use tokenization.]]>
-			    </comment>
-			</allow_card_saving>
-			<custom_message>
+                        <allow_card_saving translate="label">
+                            <label>Allow Card Saving</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[
+                            Heartland Account must be configured for multi-use tokenization.]]>
+                            </comment>
+                        </allow_card_saving>
+                        <custom_message>
                             <label>Custom Error Message</label>
                             <frontend_type>textarea</frontend_type>
                             <sort_order>65</sort_order>
