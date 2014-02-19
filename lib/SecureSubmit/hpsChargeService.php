@@ -1,4 +1,6 @@
 <?php
+define('DS', DIRECTORY_SEPARATOR);
+define('PS', PATH_SEPARATOR);
 
 require_once(dirname(__FILE__).DS.'config/config.php');
 require_once(dirname(__FILE__).DS.'entities/cardInfo.php');
@@ -147,6 +149,7 @@ class HpsChargeService
         }
         $response = new HpsTransactionResponse($soapResponse);
         $response->Validate();  // Check for errors from gateway and issuer
+        $avsResponse = new AVSResponseCodeHandler($soapResponse,$this,$this->CONFIG);
         return $response;
     }
 

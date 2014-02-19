@@ -20,6 +20,7 @@ class HpsServicesConfig
     public $secretAPIKey = "";
     public $useproxy = "";
     public $proxyOptions = "";
+    public $avsResponseErrors;
   
     function __construct($URL=NULL, $siteId=NULL, $deviceId=NULL, $developerId=NULL, $versionNbr=NULL, $licenseId=NULL, $userName=NULL, $password=NULL, $siteTrace=NULL, $secretAPIKey=NULL)
     {
@@ -36,6 +37,7 @@ class HpsServicesConfig
                 $this->siteTrace = $temp->siteTrace;
                 $this->versionNbr = $temp->versionNbr;
                 $this->secretAPIKey = $temp->secretAPIKey;
+                $this->avsResponseErrors = $temp->avsResponseErrors;
 
                 if ($temp->userName != NULL && $temp->userName != "")
                     $this->userName = $temp->userName;
@@ -71,7 +73,19 @@ class HpsServicesConfig
         if ($versionNbr != NULL)
             $this->versionNbr = $versionNbr;
         if ($secretAPIKey != NULL)
-            $this->secretAPIKey = $secretAPIKey;
-    }
+          $this->secretAPIKey = $secretAPIKey;
 
+        $this->avsResponseErrors = array(
+          "B" => "Addr Match, Zip Not Verified",
+          "C" => "Addr and Zip Mismatch",
+          "D" => "Addr and Zip Match Intl",
+          "G" => "Addr Not Verified - Intl",
+          "I" => "AVS Not Verified -- Intl",
+          "N" => "Addr and Zip No Match",
+          "P" => "Addr and Zip Not Verified",
+          "R" => "Retry - No Response",
+          "S" => "AVS Not Supported",
+          "U" => "AVS Not Supported",
+        );
+    }
 }
