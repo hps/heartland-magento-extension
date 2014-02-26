@@ -1,0 +1,26 @@
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <sales>
+                        <children>
+                            <order>
+                                <children>
+                                    <actions>
+                                        <children>
+                                            <use_saved_card translate="title" module="hps_securesubmit">
+                                                <title>Use Saved Card</title>
+                                                <sort_order>110</sort_order>
+                                            </use_saved_card>
+                                        </children>
+                                    </actions>
+                                </children>
+                            </order>
+                        </children>
+                    </sales>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

@@ -17,6 +17,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_minOrderTotal = 0.5;
 
     protected $_formBlockType = 'hps_securesubmit/form';
+    protected $_formBlockTypeAdmin = 'hps_securesubmit/adminhtml_form';
     protected $_infoBlockType = 'hps_securesubmit/info';
 
     /**
@@ -392,4 +393,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
     }
 
+    /**
+     * Retrieve block type for method form generation
+     *
+     * @return string
+     */
+    public function getFormBlockType()
+    {
+        return Mage::app()->getStore()->isAdmin() ? $this->_formBlockTypeAdmin : $this->_formBlockType;
+    }
 }
