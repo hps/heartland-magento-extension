@@ -197,7 +197,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $payment->setTransactionId($response->transactionId);
         $payment->setIsTransactionClosed(0);
         if($multiToken){
-            if ($response->tokenData->tokenRspCode == '0') {
+            if ($response->tokenData->responseCode == '0') {
                 Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
             } else {
                 Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->transactionId), Zend_Log::WARN);
@@ -386,8 +386,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $this->_debug(array(
                 'store' => Mage::app()->getStore($this->getStore())->getFrontendName(),
                 'exception_message' => $exception ? get_class($exception).': '.$exception->getMessage() : '',
-                'last_request' => $chargeService->lastRequest,
-                'last_response' => $chargeService->lastResponse,
+                //'last_request' => $chargeService->lastRequest,
+                //'last_response' => $chargeService->lastResponse,
             ));
         }
     }
