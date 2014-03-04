@@ -406,7 +406,7 @@ class HpsChargeService extends HpsService{
             $additionalTxnFields->appendChild($xml->createElement('hps:Description',$details->memo));
         }
         if($details->invoiceNumber != null && $details->invoiceNumber != ""){
-            $additionalTxnFields->appendChild($xml->createElement('hps:InvoiceNbr',$details->invoice_number));
+            $additionalTxnFields->appendChild($xml->createElement('hps:InvoiceNbr',$details->invoiceNumber));
         }
         if($details->customerId != null && $details->customerId != ""){
             $additionalTxnFields->appendChild($xml->createElement('hps:CustomerID',$details->customerId));
@@ -483,6 +483,7 @@ class HpsChargeService extends HpsService{
 
     private function _submitAuthorize($transaction, $amount, $currency){
         $response = $this->doTransaction($transaction);
+        $avsChecking = new AVSResponseCodeHandler($response,$this,$this->config);
         $header = $response->Header;
         $this->_processChargeGatewayResponse($header->GatewayRspCode,$header->GatewayRspMsg,$header->GatewayTxnId,$amount,$currency);
 
@@ -515,6 +516,7 @@ class HpsChargeService extends HpsService{
 
     private function _submitCharge($transaction, $amount, $currency){
         $response = $this->doTransaction($transaction);
+        $avsChecking = new AVSResponseCodeHandler($response,$this,$this->config);
         $header = $response->Header;
         $this->_processChargeGatewayResponse($header->GatewayRspCode,$header->GatewayRspMsg,$header->GatewayTxnId,$amount,$currency);
 
