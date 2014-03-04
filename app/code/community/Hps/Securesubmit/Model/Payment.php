@@ -131,6 +131,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $cardOrToken = new HpsTokenData();
             $cardOrToken->tokenValue = $secureToken;
         }
+        
+        $details = new HpsTransactionDetails();
+        $details->invoiceNumber = $order->getIncrementId();
 
         try
         {
@@ -149,7 +152,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                         strtolower($order->getBaseCurrencyCode()),
                         $cardOrToken,
                         $cardHolder,
-                        $multiToken);
+                        $multiToken,
+                        $details);
                 }
             }
             else
@@ -159,7 +163,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     strtolower($order->getBaseCurrencyCode()),
                     $cardOrToken,
                     $cardHolder,
-                    $multiToken);
+                    $multiToken,
+                    $details);
             }
         }
         catch (CardException $e) {

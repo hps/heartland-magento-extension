@@ -1,5 +1,4 @@
 <?php
-
 if ( ! defined('DS')) define('DS', DIRECTORY_SEPARATOR);
 if ( ! defined('PS')) define('PS', PATH_SEPARATOR);
 

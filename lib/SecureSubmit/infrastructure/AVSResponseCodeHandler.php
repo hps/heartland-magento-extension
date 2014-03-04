@@ -9,27 +9,26 @@ class AVSResponseCodeHandler {
     private $transactionId;
     private $ver;
 
-    function __construct($response, $hpsCharge, $config=null)
+    function __construct($response, $hpsChargeService=null, $config=null)
     {
         $this->config = $config;
         if(count($this->config->avsResponseErrors) == 0){
             return;
         }
-        $ver = $this->config->Version;
-        $this->response = $response->$ver;
-        $this->transaction = $this->response->Transaction;
-        $this->transactionId = $this->response->Header->GatewayTxnId;
+
+        $this->transaction = $response->Transaction;
+        $this->transactionId = $response->Header->GatewayTxnId;
 
         if(isset($this->transaction->CreditSale) && is_object($this->transaction->CreditSale)){
             $this->avsResultCode = $this->transaction->CreditSale->AVSRsltCode;
-            $this->evaluate($hpsCharge,'sale');
+            $this->evaluate($hpsChargeService,'sale');
         }else if(isset($this->transaction->CreditAuth) && is_object($this->transaction->CreditAuth)){
             $this->avsResultCode = $this->transaction->CreditAuth->AVSRsltCode;
-            $this->evaluate($hpsCharge,'auth');
+            $this->evaluate($hpsChargeService,'auth');
         }
     }
 
-    function evaluate($hpsCharge,$type){
+    function evaluate($hpsChargeService,$type){
         $exceptionFound = false;
         $code = "";
         $message = "";
@@ -43,7 +42,7 @@ class AVSResponseCodeHandler {
         }
 
         if($exceptionFound){
-            $hpsCharge->Void($this->transactionId);
+            $hpsChargeService->void($this->transactionId);
             throw new HpsException($message,$code);
         }
     }
