@@ -414,7 +414,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $memo = implode(', ', $memo);
 
         $details = new HpsTransactionDetails();
-        $details->memo = substr($memo, 0, 100);                           // Actual limit unknown..
+        $details->memo = substr($memo, 0, 200);                           // Actual limit unknown..
         $details->invoiceNumber = $order->getIncrementId();
         $details->customerId = substr($order->getCustomerEmail(), 0, 25); // Actual limit unknown..
 
