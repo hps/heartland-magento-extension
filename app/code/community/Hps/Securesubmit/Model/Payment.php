@@ -66,7 +66,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     /**
      * Authorize or Capture payment
      *
-     * @param Varien_Object $payment
+     * @param Varien_Object|Mage_Sales_Model_Order_Payment $payment
      * @param float $amount
      * @param bool $capture
      * @return  $this
@@ -74,10 +74,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     private function _authorize(Varien_Object $payment, $amount, $capture)
     {
         $order = $payment->getOrder(); /* @var $order Mage_Sales_Model_Order */
-        $billing = $order->getBillingAddress();
         $multiToken = false;
         $cardData = null;
-        $cardType = null;
         $additionalData = new Varien_Object($payment->getAdditionalData() ? unserialize($payment->getAdditionalData()) : null);
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
         $saveCreditCard = !! $additionalData->getCcSaveFuture();
@@ -91,35 +89,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $cardData->expMonth = $payment->getCcExpMonth();
         }
 
-        $config = new HpsConfiguration();
-        // Use HTTP proxy
-        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
-            $config->useProxy = true;
-            $config->proxyOptions = array(
-                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
-                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
-            );
-        }
-        
-        $config->secretApiKey = $this->getConfigData('secretapikey');
-        $config->versionNumber = '1573';
-        $config->developerId = '002914';
-
-        $chargeService = new HpsChargeService($config);
-
-        $address = new HpsAddress();
-        $address->address = $billing->getStreet(1);
-        $address->city = $billing->getCity();
-        $address->state = $billing->getRegion();
-        $address->zip = preg_replace('/[^0-9]/', '', $billing->getPostcode());
-        $address->country = $billing->getCountry();
-
-        $cardHolder = new HpsCardHolder();
-        $cardHolder->firstName = $billing->getData('firstname');
-        $cardHolder->lastName = $billing->getData('lastname');
-        $cardHolder->phone = preg_replace('/[^0-9]/', '', $billing->getTelephone());
-        $cardHolder->emailAddress = $billing->getData('email');
-        $cardHolder->address = $address;
+        $chargeService = $this->_getChargeService();
+        $cardHolder = $this->_getCardHolderData($order);
+        $details = $this->_getTxnDetailsData($order);
 
         if ($useCreditCard) {
             $cardOrToken = new HpsCreditCard();
@@ -132,9 +104,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $cardOrToken->tokenValue = $secureToken;
         }
         
-        $details = new HpsTransactionDetails();
-        $details->invoiceNumber = $order->getIncrementId();
-
         try
         {
             if ($capture)
@@ -190,14 +159,19 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $payment->setIsTransactionClosed(0);
         if($multiToken){
             if ($response->tokenData->tokenRspCode == '0') {
-                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
+                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
             } else {
-                Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->transactionId), Zend_Log::WARN);
+                Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
             }
         }
         return $this;
     }
 
+    /**
+     * @param Varien_Object|Mage_Sales_Model_Order_Payment $payment
+     * @param float $amount
+     * @return Hps_Securesubmit_Model_Payment
+     */
     public function refund(Varien_Object $payment, $amount)
     {
         if ($this->canVoid($payment)) {
@@ -224,12 +198,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $transactionId = $payment->getCcTransId();
 
-        $config = new HpsServicesConfig();
-        $config->secretAPIKey = $this->getConfigData('secretapikey');
-        $config->versionNbr = '1509';
-        $config->developerId = '002914';
-
-        $chargeService = new HpsChargeService($config);
+        $chargeService = $this->_getChargeService();
         try {
             $voidResponse = $chargeService->void($transactionId);
         }
@@ -254,22 +223,28 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $this;
     }
 
+    /**
+     * @param Varien_Object|Mage_Sales_Model_Order_Payment $payment
+     * @param $amount
+     * @return Hps_Securesubmit_Model_Payment
+     */
     protected function _refund(Varien_Object $payment, $amount)
     {
         $transactionId = $payment->getCcTransId();
-        $order = $payment->getOrder();
+        $order = $payment->getOrder(); /* @var $order Mage_Sales_Model_Order */
 
-        $config = new HpsConfiguration();
-        $config->secretApiKey = $this->getConfigData('secretapikey');
-        $config->versionNumber = '1573';
-        $config->developerId = '002914';
+        $chargeService = $this->_getChargeService();
+        $cardHolder = $this->_getCardHolderData($order);
+        $details = $this->_getTxnDetailsData($order);
 
-        $chargeService = new HpsChargeService($config);
         try {
             $refundResponse = $chargeService->refundTransaction(
                 $amount,
                 strtolower($order->getBaseCurrencyCode()),
-                $transactionId);
+                $transactionId,
+                $cardHolder,
+                $details
+            );
 
         }
         catch (HpsException $e)
@@ -369,10 +344,88 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     }
 
     /**
+     * @return HpsChargeService
+     */
+    protected function _getChargeService()
+    {
+        $config = new HpsConfiguration();
+
+        // Support HTTP proxy
+        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
+            $config->useProxy = true;
+            $config->proxyOptions = array(
+                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
+                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
+            );
+        }
+
+        $config->secretApiKey = $this->getConfigData('secretapikey');
+        $config->versionNumber = '1573';
+        $config->developerId = '002914';
+
+        return new HpsChargeService($config);
+    }
+
+    /**
+     * @param Mage_Sales_Model_Order $order
+     * @return HpsCardHolder
+     */
+    protected function _getCardHolderData($order)
+    {
+        $billing = $order->getBillingAddress();
+
+        $address = new HpsAddress();
+        $address->address = substr($billing->getStreet(1), 0, 40);        // Actual limit unknown..
+        $address->city = substr($billing->getCity(), 0, 20);
+        $address->state = substr($billing->getRegion(), 0, 20);
+        $address->zip = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper($billing->getPostcode())), 0, 9);
+        $address->country = $billing->getCountry();
+
+        $cardHolder = new HpsCardHolder();
+        $cardHolder->firstName = substr($billing->getData('firstname'), 0, 26);
+        $cardHolder->lastName = substr($billing->getData('lastname'), 0, 26);
+        $cardHolder->phone = substr(preg_replace('/[^0-9]/', '', $billing->getTelephone()), 0, 10);
+        $cardHolder->emailAddress = substr($billing->getData('email'), 0, 40);
+        $cardHolder->address = $address;
+
+        return $cardHolder;
+    }
+
+    /**
+     * @param Mage_Sales_Model_Order $order
+     * @return HpsTransactionDetails
+     */
+    protected function _getTxnDetailsData($order)
+    {
+        $memo = array();
+        $ip = '';
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+        if ($ip) {
+            $memo[] = 'Customer IP Address: '.$ip;
+        }
+        if (isset($_SERVER['HTTP_USER_AGENT'])) {
+            $memo[] = 'User Agent: '.$_SERVER['HTTP_USER_AGENT'];
+        }
+        $memo = implode(', ', $memo);
+
+        $details = new HpsTransactionDetails();
+        $details->memo = substr($memo, 0, 100);                           // Actual limit unknown..
+        $details->invoiceNumber = $order->getIncrementId();
+        $details->customerId = substr($order->getCustomerEmail(), 0, 25); // Actual limit unknown..
+
+        return $details;
+    }
+
+    /**
      * @param HpsChargeService $chargeService
      * @param Exception|null $exception
      */
-    public function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
+    protected function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
     {
         if ($this->getDebugFlag()) {
             $this->_debug(array(
