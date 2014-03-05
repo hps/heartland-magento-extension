@@ -135,6 +135,22 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $multiToken,
                     $details);
             }
+
+            $this->_debugChargeService($chargeService);
+            $payment->setStatus(self::STATUS_APPROVED);
+            $payment->setAmount($amount);
+            $payment->setLastTransId($response->transactionId);
+            $payment->setCcTransId($response->transactionId);
+            $payment->setTransactionId($response->transactionId);
+            $payment->setIsTransactionClosed(0);
+            if($multiToken){
+                if ($response->tokenData->tokenRspCode == '0') {
+                    Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
+                } else {
+                    Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
+                }
+            }
+
         }
         catch (CardException $e) {
             $this->_debugChargeService($chargeService, $e);
@@ -149,21 +165,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $this->throwUserError($e->getMessage());
         }
 
-        // No exception thrown so action was a success
-        $this->_debugChargeService($chargeService);
-        $payment->setStatus(self::STATUS_APPROVED);
-        $payment->setAmount($amount);
-        $payment->setLastTransId($response->transactionId);
-        $payment->setCcTransId($response->transactionId);
-        $payment->setTransactionId($response->transactionId);
-        $payment->setIsTransactionClosed(0);
-        if($multiToken){
-            if ($response->tokenData->tokenRspCode == '0') {
-                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
-            } else {
-                Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
-            }
-        }
         return $this;
     }
 
@@ -201,6 +202,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $chargeService = $this->_getChargeService();
         try {
             $voidResponse = $chargeService->void($transactionId);
+            $payment
+                ->setTransactionId($voidResponse->transactionId)
+                ->setParentTransactionId($transactionId)
+                ->setIsTransactionClosed(1)
+                ->setShouldCloseParentTransaction(1);
         }
         catch (HpsException $e)
         {
@@ -213,12 +219,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             Mage::throwException(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try again or contact a system administrator.'));
         }
         $this->_debugChargeService($chargeService);
-
-        $payment
-            ->setTransactionId($voidResponse->TransactionId)
-            ->setParentTransactionId($transactionId)
-            ->setIsTransactionClosed(1)
-            ->setShouldCloseParentTransaction(1);
 
         return $this;
     }
@@ -246,6 +246,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $details
             );
 
+            $payment
+                ->setTransactionId($refundResponse->transactionId)
+                ->setParentTransactionId($transactionId)
+                ->setIsTransactionClosed(1)
+                ->setShouldCloseParentTransaction(1);
         }
         catch (HpsException $e)
         {
@@ -259,15 +264,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         $this->_debugChargeService($chargeService);
 
-        $payment
-            ->setTransactionId($refundResponse->transactionId)
-            ->setParentTransactionId($transactionId)
-            ->setIsTransactionClosed(1)
-            ->setShouldCloseParentTransaction(1);
-
         return $this;
-    }    
-    
+    }
+
+    /**
+     * @param null|Mage_Sales_Model_Quote $quote
+     * @return bool
+     */
     public function isAvailable($quote = null)
     {
         if($quote && $quote->getBaseGrandTotal()<$this->_minOrderTotal) {
