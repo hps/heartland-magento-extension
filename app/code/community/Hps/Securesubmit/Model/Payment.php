@@ -17,6 +17,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_minOrderTotal = 0.5;
 
     protected $_formBlockType = 'hps_securesubmit/form';
+    protected $_formBlockTypeAdmin = 'hps_securesubmit/adminhtml_form';
     protected $_infoBlockType = 'hps_securesubmit/info';
 
     /**
@@ -106,6 +107,12 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         
         try
         {
+            // Gracefully handle javascript errors.
+            if ( ! $secureToken) {
+                Mage::log('Payment information submitted without token.', Zend_Log::ERR);
+                $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), NULL, TRUE);
+            }
+
             if ($capture)
             {
                 if ($payment->getCcTransId())
@@ -153,10 +160,17 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
         }
-        catch (CardException $e) {
+        catch (CardException $e)
+        {
             $this->_debugChargeService($chargeService, $e);
             $payment->setStatus(self::STATUS_DECLINED);
             $this->throwUserError($e->getMessage(), $e->ResultText, TRUE);
+        }
+        catch (HpsException $e)
+        {
+            $this->_debugChargeService($chargeService, $e);
+            $payment->setStatus(self::STATUS_ERROR);
+            $this->throwUserError($e->getMessage(), NULL, TRUE);
         }
         catch (Exception $e)
         {
@@ -435,10 +449,19 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $this->_debug(array(
                 'store' => Mage::app()->getStore($this->getStore())->getFrontendName(),
                 'exception_message' => $exception ? get_class($exception).': '.$exception->getMessage() : '',
-                'last_request' => $chargeService->lastRequest,
-                'last_response' => $chargeService->lastResponse,
+                //'last_request' => $chargeService->lastRequest,
+                //'last_response' => $chargeService->lastResponse,
             ));
         }
     }
 
+    /**
+     * Retrieve block type for method form generation
+     *
+     * @return string
+     */
+    public function getFormBlockType()
+    {
+        return Mage::app()->getStore()->isAdmin() ? $this->_formBlockTypeAdmin : $this->_formBlockType;
+    }
 }
