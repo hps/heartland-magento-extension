@@ -446,12 +446,15 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
     {
         if ($this->getDebugFlag()) {
-            $this->_debug(array(
+            $debugData = array(
                 'store' => Mage::app()->getStore($this->getStore())->getFrontendName(),
-                'exception_message' => $exception ? get_class($exception).': '.$exception->getMessage() : '',
-                //'last_request' => $chargeService->lastRequest,
-                //'last_response' => $chargeService->lastResponse,
-            ));
+                'last_request' => $chargeService->lastRequest,
+                'last_response' => $chargeService->lastResponse,
+            );
+            if ($exception) {
+                $debugData['exception'] = get_class($exception).': '.$exception->getMessage();
+            }
+            $this->_debug($debugData);
         }
     }
 
