@@ -485,12 +485,12 @@ class HpsChargeService extends HpsService{
             $exception->responseCode = $response->responseCode;
             $exception->responseText = $response->responseText;
 
-            $resultText = "{$response->responseText} ({$response->responseText})";
+            $resultText = "{$response->responseText} ({$response->responseCode})";
             if ($response->avsResultCode) {
                 $resultText .= ", AVS Result: {$response->avsResultText} ({$response->avsResultCode})";
             }
             if ($response->cvvResultCode) {
-                $resultText = ", CVV Result: {$response->cvvResultText} ({$response->cvvResultCode})";
+                $resultText .= ", CVV Result: {$response->cvvResultText} ({$response->cvvResultCode})";
             }
             $exception->resultText = $resultText;
 
