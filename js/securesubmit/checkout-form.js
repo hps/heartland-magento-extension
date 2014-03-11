@@ -27,7 +27,8 @@ Object.extend(Payment.prototype, {
                         token_type:   null, // 'supt'?
                         token_expire: new Date().toISOString(),
                         card:         {
-                            number: data.token.cc_last4
+                            number: data.token.cc_last4,
+                            type: data.token.cc_type
                         }
                     });
                 }.bind(this),
@@ -63,8 +64,9 @@ Object.extend(Payment.prototype, {
     },
     secureSubmitResponseHandler: function (response) {
         var tokenField = $('hps_securesubmit_token'),
-            lastFourField = $('hps_securesubmit_cc_last_four');
-        tokenField.value = lastFourField.value = null;
+            lastFourField = $('hps_securesubmit_cc_last_four'),
+            ccTypeField = $('hps_securesubmit_cc_type');
+        tokenField.value = lastFourField.value = ccTypeField.value = null;
 
         if (response && response.error) {
             if (response.message) {
@@ -74,6 +76,7 @@ Object.extend(Payment.prototype, {
         } else if (response && response.token_value) {
             tokenField.value = response.token_value;
             lastFourField.value = response.card.number.substr(-4);
+            ccTypeField.value = response.card.type || this.getCcType($('hps_securesubmit_cc_number').value);
 
             // Continue Magento checkout steps
             new Ajax.Request(this.saveUrl, {
@@ -86,5 +89,15 @@ Object.extend(Payment.prototype, {
         } else {
             alert('Unexpected error.')
         }
+    },
+    getCcType: function(value) {
+        var ccMatchedType = null;
+        Validation.creditCartTypes.each(function (pair) {
+            if (pair.value[0] && value.match(pair.value[0])) {
+                ccMatchedType = pair.key;
+                throw $break;
+            }
+        });
+        return ccMatchedType;
     }
 });
