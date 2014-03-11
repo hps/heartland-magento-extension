@@ -4,6 +4,8 @@ class HpsService {
     public $exceptionMapper    = null,
             $config             = null;
 
+    public $lastRequest, $lastResponse;
+
     public function __construct(HpsConfiguration $config=null){
         if($config != null){
             $this->config = $config;
@@ -51,11 +53,12 @@ class HpsService {
 
         //cURL
         try{
+            $requestData = $xml->saveXML();
             $header = array(
                 "Content-type: text/xml;charset=\"utf-8\"",
                 "Accept: text/xml",
                 "SOAPAction: \"\"",
-                "Content-length: ".strlen($xml->saveXML()),
+                "Content-length: ".strlen($requestData),
             );
             $soap_do = curl_init();
             curl_setopt($soap_do, CURLOPT_URL, $this->_gatewayUrlForKey($this->config->secretApiKey));
@@ -64,18 +67,29 @@ class HpsService {
             curl_setopt($soap_do, CURLOPT_RETURNTRANSFER, true );
             curl_setopt($soap_do, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($soap_do, CURLOPT_SSL_VERIFYHOST, false);
-            curl_setopt($soap_do, CURLOPT_POST, true);
-            curl_setopt($soap_do, CURLOPT_POSTFIELDS, $xml->saveXML());
+            curl_setopt($soap_do, CURLOPT_POST,           true);
+            curl_setopt($soap_do, CURLOPT_POSTFIELDS,     $requestData);
             curl_setopt($soap_do, CURLOPT_HTTPHEADER,     $header);
             
             if($this->config->useProxy){
                 curl_setopt($soap_do, CURLOPT_PROXY, $this->config->proxyOptions['proxy_host']);
                 curl_setopt($soap_do, CURLOPT_PROXYPORT, $this->config->proxyOptions['proxy_port']);
             }
+            
             $curlResponse = curl_exec($soap_do);
-            $curlInfo = curl_getinfo($soap_do);
+            $curlError = curl_error($soap_do);
+            $responseCode = curl_getinfo($soap_do, CURLINFO_HTTP_CODE);
+            curl_close($soap_do);
 
-            if($curlInfo['http_code'] == '200'){
+            // Set debug data
+            $this->lastRequest = $this->_redact($requestData);
+            $this->lastResponse = $curlError ? $curlError : $this->_redact($curlResponse);
+
+            if ($curlError) {
+                throw new Exception($curlError);
+            }
+
+            if($responseCode == '200'){
                 $responseObject = $this->_XML2Array($curlResponse);
                 $ver = "Ver1.0";
                 return $responseObject->$ver;
@@ -125,5 +139,12 @@ class HpsService {
                 return $item;
             }
         }
+    }
+
+    protected function _redact($data)
+    {
+        $data = str_replace(array($this->config->secretApiKey, $this->config->password), '*****', $data);
+        $data = preg_replace('/\d{11,12}(\d{4})/', '*****$1', $data);
+        return $data;
     }
 } 
