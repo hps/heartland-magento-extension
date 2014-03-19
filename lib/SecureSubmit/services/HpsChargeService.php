@@ -367,6 +367,14 @@ class HpsChargeService extends HpsService{
         if($result->responseCode != "00" && $result->responseCode != "85"){
             throw $this->exceptionMapper->map_issuer_exception($result->transactionId, $result->responseCode, $result->responseText);
         }
+
+        if(isset($header->TokenData) && is_object($header->TokenData)){
+            $result->tokenData = new HpsTokenData();
+            $result->tokenData->responseCode = $header->TokenData->TokenRspCode;
+            $result->tokenData->responseMessage = $header->TokenData->TokenRspMsg;
+            $result->tokenData->tokenValue = $header->TokenData->TokenValue;
+        }
+
         return $result;
     }
 
