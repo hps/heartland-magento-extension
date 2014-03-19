@@ -20,7 +20,7 @@ if ($_loggedIn && $allow_card_saving) {
         <div class="input-box">
             <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">
             <?php foreach ($customerStoredCards as $key => $card): ?>
-                <option value="<?= $card->getId() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></option>
+                <option value="<?php echo $card->getId() ?>"><?php echo $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></option>
             <?php endforeach ?>
             </select>
         </div>
