@@ -34,7 +34,7 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
         </table>
     <?php else: ?>
         <p>
-            <?= $this->__('You do not have any saved credit cards.') ?>
+            <?php echo $this->__('You do not have any saved credit cards.') ?>
         </p>
     <?php endif; ?>
 </div>
