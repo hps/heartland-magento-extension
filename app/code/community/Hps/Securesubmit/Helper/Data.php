@@ -29,9 +29,9 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
                 ->setCustomerId($_customerId)
                 ->setTokenValue($token)
                 ->setCcType($cardType)
-                ->setCcLast4($cardData->CardNbr)
-                ->setCcExpMonth(str_pad($cardData->ExpMonth, 2, '0', STR_PAD_LEFT))
-                ->setCcExpYear($cardData->ExpYear);
+                ->setCcLast4($cardData->number)
+                ->setCcExpMonth(str_pad($cardData->expMonth, 2, '0', STR_PAD_LEFT))
+                ->setCcExpYear($cardData->expYear);
             try{
                 $storedCard->removeDuplicates();
                 $storedCard->save();
