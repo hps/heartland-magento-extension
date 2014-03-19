@@ -5,6 +5,7 @@ class HpsChargeService extends HpsService{
     public function authorize($amount, $currency, $cardOrToken, $cardHolder=null, $requestMultiUseToken=false, $details=null){
         $this->_checkAmount($amount);
         $this->_checkCurrency($currency);
+        $amount = sprintf("%0.2f",round($amount,3));
 
         $xml = new DOMDocument();
         $hpsTransaction = $xml->createElement('hps:Transaction');
@@ -40,6 +41,7 @@ class HpsChargeService extends HpsService{
             $hpsCreditAddToBatch = $xml->createElement('hps:CreditAddToBatch');
                 $hpsCreditAddToBatch->appendChild($xml->createElement('hps:GatewayTxnId',$transactionId));
                 if($amount != null){
+                    $amount = sprintf("%0.2f",round($amount,3));
                     $hpsCreditAddToBatch->appendChild($xml->createElement('hps:Amt',$amount));
                 }
                 if($gratuity != null){
@@ -59,6 +61,7 @@ class HpsChargeService extends HpsService{
     public function charge($amount, $currency, $cardOrToken, $cardHolder=null, $requestMultiUseToken=false, $details=null){
         $this->_checkAmount($amount);
         $this->_checkCurrency($currency);
+        $amount = sprintf("%0.2f",round($amount,3));
 
         $xml = new DOMDocument();
         $hpsTransaction = $xml->createElement('hps:Transaction');
@@ -219,6 +222,7 @@ class HpsChargeService extends HpsService{
     public function refund($amount, $currency, $cardOrToken, $cardHolder=null, $details=null){
         $this->_checkAmount($amount);
         $this->_checkCurrency($currency);
+        $amount = sprintf("%0.2f",round($amount,3));
 
         $xml = new DOMDocument();
         $hpsTransaction = $xml->createElement('hps:Transaction');
@@ -249,6 +253,7 @@ class HpsChargeService extends HpsService{
     public function refundTransaction($amount,$currency,$transactionId, $cardHolder=null, $details=null){
         $this->_checkAmount($amount);
         $this->_checkCurrency($currency);
+        $amount = sprintf("%0.2f",round($amount,3));
 
         $xml = new DOMDocument();
         $hpsTransaction = $xml->createElement('hps:Transaction');
@@ -271,6 +276,7 @@ class HpsChargeService extends HpsService{
     public function reverse($cardOrToken, $amount, $currency, $details=null){
         $this->_checkAmount($amount);
         $this->_checkCurrency($currency);
+        $amount = sprintf("%0.2f",round($amount,3));
 
         $xml = new DOMDocument();
         $hpsTransaction = $xml->createElement('hps:Transaction');
@@ -298,6 +304,7 @@ class HpsChargeService extends HpsService{
     public function reverseTransaction($transactionId, $amount,$currency, $details=null){
         $this->_checkAmount($amount);
         $this->_checkCurrency($currency);
+        $amount = sprintf("%0.2f",round($amount,3));
 
         $xml = new DOMDocument();
         $hpsTransaction = $xml->createElement('hps:Transaction');
@@ -360,6 +367,14 @@ class HpsChargeService extends HpsService{
         if($result->responseCode != "00" && $result->responseCode != "85"){
             throw $this->exceptionMapper->map_issuer_exception($result->transactionId, $result->responseCode, $result->responseText);
         }
+
+        if(isset($header->TokenData) && is_object($header->TokenData)){
+            $result->tokenData = new HpsTokenData();
+            $result->tokenData->responseCode = $header->TokenData->TokenRspCode;
+            $result->tokenData->responseMessage = $header->TokenData->TokenRspMsg;
+            $result->tokenData->tokenValue = $header->TokenData->TokenValue;
+        }
+
         return $result;
     }
 
