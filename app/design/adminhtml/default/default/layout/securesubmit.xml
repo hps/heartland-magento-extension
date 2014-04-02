@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+  <adminhtml_sales_order_create_index>
+    <reference name="head">
+      <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
+    </reference>
+  </adminhtml_sales_order_create_index>
+</layout>

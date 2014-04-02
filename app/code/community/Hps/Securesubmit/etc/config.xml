@@ -76,4 +76,25 @@
             </hps_securesubmit>
         </routers>
     </frontend>
+    <adminhtml>
+        <secure_url>
+            <securesubmit>/securesubmit/</securesubmit>
+        </secure_url>
+        <layout>
+            <updates>
+                <hps_securesubmit module="Hps_Securesubmit">
+                    <file>securesubmit.xml</file>
+                </hps_securesubmit>
+            </updates>
+        </layout>
+        <routers>
+            <hps_securesubmit>
+                <use>standard</use>
+                <args>
+                    <module>Hps_Securesubmit</module>
+                    <frontName>securesubmit</frontName>
+                </args>
+            </hps_securesubmit>
+        </routers>
+    </adminhtml>
 </config>
