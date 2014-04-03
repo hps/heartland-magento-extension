@@ -20,6 +20,8 @@ $public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publica
         <label for="<?php echo $_code ?>_cc_number"><?php echo Mage::helper('payment')->__('Credit Card Number') ?><span class="required">*</span></label>
         <div class="input-box">
             <input type="text" id="<?php echo $_code ?>_cc_number" data-encrypted-name="payment[cc_number]"  title="<?php echo Mage::helper('payment')->__('Credit Card Number') ?>"  class="input-text validate-cc-number validate-cc-type" value=""/>
+            <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="">
+            <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="">
         </div>
     </li>
     <li>
@@ -51,7 +53,7 @@ $public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publica
 
 <script type="text/javascript">
 //<![CDATA[
-payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
-payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+order.secureSubmitPublicKey = '<?php echo $public_key ?>';
+order.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 //]]>
 </script>
