@@ -11,6 +11,11 @@
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
         </reference>
     </checkout_onepage_index>
+    <onepagecheckout_index_index>
+        <reference name="head">
+            <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
+        </reference>
+    </onepagecheckout_index_index>
     <customer_account>
         <reference name="customer_account_navigation">
           <action method="addLink" >
