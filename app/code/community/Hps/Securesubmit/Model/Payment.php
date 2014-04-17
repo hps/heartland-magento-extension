@@ -224,9 +224,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $transactionId = $payment->getCcTransId();
 
-        $config = new HpsServicesConfig();
-        $config->secretAPIKey = $this->getConfigData('secretapikey');
-        $config->versionNbr = '1509';
+        $config = new HpsConfiguration();
+        $config->secretApiKey = $this->getConfigData('secretapikey');
+        $config->versionNumber = '1509';
         $config->developerId = '002914';
 
         $chargeService = new HpsChargeService($config);
