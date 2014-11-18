@@ -82,6 +82,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
         $saveCreditCard = !! (bool)$additionalData->getCcSaveFuture();
         $useCreditCard = !! (bool)$additionalData->getUseCreditCard();
+        $customerId = $additionalData->getCustomerId();
 
         if ($saveCreditCard && ! $useCreditCard) {
             $multiToken = true;
@@ -100,7 +101,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
             );
         }
-        
+
         $config->secretApiKey = $this->getConfigData('secretapikey');
         $config->versionNumber = '1573';
         $config->developerId = '002914';
@@ -131,7 +132,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $cardOrToken = new HpsTokenData();
             $cardOrToken->tokenValue = $secureToken;
         }
-        
+
         $details = new HpsTransactionDetails();
         $details->invoiceNumber = $order->getIncrementId();
 
@@ -142,7 +143,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 if ($payment->getCcTransId())
                 {
                     $response = $chargeService->capture(
-                        $payment->getCcTransId(), 
+                        $payment->getCcTransId(),
                         $amount);
                 }
                 else
@@ -154,6 +155,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                         $cardHolder,
                         $multiToken,
                         $details);
+
+                    $payment->setCcTransId($response->transactionId);
                 }
             }
             else
@@ -165,6 +168,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $cardHolder,
                     $multiToken,
                     $details);
+
+                $payment->setCcTransId($response->transactionId);
             }
         }
         catch (CardException $e) {
@@ -185,12 +190,16 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $payment->setStatus(self::STATUS_APPROVED);
         $payment->setAmount($amount);
         $payment->setLastTransId($response->transactionId);
-        $payment->setCcTransId($response->transactionId);
+//        $payment->setCcTransId($response->transactionId);
         $payment->setTransactionId($response->transactionId);
         $payment->setIsTransactionClosed(0);
         if($multiToken){
             if ($response->tokenData->responseCode == '0') {
-                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
+                if( $customerId > 0 ){
+                    Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType, $customerId);
+                } else {
+                    Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
+                }
             } else {
                 Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->transactionId), Zend_Log::WARN);
             }
@@ -291,8 +300,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             ->setShouldCloseParentTransaction(1);
 
         return $this;
-    }    
-    
+    }
+
     public function isAvailable($quote = null)
     {
         if($quote && $quote->getBaseGrandTotal()<$this->_minOrderTotal) {
@@ -302,7 +311,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $this->getConfigData('secretapikey', ($quote ? $quote->getStoreId() : null))
             && parent::isAvailable($quote);
     }
-    
+
     public function canUseForCurrency($currencyCode)
     {
         if (!in_array($currencyCode, $this->_supportedCurrencyCodes)) {
@@ -334,6 +343,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         if ($data->getData('use_credit_card')) {
             $details['use_credit_card'] = 1;
+        }
+        if ($data->getData('customer_id')){
+            $details['customer_id'] = $data->getData('customer_id');
         }
         if ( ! empty($details)) {
             $this->getInfoInstance()->setAdditionalData(serialize($details));
