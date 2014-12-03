@@ -80,8 +80,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $cardType = null;
         $additionalData = new Varien_Object($payment->getAdditionalData() ? unserialize($payment->getAdditionalData()) : null);
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
-        $saveCreditCard = !! $additionalData->getCcSaveFuture();
-        $useCreditCard = !! $additionalData->getUseCreditCard();
+        $saveCreditCard = !! (bool)$additionalData->getCcSaveFuture();
+        $useCreditCard = !! (bool)$additionalData->getUseCreditCard();
 
         if ($saveCreditCard && ! $useCreditCard) {
             $multiToken = true;
