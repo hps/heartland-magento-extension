@@ -1,7 +1,7 @@
 <?php /* @var $this Hps_Securesubmit_Block_Form */
 $_code = $this->getMethodCode();
 $public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey');
-$allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
+$allow_card_saving = (bool)Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
 $_loggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
 if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
