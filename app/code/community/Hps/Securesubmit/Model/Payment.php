@@ -378,8 +378,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $this->_debug(array(
                 'store' => Mage::app()->getStore($this->getStore())->getFrontendName(),
                 'exception_message' => $exception ? get_class($exception).': '.$exception->getMessage() : '',
-                'last_request' => $chargeService->lastRequest,
-                'last_response' => $chargeService->lastResponse,
+                // 'last_request' => $chargeService->lastRequest,
+                // 'last_response' => $chargeService->lastResponse,
             ));
         }
     }

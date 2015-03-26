@@ -507,23 +507,23 @@ class HpsChargeService extends HpsService{
 
         $result = new HpsAuthorization($this->hydrateTransactionHeader($header));
         $result->transactionId = $header->GatewayTxnId;
-        $result->authorizedAmount = (isset($authResponse->AuthAmt) ? $authResponse->AuthAmt : null);
-        $result->authorizationCode = (isset($authResponse->AuthCode) ? $authResponse->AuthCode : null);
-        $result->avsResultCode = (isset($authResponse->AVSRsltCode) ? $authResponse->AVSRsltCode : null);
-        $result->avsResultText = (isset($authResponse->AVSRsltText) ? $authResponse->AVSRsltText : null);
-        $result->cardType = (isset($authResponse->CardType) ? $authResponse->CardType : null);
-        $result->cpcIndicator = (isset($authResponse->CPCInd) ? $authResponse->CPCInd : null);
-        $result->cvvResultCode = (isset($authResponse->CVVRsltCode) ? $authResponse->CVVRsltCode : null);
-        $result->cvvResultText = (isset($authResponse->CVVRsltText) ? $authResponse->CVVRsltText : null);
-        $result->referenceNumber = (isset($authResponse->RefNbr) ? $authResponse->RefNbr : null);
-        $result->responseCode = (isset($authResponse->RspCode) ? $authResponse->RspCode : null);
-        $result->responseText = (isset($authResponse->RspText) ? $authResponse->RspText : null);
+        $result->authorizedAmount = (isset($authResponse->AuthAmt) ? (string)$authResponse->AuthAmt : null);
+        $result->authorizationCode = (isset($authResponse->AuthCode) ? (string)$authResponse->AuthCode : null);
+        $result->avsResultCode = (isset($authResponse->AVSRsltCode) ? (string)$authResponse->AVSRsltCode : null);
+        $result->avsResultText = (isset($authResponse->AVSRsltText) ? (string)$authResponse->AVSRsltText : null);
+        $result->cardType = (isset($authResponse->CardType) ? (string)$authResponse->CardType : null);
+        $result->cpcIndicator = (isset($authResponse->CPCInd) ? (string)$authResponse->CPCInd : null);
+        $result->cvvResultCode = (isset($authResponse->CVVRsltCode) ? (string)$authResponse->CVVRsltCode : null);
+        $result->cvvResultText = (isset($authResponse->CVVRsltText) ? (string)$authResponse->CVVRsltText : null);
+        $result->referenceNumber = (isset($authResponse->RefNbr) ? (string)$authResponse->RefNbr : null);
+        $result->responseCode = (isset($authResponse->RspCode) ? (string)$authResponse->RspCode : null);
+        $result->responseText = (isset($authResponse->RspText) ? (string)$authResponse->RspText : null);
 
         if(isset($header->TokenData) && is_object($header->TokenData)){
             $result->tokenData = new HpsTokenData();
-            $result->tokenData->responseCode = $header->TokenData->TokenRspCode;
-            $result->tokenData->responseMessage = $header->TokenData->TokenRspMsg;
-            $result->tokenData->tokenValue = $header->TokenData->TokenValue;
+            $result->tokenData->responseCode = (string)$header->TokenData->TokenRspCode;
+            $result->tokenData->responseMessage = (string)$header->TokenData->TokenRspMsg;
+            $result->tokenData->tokenValue = (string)$header->TokenData->TokenValue;
         }
 
         return $result;
@@ -540,23 +540,23 @@ class HpsChargeService extends HpsService{
 
         $result = new HpsCharge($this->hydrateTransactionHeader($header));
         $result->transactionId = $header->GatewayTxnId;
-        $result->authorizedAmount = (isset($creditSaleRsp->AuthAmt) ? $creditSaleRsp->AuthAmt : null);
-        $result->authorizationCode = (isset($creditSaleRsp->AuthCode) ? $creditSaleRsp->AuthCode : null);
-        $result->avsResultCode = (isset($creditSaleRsp->AVSRsltCode) ? $creditSaleRsp->AVSRsltCode : null);
-        $result->avsResultText = (isset($creditSaleRsp->AVSRsltText) ? $creditSaleRsp->AVSRsltText : null);
-        $result->cardType = (isset($creditSaleRsp->CardType) ? $creditSaleRsp->CardType : null);
-        $result->cpcIndicator = (isset($creditSaleRsp->CPCInd) ? $creditSaleRsp->CPCInd : null);
-        $result->cvvResultCode = (isset($creditSaleRsp->CVVRsltCode) ? $creditSaleRsp->CVVRsltCode : null);
-        $result->cvvResultText = (isset($creditSaleRsp->CVVRsltText) ? $creditSaleRsp->CVVRsltText : null);
-        $result->referenceNumber = (isset($creditSaleRsp->RefNbr) ? $creditSaleRsp->RefNbr : null);
-        $result->responseCode = (isset($creditSaleRsp->RspCode) ? $creditSaleRsp->RspCode : null);
-        $result->responseText = (isset($creditSaleRsp->RspText) ? $creditSaleRsp->RspText : null);
+        $result->authorizedAmount = (isset($creditSaleRsp->AuthAmt) ? (string)$creditSaleRsp->AuthAmt : null);
+        $result->authorizationCode = (isset($creditSaleRsp->AuthCode) ? (string)$creditSaleRsp->AuthCode : null);
+        $result->avsResultCode = (isset($creditSaleRsp->AVSRsltCode) ? (string)$creditSaleRsp->AVSRsltCode : null);
+        $result->avsResultText = (isset($creditSaleRsp->AVSRsltText) ? (string)$creditSaleRsp->AVSRsltText : null);
+        $result->cardType = (isset($creditSaleRsp->CardType) ? (string)$creditSaleRsp->CardType : null);
+        $result->cpcIndicator = (isset($creditSaleRsp->CPCInd) ? (string)$creditSaleRsp->CPCInd : null);
+        $result->cvvResultCode = (isset($creditSaleRsp->CVVRsltCode) ? (string)$creditSaleRsp->CVVRsltCode : null);
+        $result->cvvResultText = (isset($creditSaleRsp->CVVRsltText) ? (string)$creditSaleRsp->CVVRsltText : null);
+        $result->referenceNumber = (isset($creditSaleRsp->RefNbr) ? (string)$creditSaleRsp->RefNbr : null);
+        $result->responseCode = (isset($creditSaleRsp->RspCode) ? (string)$creditSaleRsp->RspCode : null);
+        $result->responseText = (isset($creditSaleRsp->RspText) ? (string)$creditSaleRsp->RspText : null);
 
         if(isset($header->TokenData) && is_object($header->TokenData)){
             $result->tokenData = new HpsTokenData();
-            $result->tokenData->responseCode = $header->TokenData->TokenRspCode;
-            $result->tokenData->responseMessage = $header->TokenData->TokenRspMsg;
-            $result->tokenData->tokenValue = $header->TokenData->TokenValue;
+            $result->tokenData->responseCode = (string)$header->TokenData->TokenRspCode;
+            $result->tokenData->responseMessage = (string)$header->TokenData->TokenRspMsg;
+            $result->tokenData->tokenValue = (string)$header->TokenData->TokenValue;
         }
 
         return $result;
@@ -571,7 +571,7 @@ class HpsChargeService extends HpsService{
         }
 
         $result = new HpsRefund($this->hydrateTransactionHeader($header));
-        $result->transactionId = $header->GatewayTxnId;
+        $result->transactionId = (string)$header->GatewayTxnId;
         $result->responseCode = "00";
         $result->responseText = "";
 
@@ -588,15 +588,15 @@ class HpsChargeService extends HpsService{
 
         $reversal = (isset($response->Transaction->CreditReversal) ? $response->Transaction->CreditReversal : null);
         $result = new HpsReversal($this->hydrateTransactionHeader($header));
-        $result->transactionId = (isset($header->GatewayTxnId) ? $header->GatewayTxnId : null);
-        $result->avsResultCode = (isset($reversal->AVSRsltCode) ? $reversal->AVSRsltCode : null);
-        $result->avsResultText = (isset($reversal->AVSRsltText) ? $reversal->AVSRsltText : null);
-        $result->cpcIndicator = (isset($reversal->CPCInd) ? $reversal->CPCInd : null);
-        $result->cvvResultCode = (isset($reversal->CVVRsltCode) ? $reversal->CVVRsltCode : null);
-        $result->cvvResultText = (isset($reversal->CVVRsltText) ? $reversal->CVVRsltText : null);
-        $result->referenceNumber = (isset($reversal->RefNbr) ? $reversal->RefNbr : null);
-        $result->responseCode = (isset($reversal->RspCode) ? $reversal->RspCode : null);
-        $result->responseText = (isset($reversal->RspText) ? $reversal->RspText : null);
+        $result->transactionId = (isset($header->GatewayTxnId) ? (string)$header->GatewayTxnId : null);
+        $result->avsResultCode = (isset($reversal->AVSRsltCode) ? (string)$reversal->AVSRsltCode : null);
+        $result->avsResultText = (isset($reversal->AVSRsltText) ? (string)$reversal->AVSRsltText : null);
+        $result->cpcIndicator = (isset($reversal->CPCInd) ? (string)$reversal->CPCInd : null);
+        $result->cvvResultCode = (isset($reversal->CVVRsltCode) ? (string)$reversal->CVVRsltCode : null);
+        $result->cvvResultText = (isset($reversal->CVVRsltText) ? (string)$reversal->CVVRsltText : null);
+        $result->referenceNumber = (isset($reversal->RefNbr) ? (string)$reversal->RefNbr : null);
+        $result->responseCode = (isset($reversal->RspCode) ? (string)$reversal->RspCode : null);
+        $result->responseText = (isset($reversal->RspText) ? (string)$reversal->RspText : null);
         return $result;
     }
 } 
