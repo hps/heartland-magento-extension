@@ -500,13 +500,13 @@ class HpsChargeService extends HpsService{
         $response = $this->doTransaction($transaction);
         $avsChecking = new AVSResponseCodeHandler($response,$this,$this->config);
         $header = $response->Header;
-        $this->_processChargeGatewayResponse($header->GatewayRspCode,$header->GatewayRspMsg,$header->GatewayTxnId,$amount,$currency);
+        $this->_processChargeGatewayResponse((string)$header->GatewayRspCode,(string)$header->GatewayRspMsg,(string)$header->GatewayTxnId,$amount,$currency);
 
         $authResponse = $response->Transaction->CreditAuth;
-        $this->_processChargeIssuerResponse($authResponse->RspCode,$authResponse->RspText,$authResponse->GatewayTxnId,$amount,$currency);
+        $this->_processChargeIssuerResponse((string)$authResponse->RspCode,(string)$authResponse->RspText,(string)$authResponse->GatewayTxnId,$amount,$currency);
 
         $result = new HpsAuthorization($this->hydrateTransactionHeader($header));
-        $result->transactionId = $header->GatewayTxnId;
+        $result->transactionId = (string)$header->GatewayTxnId;
         $result->authorizedAmount = (isset($authResponse->AuthAmt) ? (string)$authResponse->AuthAmt : null);
         $result->authorizationCode = (isset($authResponse->AuthCode) ? (string)$authResponse->AuthCode : null);
         $result->avsResultCode = (isset($authResponse->AVSRsltCode) ? (string)$authResponse->AVSRsltCode : null);
@@ -533,13 +533,13 @@ class HpsChargeService extends HpsService{
         $response = $this->doTransaction($transaction);
         $avsChecking = new AVSResponseCodeHandler($response,$this,$this->config);
         $header = $response->Header;
-        $this->_processChargeGatewayResponse($header->GatewayRspCode,$header->GatewayRspMsg,$header->GatewayTxnId,$amount,$currency);
+        $this->_processChargeGatewayResponse((string)$header->GatewayRspCode,(string)$header->GatewayRspMsg,(string)$header->GatewayTxnId,$amount,$currency);
 
         $creditSaleRsp = $response->Transaction->CreditSale;
-        $this->_processChargeIssuerResponse($creditSaleRsp->RspCode,$creditSaleRsp->RspText,$creditSaleRsp->GatewayTxnId,$amount,$currency);
+        $this->_processChargeIssuerResponse((string)$creditSaleRsp->RspCode,(string)$creditSaleRsp->RspText,(string)$creditSaleRsp->GatewayTxnId,$amount,$currency);
 
         $result = new HpsCharge($this->hydrateTransactionHeader($header));
-        $result->transactionId = $header->GatewayTxnId;
+        $result->transactionId = (string)$header->GatewayTxnId;
         $result->authorizedAmount = (isset($creditSaleRsp->AuthAmt) ? (string)$creditSaleRsp->AuthAmt : null);
         $result->authorizationCode = (isset($creditSaleRsp->AuthCode) ? (string)$creditSaleRsp->AuthCode : null);
         $result->avsResultCode = (isset($creditSaleRsp->AVSRsltCode) ? (string)$creditSaleRsp->AVSRsltCode : null);
@@ -567,7 +567,7 @@ class HpsChargeService extends HpsService{
         $header = $response->Header;
 
         if($header->GatewayRspCode != "0"){
-            throw $this->exceptionMapper->map_gateway_exception($header->GatewayTxnId,$header->GatewayRspCode,$header->GatewayRspMsg);
+            throw $this->exceptionMapper->map_gateway_exception((string)$header->GatewayTxnId,(string)$header->GatewayRspCode,(string)$header->GatewayRspMsg);
         }
 
         $result = new HpsRefund($this->hydrateTransactionHeader($header));
@@ -583,7 +583,7 @@ class HpsChargeService extends HpsService{
         $header = $response->Header;
 
         if($header->GatewayRspCode != "0"){
-            throw $this->exceptionMapper->map_gateway_exception($header->GatewayTxnId,$header->GatewayRspCOde,$header->GatewayRspMsg);
+            throw $this->exceptionMapper->map_gateway_exception((string)$header->GatewayTxnId,(string)$header->GatewayRspCode,(string)$header->GatewayRspMsg);
         }
 
         $reversal = (isset($response->Transaction->CreditReversal) ? $response->Transaction->CreditReversal : null);
