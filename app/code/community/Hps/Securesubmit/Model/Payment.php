@@ -154,6 +154,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                         $cardHolder,
                         $multiToken,
                         $details);
+
+                    $payment->setCcTransId($response->transactionId);
                 }
             }
             else
@@ -165,6 +167,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $cardHolder,
                     $multiToken,
                     $details);
+
+                $payment->setCcTransId($response->transactionId);
             }
         }
         catch (CardException $e) {
@@ -185,8 +189,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $payment->setStatus(self::STATUS_APPROVED);
         $payment->setAmount($amount);
         $payment->setLastTransId($response->transactionId);
-        $payment->setCcTransId($response->transactionId);
         $payment->setTransactionId($response->transactionId);
+
         $payment->setIsTransactionClosed(0);
         if($multiToken){
             if ($response->tokenData->responseCode == '0') {
