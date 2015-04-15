@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <config>
     <acl>
         <resources>
@@ -19,8 +20,42 @@
                             </order>
                         </children>
                     </sales>
+                    <report>
+                        <children>
+                            <salesroot>
+                                <children>
+                                    <hps_paypal_settlement_reports translate="title">
+                                        <title>HPS PayPal Settlement Reports</title>
+                                        <children>
+                                            <view translate="title">
+                                                <title>View</title>
+                                            </view>
+                                            <fetch translate="title">
+                                                <title>Fetch</title>
+                                            </fetch>
+                                        </children>
+                                    </hps_paypal_settlement_reports>
+                                </children>
+                            </salesroot>
+                        </children>
+                    </report>
                 </children>
             </admin>
         </resources>
     </acl>
+    <menu>
+        <report>
+            <children>
+                <salesroot translate="title">
+                    <children>
+                        <hps_paypal_settlement_reports translate="title">
+                            <title>Hps PayPal Settlement Reports</title>
+                            <action>adminhtml/hps_paypal_reports</action>
+                            <sort_order>100</sort_order>
+                        </hps_paypal_settlement_reports>
+                    </children>
+                </salesroot>
+            </children>
+        </report>
+    </menu>
 </config>

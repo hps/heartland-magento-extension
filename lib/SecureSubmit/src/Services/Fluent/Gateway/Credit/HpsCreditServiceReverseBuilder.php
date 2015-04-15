@@ -71,7 +71,7 @@ class HpsCreditServiceReverseBuilder extends HpsBuilderAbstract
         if ($this->authAmount != null) {
             $hpsBlock1->appendChild($xml->createElement('hps:AuthAmt', $this->authAmount));
         }
-        
+
         if ($this->card != null) {
             $cardData = $xml->createElement('hps:CardData');
             $cardData->appendChild($this->service->_hydrateManualEntry(

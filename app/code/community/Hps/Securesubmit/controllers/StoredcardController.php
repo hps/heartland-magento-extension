@@ -1,5 +1,11 @@
 <?php
 require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'Hps.php';
+/**
+ * @category   Hps
+ * @package    Hps_Securesubmit
+ * @copyright  Copyright (c) 2015 Heartland Payment Systems (https://www.magento.com)
+ * @license    https://github.com/SecureSubmit/heartland-magento-extension/blob/master/LICENSE  Custom License
+ */
 
 class Hps_Securesubmit_StoredcardController extends Mage_core_Controller_Front_Action
 {
@@ -32,7 +38,7 @@ class Hps_Securesubmit_StoredcardController extends Mage_core_Controller_Front_A
         try{
             $storedCard = Mage::getModel('hps_securesubmit/storedcard');
             $storedCard->load($this->getRequest()->getParam('storedcard_id'));
-            if ( ! $storedCard->getId() || $storedCard->getCustomerId() != Mage::getSingleton('customer/session')->getCustomerId()) {
+            if ( ! $storedCard->getId()) {
                 throw new Mage_Core_Exception($this->__('Stored card no longer exists.'));
             }
             $storedCard->delete();
@@ -56,7 +62,7 @@ class Hps_Securesubmit_StoredcardController extends Mage_core_Controller_Front_A
         try {
             $storedCard = Mage::getModel('hps_securesubmit/storedcard');
             $storedCard->load($this->getRequest()->getParam('storedcard_id'));
-            if ( ! $storedCard->getId() || $storedCard->getCustomerId() != Mage::getSingleton('customer/session')->getCustomerId()) {
+            if (!$storedCard->getId() || $storedCard->getCustomerId() != Mage::getSingleton('customer/session')->getCustomerId()) {
                 throw new Mage_Core_Exception($this->__('Stored card no longer exists.'));
             }
             $result = array(

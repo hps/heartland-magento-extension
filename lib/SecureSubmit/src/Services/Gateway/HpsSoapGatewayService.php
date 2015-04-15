@@ -276,6 +276,8 @@ class HpsSoapGatewayService extends HpsGatewayServiceAbstract
 
         $manualEntry->appendChild($xml->createElement('hps:CardPresent', ($cardPresent ? 'Y' : 'N')));
         $manualEntry->appendChild($xml->createElement('hps:ReaderPresent', ($readerPresent ? 'Y' : 'N')));
+        $manualEntry->appendChild($xml->createElement('hps:CardPresent', 'N'));
+        $manualEntry->appendChild($xml->createElement('hps:ReaderPresent', 'N'));
 
         return $manualEntry;
     }

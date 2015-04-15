@@ -1,4 +1,11 @@
 <?php
+/**
+ * @category   Hps
+ * @package    Hps_Securesubmit
+ * @copyright  Copyright (c) 2015 Heartland Payment Systems (https://www.magento.com)
+ * @license    https://github.com/SecureSubmit/heartland-magento-extension/blob/master/LICENSE  Custom License
+ */
+
 class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
 {
     const XML_PATH_PAYMENT_HPS_SECURESUBMIT_USE_HTTP_PROXY  = 'payment/hps_securesubmit/use_http_proxy';

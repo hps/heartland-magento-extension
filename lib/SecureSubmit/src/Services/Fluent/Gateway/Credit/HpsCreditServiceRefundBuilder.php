@@ -75,7 +75,7 @@ class HpsCreditServiceRefundBuilder extends HpsBuilderAbstract
         if ($this->cardHolder != null) {
             $hpsBlock1->appendChild($this->service->_hydrateCardHolderData($this->cardHolder, $xml));
         }
-        
+
         if ($this->card != null) {
             $cardData = $xml->createElement('hps:CardData');
             $cardData->appendChild($this->service->_hydrateManualEntry(
