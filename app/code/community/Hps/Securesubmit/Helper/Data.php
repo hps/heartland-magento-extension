@@ -16,6 +16,12 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
         return $cardCollection;
     }
 
+    /**
+     * @param string $token
+     * @param HpsCreditCard $cardData
+     * @param string $cardType
+     * @return Hps_Securesubmit_Model_Storedcard
+     */
     public function saveMultiToken($token,$cardData,$cardType)
     {
         $_session = Mage::getSingleton('customer/session');

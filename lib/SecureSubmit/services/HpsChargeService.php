@@ -394,7 +394,7 @@ class HpsChargeService extends HpsService{
 
         $creditVoid = $response->Transaction->CreditVoid;
         $result = new HpsVoid($this->hydrateTransactionHeader($header));
-        $result->transactionId = (isset($creditVoid->GatewayTxnId) ? $creditVoid->GatewayTxnId : null);
+        $result->transactionId = (isset($creditVoid->GatewayTxnId) ? "{$creditVoid->GatewayTxnId}" : null);
         $result->responseCode = "00";
         $result->responseText = "";
         return $result;
@@ -474,24 +474,41 @@ class HpsChargeService extends HpsService{
         }
     }
 
-    private function _processChargeIssuerResponse($responseCode, $responseText, $transactionId, $amount, $currency){
-        if($responseCode == "91"){
+    /**
+     * @param HpsCharge|HpsAuthorization $response
+     * @param float $amount
+     * @param string $currency
+     * @throws CardException
+     * @throws ApiConnectionException|HpsException|InvalidRequestException
+     */
+    private function _processChargeIssuerResponse($response, $amount, $currency){
+        if($response->responseCode == "91"){
             try{
-                $this->reverseTransaction($transactionId, $amount, $currency);
+                $this->reverseTransaction($response->transactionId, $amount, $currency);
             }catch (Exception $e){
                 $exception = $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$reversalErrorAfterIssuerTimeout, $e);
-                $exception->responseCode = $responseCode;
-                $exception->responseText = $responseText;
+                $exception->responseCode = $response->responseCode;
+                $exception->responseText = $response->responseText;
                 throw $exception;
             }
             $exception = $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$processingError);
-            $exception->responseCode = $responseCode;
-            $exception->responseText = $responseText;
+            $exception->responseCode = $response->responseCode;
+            $exception->responseText = $response->responseText;
             throw $exception;
-        }else if($responseCode != "00"){
-            $exception = $this->exceptionMapper->map_issuer_exception($transactionId, $responseCode, $responseText);
-            $exception->responseCode = $responseCode;
-            $exception->responseText = $responseText;
+        }else if($response->responseCode != "00"){
+            $exception = $this->exceptionMapper->map_issuer_exception($response->transactionId, $response->responseCode, $response->responseText);
+            $exception->responseCode = $response->responseCode;
+            $exception->responseText = $response->responseText;
+
+            $resultText = "{$response->responseText} ({$response->responseCode})";
+            if ($response->avsResultCode) {
+                $resultText .= ", AVS Result: {$response->avsResultText} ({$response->avsResultCode})";
+            }
+            if ($response->cvvResultCode) {
+                $resultText .= ", CVV Result: {$response->cvvResultText} ({$response->cvvResultCode})";
+            }
+            $exception->resultText = $resultText;
+
             throw $exception;
         }
     }
@@ -526,6 +543,8 @@ class HpsChargeService extends HpsService{
             $result->tokenData->tokenValue = (string)$header->TokenData->TokenValue;
         }
 
+        $this->_processChargeIssuerResponse($result, $amount, $currency);
+
         return $result;
     }
 
@@ -558,6 +577,8 @@ class HpsChargeService extends HpsService{
             $result->tokenData->responseMessage = (string)$header->TokenData->TokenRspMsg;
             $result->tokenData->tokenValue = (string)$header->TokenData->TokenValue;
         }
+
+        $this->_processChargeIssuerResponse($result, $amount, $currency);
 
         return $result;
     }

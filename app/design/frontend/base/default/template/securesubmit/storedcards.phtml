@@ -27,7 +27,7 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
                 <td class="a-center"><span class="nobr"><?php echo $card['cc_type'] ?></span></td>
                 <td class="a-center"><span class="nobr"><?php echo "************".$card['cc_last4'] ?></span></td>
                 <td class="a-center"><span class="nobr"><?php echo $card['cc_exp_month'] ."-".$card['cc_exp_year'] ?></span></td>
-                <td><a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>">Delete</a></td>
+                <td><a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>"><?php echo $this->__('Delete') ?></a></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

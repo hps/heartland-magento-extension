@@ -1,0 +1,1726 @@
+From 7e76e6fa7c83cbc10c3fd504867d8efd498c4366 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Thu, 20 Feb 2014 12:03:48 -0500
+Subject: [PATCH 01/13] Handle unexpected missing token error and redirect user
+ back to payment step on invalid token error. noref
+
+---
+ app/code/community/Hps/Securesubmit/Model/Payment.php | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index 494351b..2d725c2 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -134,6 +134,12 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+
+         try
+         {
++            // Gracefully handle javascript errors.
++            if ( ! $secureToken) {
++                Mage::log('Payment information submitted without token.', Zend_Log::ERR);
++                $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), NULL, TRUE);
++            }
++
+             if ($capture)
+             {
+                 if ($payment->getCcTransId())
+@@ -162,11 +168,18 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+                     $multiToken);
+             }
+         }
+-        catch (CardException $e) {
++        catch (CardException $e)
++        {
+             $this->_debugChargeService($chargeService, $e);
+             $payment->setStatus(self::STATUS_DECLINED);
+             $this->throwUserError($e->getMessage(), $e->ResultText, TRUE);
+         }
++        catch (HpsException $e)
++        {
++            $this->_debugChargeService($chargeService, $e);
++            $payment->setStatus(self::STATUS_ERROR);
++            $this->throwUserError($e->getMessage(), NULL, TRUE);
++        }
+         catch (Exception $e)
+         {
+             $this->_debugChargeService($chargeService, $e);
+
+From fc20439e9a77c800cf6d4ca2ff1aada926ab0047 Mon Sep 17 00:00:00 2001
+From: Sergey Kalenyuk <sergey.kalenyuk@gmail.com>
+Date: Wed, 26 Feb 2014 10:18:43 -0500
+Subject: [PATCH 02/13] Fix exceptions after merging remote master branch. Refs
+ #3364.
+
+---
+ app/code/community/Hps/Securesubmit/Helper/Data.php   | 6 +++---
+ app/code/community/Hps/Securesubmit/Model/Payment.php | 6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Helper/Data.php b/app/code/community/Hps/Securesubmit/Helper/Data.php
+index fa0d488..57431e6 100644
+--- a/app/code/community/Hps/Securesubmit/Helper/Data.php
++++ b/app/code/community/Hps/Securesubmit/Helper/Data.php
+@@ -29,9 +29,9 @@ public function saveMultiToken($token,$cardData,$cardType)
+                 ->setCustomerId($_customerId)
+                 ->setTokenValue($token)
+                 ->setCcType($cardType)
+-                ->setCcLast4($cardData->CardNbr)
+-                ->setCcExpMonth(str_pad($cardData->ExpMonth, 2, '0', STR_PAD_LEFT))
+-                ->setCcExpYear($cardData->ExpYear);
++                ->setCcLast4($cardData->number)
++                ->setCcExpMonth(str_pad($cardData->expMonth, 2, '0', STR_PAD_LEFT))
++                ->setCcExpYear($cardData->expYear);
+             try{
+                 $storedCard->removeDuplicates();
+                 $storedCard->save();
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index 2d725c2..8c9260a 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -197,7 +197,7 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+         $payment->setTransactionId($response->transactionId);
+         $payment->setIsTransactionClosed(0);
+         if($multiToken){
+-            if ($response->tokenData->tokenRspCode == '0') {
++            if ($response->tokenData->responseCode == '0') {
+                 Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
+             } else {
+                 Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->transactionId), Zend_Log::WARN);
+@@ -386,8 +386,8 @@ public function _debugChargeService(HpsChargeService $chargeService, $exception
+             $this->_debug(array(
+                 'store' => Mage::app()->getStore($this->getStore())->getFrontendName(),
+                 'exception_message' => $exception ? get_class($exception).': '.$exception->getMessage() : '',
+-                'last_request' => $chargeService->lastRequest,
+-                'last_response' => $chargeService->lastResponse,
++                //'last_request' => $chargeService->lastRequest,
++                //'last_response' => $chargeService->lastResponse,
+             ));
+         }
+     }
+
+From 28b4ff36663a0809e4f0bdbbd90d1e0a878cfabc Mon Sep 17 00:00:00 2001
+From: Sergey Kalenyuk <sergey.kalenyuk@gmail.com>
+Date: Wed, 26 Feb 2014 10:57:11 -0500
+Subject: [PATCH 03/13] Use customer saved cards when placing orders from
+ backend. Refs #3364.
+
+---
+ .../Hps/Securesubmit/Block/Adminhtml/Form.php      |  46 ++++++++
+ .../community/Hps/Securesubmit/Model/Payment.php   |  10 ++
+ .../community/Hps/Securesubmit/etc/adminhtml.xml   |  26 +++++
+ app/code/community/Hps/Securesubmit/etc/config.xml |   9 +-
+ app/code/community/Hps/Securesubmit/etc/system.xml |  14 +--
+ .../mysql4-upgrade-1.0.0-1.0.1.php                 |  13 +++
+ .../default/template/securesubmit/form.phtml       | 122 ++++++++++++---------
+ .../template/securesubmit/storedcards.phtml        |   2 +-
+ 8 files changed, 184 insertions(+), 58 deletions(-)
+ create mode 100644 app/code/community/Hps/Securesubmit/Block/Adminhtml/Form.php
+ create mode 100644 app/code/community/Hps/Securesubmit/etc/adminhtml.xml
+ create mode 100755 app/code/community/Hps/Securesubmit/sql/hps_securesubmit_setup/mysql4-upgrade-1.0.0-1.0.1.php
+
+diff --git a/app/code/community/Hps/Securesubmit/Block/Adminhtml/Form.php b/app/code/community/Hps/Securesubmit/Block/Adminhtml/Form.php
+new file mode 100644
+index 0000000..4ac0c7c
+--- /dev/null
++++ b/app/code/community/Hps/Securesubmit/Block/Adminhtml/Form.php
+@@ -0,0 +1,46 @@
++<?php
++class Hps_Securesubmit_Block_Adminhtml_Form extends Hps_Securesubmit_Block_Form
++{
++    /**
++     * Retrieve stored cards for the customer
++     *
++     * @return Hps_Securesubmit_Model_Storedcard[]|Hps_Securesubmit_Model_Resource_Storedcard_Collection
++     */
++    public function getCustomerStoredCards()
++    {
++        if ( ! Mage::app()->getStore()->isAdmin()) {
++            return array();
++        }
++        if ( ! Mage::getSingleton('admin/session')->isAllowed('sales/order/actions/use_saved_card')) {
++            return array();
++        }
++        if ( ! $customerId = Mage::getSingleton('adminhtml/session_quote')->getCustomerId()) {
++            return array();
++        }
++        return Mage::helper('hps_securesubmit')->getStoredCards($customerId);
++    }
++
++    /**
++     * Retrieve customer stored credit cards JavaScript config
++     *
++     * @return array
++     */
++    public function getJsConfig()
++    {
++        $config = array();
++        $collection = $this->getCustomerStoredCards();
++        if (count($collection) === 0) {
++            return $config;
++        }
++
++        foreach ($collection as $card) { /** @var $card Hps_Securesubmit_Model_Storedcard */
++            $config[$card->getId()] = array(
++                'cc_exp_month' => $card->getCcExpMonth(),
++                'cc_exp_year'  => $card->getCcExpYear(),
++                'token_value'  => $card->getTokenValue(),
++                'cc_last_four' => $card->getCcLast4(),
++            );
++        }
++        return $config;
++    }
++}
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index 8c9260a..19eebf1 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -17,6 +17,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
+     protected $_minOrderTotal = 0.5;
+
+     protected $_formBlockType = 'hps_securesubmit/form';
++    protected $_formBlockTypeAdmin = 'hps_securesubmit/adminhtml_form';
+     protected $_infoBlockType = 'hps_securesubmit/info';
+
+     /**
+@@ -392,4 +393,13 @@ public function _debugChargeService(HpsChargeService $chargeService, $exception
+         }
+     }
+
++    /**
++     * Retrieve block type for method form generation
++     *
++     * @return string
++     */
++    public function getFormBlockType()
++    {
++        return Mage::app()->getStore()->isAdmin() ? $this->_formBlockTypeAdmin : $this->_formBlockType;
++    }
+ }
+diff --git a/app/code/community/Hps/Securesubmit/etc/adminhtml.xml b/app/code/community/Hps/Securesubmit/etc/adminhtml.xml
+new file mode 100644
+index 0000000..fcc020e
+--- /dev/null
++++ b/app/code/community/Hps/Securesubmit/etc/adminhtml.xml
+@@ -0,0 +1,26 @@
++<config>
++    <acl>
++        <resources>
++            <admin>
++                <children>
++                    <sales>
++                        <children>
++                            <order>
++                                <children>
++                                    <actions>
++                                        <children>
++                                            <use_saved_card translate="title" module="hps_securesubmit">
++                                                <title>Use Saved Card</title>
++                                                <sort_order>110</sort_order>
++                                            </use_saved_card>
++                                        </children>
++                                    </actions>
++                                </children>
++                            </order>
++                        </children>
++                    </sales>
++                </children>
++            </admin>
++        </resources>
++    </acl>
++</config>
+diff --git a/app/code/community/Hps/Securesubmit/etc/config.xml b/app/code/community/Hps/Securesubmit/etc/config.xml
+index 0366472..fee69a5 100644
+--- a/app/code/community/Hps/Securesubmit/etc/config.xml
++++ b/app/code/community/Hps/Securesubmit/etc/config.xml
+@@ -2,7 +2,7 @@
+ <config>
+     <modules>
+         <Hps_Securesubmit>
+-            <version>1.0.0</version>
++            <version>1.0.1</version>
+         </Hps_Securesubmit>
+     </modules>
+     <global>
+@@ -38,6 +38,13 @@
+                 <class>Hps_Securesubmit_Block</class>
+             </hps_securesubmit>
+         </blocks>
++        <fieldsets>
++            <sales_convert_quote_payment>
++                <securesubmit_use_stored_card>
++                    <to_order_payment>*</to_order_payment>
++                </securesubmit_use_stored_card>
++            </sales_convert_quote_payment>
++        </fieldsets>
+     </global>
+     <default>
+         <payment>
+diff --git a/app/code/community/Hps/Securesubmit/etc/system.xml b/app/code/community/Hps/Securesubmit/etc/system.xml
+index 3d4a566..8199fe5 100644
+--- a/app/code/community/Hps/Securesubmit/etc/system.xml
++++ b/app/code/community/Hps/Securesubmit/etc/system.xml
+@@ -22,13 +22,13 @@
+                             <show_in_store>0</show_in_store>
+                         </active>
+                         <order_status translate="label">
+-                          <label>New order status</label>
+-                          <frontend_type>select</frontend_type>
+-                          <source_model>adminhtml/system_config_source_order_status_processing</source_model>
+-                          <sort_order>4</sort_order>
+-                          <show_in_default>1</show_in_default>
+-                          <show_in_website>1</show_in_website>
+-                          <show_in_store>0</show_in_store>
++                            <label>New order status</label>
++                            <frontend_type>select</frontend_type>
++                            <source_model>adminhtml/system_config_source_order_status_processing</source_model>
++                            <sort_order>4</sort_order>
++                            <show_in_default>1</show_in_default>
++                            <show_in_website>1</show_in_website>
++                            <show_in_store>0</show_in_store>
+                         </order_status>
+                         <title translate="label">
+                             <label>Title</label>
+diff --git a/app/code/community/Hps/Securesubmit/sql/hps_securesubmit_setup/mysql4-upgrade-1.0.0-1.0.1.php b/app/code/community/Hps/Securesubmit/sql/hps_securesubmit_setup/mysql4-upgrade-1.0.0-1.0.1.php
+new file mode 100755
+index 0000000..6ace885
+--- /dev/null
++++ b/app/code/community/Hps/Securesubmit/sql/hps_securesubmit_setup/mysql4-upgrade-1.0.0-1.0.1.php
+@@ -0,0 +1,13 @@
++<?php
++/** @var $this Hps_Securesubmit_Model_Resource_Setup */
++$installer = $this;
++$installer->startSetup();
++
++/*
++ * Add 'use_stored_card' column to 'sales_flat_quote_payment' and 'sales_flat_order_payment' tables.
++ */
++
++$installer->getConnection()->addColumn($installer->getTable('sales/quote_payment'), 'securesubmit_use_stored_card', 'TINYINT UNSIGNED DEFAULT NULL');
++$installer->getConnection()->addColumn($installer->getTable('sales/order_payment'), 'securesubmit_use_stored_card', 'TINYINT UNSIGNED DEFAULT NULL');
++
++$installer->endSetup();
+diff --git a/app/design/adminhtml/default/default/template/securesubmit/form.phtml b/app/design/adminhtml/default/default/template/securesubmit/form.phtml
+index f5dc838..82358cb 100644
+--- a/app/design/adminhtml/default/default/template/securesubmit/form.phtml
++++ b/app/design/adminhtml/default/default/template/securesubmit/form.phtml
+@@ -1,13 +1,49 @@
+-<?php $_code=$this->getMethodCode() ?>
++<?php /** @var $this Hps_Securesubmit_Block_Adminhtml_Form */
++$_code = $this->getMethodCode();
++$customerStoredCards = $this->getCustomerStoredCards();
++$useStoredCard = !! $this->getInfoData('securesubmit_use_stored_card');
++?>
+ <ul id="payment_form_<?php echo $_code ?>" style="display:none">
+-    <input type="hidden" name="payment[use_credit_card]" value="1" />
+-    <li>
++    <?php if (count($customerStoredCards)) : ?>
++        <li>
++            <label for="<?php echo $_code ?>_stored_card_checkbox"><?php echo $this->__('Use a stored card') ?></label>
++            <div class="input-box">
++                <input type="checkbox" id="<?php echo $_code ?>_stored_card_checkbox" name="payment[securesubmit_use_stored_card]" <?php if ($useStoredCard) : ?> checked="checked" <?php endif ?> value="1" />
++            </div>
++        </li>
++        <li id="<?php echo $_code ?>_stored_cards" style="display: none">
++            <label for="<?php echo $_code ?>_stored_card_select"><?php echo $this->__('Stored Card') ?></label>
++            <div class="input-box">
++                <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">
++                    <?php foreach ($customerStoredCards as $key => $card) : ?>
++                        <option value="<?= $card->getId() ?>"><?= $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></option>
++                    <?php endforeach ?>
++                </select>
++            </div>
++        </li>
++    <?php endif ?>
++    <input id="<?php echo $_code ?>_use_credit_card" type="hidden" name="payment[use_credit_card]" value="1" />
++    <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="" />
++    <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="" />
++    <li class="stored_cards_selected">
++        <label for="<?php echo $_code ?>_cc_type"><?php echo Mage::helper('payment')->__('Credit Card Type') ?> <span class="required">*</span></label><br/>
++        <div class="input-box">
++            <select id="<?php echo $_code ?>_cc_type" name="payment[cc_type]" class="required-entry validate-cc-type-select">
++                <option value=""><?php echo $this->__('--Please Select--') ?></option>
++                <?php $_ccType = $this->getInfoData('cc_type') ?>
++                <?php foreach ($this->getCcAvailableTypes() as $_typeCode => $_typeName) : ?>
++                    <option value="<?php echo $_typeCode ?>"<?php if($_typeCode == $_ccType) : ?> selected="selected"<?php endif ?>><?php echo $_typeName ?></option>
++                <?php endforeach ?>
++            </select>
++        </div>
++    </li>
++    <li class="stored_cards_selected">
+         <div class="input-box">
+             <label for="<?php echo $_code ?>_cc_number"><?php echo Mage::helper('payment')->__('Credit Card Number') ?> <span class="required">*</span></label><br/>
+             <input type="text" id="<?php echo $_code ?>_cc_number" name="payment[cc_number]" title="<?php echo Mage::helper('payment')->__('Credit Card Number') ?>" class="input-text validate-cc-number" value="<?php echo $this->getInfoData('cc_number')?>"/>
+         </div>
+     </li>
+-    <li>
++    <li class="stored_cards_selected">
+         <div class="input-box">
+             <label for="<?php echo $_code ?>_expiration"><?php echo Mage::helper('payment')->__('Expiration Date') ?> <span class="required">*</span></label><br/>
+             <select id="<?php echo $_code ?>_expiration" style="width:140px;" name="payment[cc_exp_month]" class="validate-cc-exp required-entry">
+@@ -25,55 +61,43 @@
+         </div>
+     </li>
+     <?php if($this->hasVerification()): ?>
+-        <li>
++        <li class="stored_cards_selected">
+             <div class="input-box">
+                 <label for="<?php echo $_code ?>_cc_cid"><?php echo Mage::helper('payment')->__('Card Verification Number') ?> <span class="required">*</span></label><br/>
+                 <input type="text" title="<?php echo Mage::helper('payment')->__('Card Verification Number') ?>" class="required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" style="width:3em;" value="<?php echo $this->getInfoData('cc_cid')?>"/>
+             </div>
+         </li>
+     <?php endif; ?>
+-    <?php if ($this->hasSsCardType()): ?>
+-        <li id="<?php echo $_code ?>_cc_type_ss_div">
+-            <ul class="inner-form">
+-                <li class="form-alt"><label for="<?php echo $_code ?>_cc_issue" class="required"><em>*</em><?php echo $this->__('Switch/Solo/Maestro Only') ?></label></li>
+-                <li>
+-                    <label for="<?php echo $_code ?>_cc_issue"><?php echo $this->__('Issue Number') ?>:</label>
+-                <span class="input-box">
+-                    <input type="text" title="<?php echo $this->__('Issue Number') ?>" class="input-text validate-cc-ukss cvv" id="<?php echo $_code ?>_cc_issue" name="payment[cc_ss_issue]" value="" />
+-                </span>
+-                </li>
+-
+-                <li>
+-                    <label for="<?php echo $_code ?>_start_month"><?php echo $this->__('Start Date') ?>:</label>
+-                    <div class="input-box">
+-                        <select id="<?php echo $_code ?>_start_month" name="payment[cc_ss_start_month]" class="validate-cc-ukss month">
+-                            <?php foreach ($this->getCcMonths() as $k=>$v): ?>
+-                                <option value="<?php echo $k?$k:'' ?>"<?php if($k==$this->getInfoData('cc_ss_start_month')): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+-                            <?php endforeach ?>
+-                        </select>
+-                        <select id="<?php echo $_code ?>_start_year" name="payment[cc_ss_start_year]" class="validate-cc-ukss year">
+-                            <?php foreach ($this->getSsStartYears() as $k=>$v): ?>
+-                                <option value="<?php echo $k?$k:'' ?>"<?php if($k==$this->getInfoData('cc_ss_start_year')): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+-                            <?php endforeach ?>
+-                        </select>
+-                    </div>
+-                </li>
+-                <li class="adv-container">&nbsp;</li>
+-            </ul>
+-            <script type="text/javascript">
+-                //<![CDATA[
+-                var SSChecked<?php echo $_code ?> = function() {
+-                    var elm = $('<?php echo $_code ?>_cc_type');
+-                    if (['SS','SM','SO'].indexOf(elm.value) != -1) {
+-                        $('<?php echo $_code ?>_cc_type_ss_div').show();
+-                    } else {
+-                        $('<?php echo $_code ?>_cc_type_ss_div').hide();
+-                    }
+-                };
+-                Event.observe($('<?php echo $_code ?>_cc_type'), 'change', SSChecked<?php echo $_code ?>);
+-                SSChecked<?php echo $_code ?>();
+-                //]]>
+-            </script>
+-        </li>
+-    <?php endif; ?>
+ </ul>
++<script type="text/javascript">
++//<![CDATA[
++<?php if (count($customerStoredCards)) : ?>
++    var customerStoredCards = <?php echo json_encode($this->getJsConfig()) ?>;
++    $('<?php echo $_code ?>_stored_card_checkbox').observe('click',function() {
++        toggleStoredCards();
++    });
++    function toggleStoredCards() {
++        // Toggle between the saved credit cards and a new card form
++        $$('.stored_cards_selected').invoke('toggle');
++        $('<?php echo $_code ?>_stored_cards').toggle();
++        $('<?php echo $_code ?>_cc_type').toggleClassName('validate-cc-type-select').toggleClassName('required-entry');
++        $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
++        $('<?php echo $_code ?>_cc_cid').toggleClassName('validate-cc-cvn').toggleClassName('required-entry');
++        $('<?php echo $_code ?>_use_credit_card').value = $('<?php echo $_code ?>_stored_card_checkbox').checked ? '0' : '1';
++
++        // Set credit card information
++        var creditCardId = $('<?php echo $_code ?>_stored_card_select').value;
++        if (customerStoredCards[creditCardId]) {
++            var creditCardData = customerStoredCards[creditCardId];
++            $('<?php echo $_code ?>_expiration').value = parseInt(creditCardData.cc_exp_month);
++            $('<?php echo $_code ?>_expiration_yr').value = creditCardData.cc_exp_year;
++            $('<?php echo $_code ?>_token').value = creditCardData.token_value;
++            $('<?php echo $_code ?>_cc_last_four').value = creditCardData.cc_last_four;
++        }
++    }
++    <?php if ($useStoredCard) : ?>
++        toggleStoredCards();
++    <?php endif ?>
++<?php endif ?>
++//]]>
++</script>
+diff --git a/app/design/frontend/base/default/template/securesubmit/storedcards.phtml b/app/design/frontend/base/default/template/securesubmit/storedcards.phtml
+index b84226b..ca3a548 100644
+--- a/app/design/frontend/base/default/template/securesubmit/storedcards.phtml
++++ b/app/design/frontend/base/default/template/securesubmit/storedcards.phtml
+@@ -27,7 +27,7 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
+                 <td class="a-center"><span class="nobr"><?php echo $card['cc_type'] ?></span></td>
+                 <td class="a-center"><span class="nobr"><?php echo "************".$card['cc_last4'] ?></span></td>
+                 <td class="a-center"><span class="nobr"><?php echo $card['cc_exp_month'] ."-".$card['cc_exp_year'] ?></span></td>
+-                <td><a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>">Delete</a></td>
++                <td><a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>"><?php echo $this->__('Delete') ?></a></td>
+             </tr>
+         <?php endforeach; ?>
+         </tbody>
+
+From e8d22647f9f5d7f1bd93db5509f800dce8cd3d2d Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Tue, 4 Mar 2014 16:04:21 -0500
+Subject: [PATCH 04/13] Add more transaction details, refactor \(DRY\) and fix
+ proxy for refunds.
+
+---
+ .../community/Hps/Securesubmit/Helper/Data.php     |   6 +
+ .../community/Hps/Securesubmit/Model/Payment.php   | 155 ++++++++++++++-------
+ 2 files changed, 110 insertions(+), 51 deletions(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Helper/Data.php b/app/code/community/Hps/Securesubmit/Helper/Data.php
+index fa0d488..f125a3b 100644
+--- a/app/code/community/Hps/Securesubmit/Helper/Data.php
++++ b/app/code/community/Hps/Securesubmit/Helper/Data.php
+@@ -16,6 +16,12 @@ public function getStoredCards($customerId)
+         return $cardCollection;
+     }
+
++    /**
++     * @param string $token
++     * @param HpsCreditCard $cardData
++     * @param string $cardType
++     * @return Hps_Securesubmit_Model_Storedcard
++     */
+     public function saveMultiToken($token,$cardData,$cardType)
+     {
+         $_session = Mage::getSingleton('customer/session');
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index 74b3b3e..4852afd 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -66,7 +66,7 @@ public function authorize(Varien_Object $payment, $amount)
+     /**
+      * Authorize or Capture payment
+      *
+-     * @param Varien_Object $payment
++     * @param Varien_Object|Mage_Sales_Model_Order_Payment $payment
+      * @param float $amount
+      * @param bool $capture
+      * @return  $this
+@@ -74,10 +74,8 @@ public function authorize(Varien_Object $payment, $amount)
+     private function _authorize(Varien_Object $payment, $amount, $capture)
+     {
+         $order = $payment->getOrder(); /* @var $order Mage_Sales_Model_Order */
+-        $billing = $order->getBillingAddress();
+         $multiToken = false;
+         $cardData = null;
+-        $cardType = null;
+         $additionalData = new Varien_Object($payment->getAdditionalData() ? unserialize($payment->getAdditionalData()) : null);
+         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
+         $saveCreditCard = !! $additionalData->getCcSaveFuture();
+@@ -91,35 +89,9 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+             $cardData->expMonth = $payment->getCcExpMonth();
+         }
+
+-        $config = new HpsConfiguration();
+-        // Use HTTP proxy
+-        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
+-            $config->useProxy = true;
+-            $config->proxyOptions = array(
+-                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
+-                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
+-            );
+-        }
+-
+-        $config->secretApiKey = $this->getConfigData('secretapikey');
+-        $config->versionNumber = '1573';
+-        $config->developerId = '002914';
+-
+-        $chargeService = new HpsChargeService($config);
+-
+-        $address = new HpsAddress();
+-        $address->address = $billing->getStreet(1);
+-        $address->city = $billing->getCity();
+-        $address->state = $billing->getRegion();
+-        $address->zip = preg_replace('/[^0-9]/', '', $billing->getPostcode());
+-        $address->country = $billing->getCountry();
+-
+-        $cardHolder = new HpsCardHolder();
+-        $cardHolder->firstName = $billing->getData('firstname');
+-        $cardHolder->lastName = $billing->getData('lastname');
+-        $cardHolder->phone = preg_replace('/[^0-9]/', '', $billing->getTelephone());
+-        $cardHolder->emailAddress = $billing->getData('email');
+-        $cardHolder->address = $address;
++        $chargeService = $this->_getChargeService();
++        $cardHolder = $this->_getCardHolderData($order);
++        $details = $this->_getTxnDetailsData($order);
+
+         if ($useCreditCard) {
+             $cardOrToken = new HpsCreditCard();
+@@ -132,9 +104,6 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+             $cardOrToken->tokenValue = $secureToken;
+         }
+
+-        $details = new HpsTransactionDetails();
+-        $details->invoiceNumber = $order->getIncrementId();
+-
+         try
+         {
+             if ($capture)
+@@ -190,14 +159,19 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+         $payment->setIsTransactionClosed(0);
+         if($multiToken){
+             if ($response->tokenData->tokenRspCode == '0') {
+-                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
++                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
+             } else {
+-                Mage::log(Mage::helper('hps_securesubmit')->__('Requested multi token has not been generated for the transaction # %s.', $response->transactionId), Zend_Log::WARN);
++                Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
+             }
+         }
+         return $this;
+     }
+
++    /**
++     * @param Varien_Object|Mage_Sales_Model_Order_Payment $payment
++     * @param float $amount
++     * @return Hps_Securesubmit_Model_Payment
++     */
+     public function refund(Varien_Object $payment, $amount)
+     {
+         if ($this->canVoid($payment)) {
+@@ -224,12 +198,7 @@ public function void(Varien_Object $payment)
+     {
+         $transactionId = $payment->getCcTransId();
+
+-        $config = new HpsServicesConfig();
+-        $config->secretAPIKey = $this->getConfigData('secretapikey');
+-        $config->versionNbr = '1509';
+-        $config->developerId = '002914';
+-
+-        $chargeService = new HpsChargeService($config);
++        $chargeService = $this->_getChargeService();
+         try {
+             $voidResponse = $chargeService->void($transactionId);
+         }
+@@ -254,22 +223,28 @@ public function void(Varien_Object $payment)
+         return $this;
+     }
+
++    /**
++     * @param Varien_Object|Mage_Sales_Model_Order_Payment $payment
++     * @param $amount
++     * @return Hps_Securesubmit_Model_Payment
++     */
+     protected function _refund(Varien_Object $payment, $amount)
+     {
+         $transactionId = $payment->getCcTransId();
+-        $order = $payment->getOrder();
++        $order = $payment->getOrder(); /* @var $order Mage_Sales_Model_Order */
+
+-        $config = new HpsConfiguration();
+-        $config->secretApiKey = $this->getConfigData('secretapikey');
+-        $config->versionNumber = '1573';
+-        $config->developerId = '002914';
++        $chargeService = $this->_getChargeService();
++        $cardHolder = $this->_getCardHolderData($order);
++        $details = $this->_getTxnDetailsData($order);
+
+-        $chargeService = new HpsChargeService($config);
+         try {
+             $refundResponse = $chargeService->refundTransaction(
+                 $amount,
+                 strtolower($order->getBaseCurrencyCode()),
+-                $transactionId);
++                $transactionId,
++                $cardHolder,
++                $details
++            );
+
+         }
+         catch (HpsException $e)
+@@ -369,10 +344,88 @@ public function throwUserError($error, $detailedError = NULL, $goToPaymentSectio
+     }
+
+     /**
++     * @return HpsChargeService
++     */
++    protected function _getChargeService()
++    {
++        $config = new HpsConfiguration();
++
++        // Support HTTP proxy
++        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
++            $config->useProxy = true;
++            $config->proxyOptions = array(
++                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
++                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
++            );
++        }
++
++        $config->secretApiKey = $this->getConfigData('secretapikey');
++        $config->versionNumber = '1573';
++        $config->developerId = '002914';
++
++        return new HpsChargeService($config);
++    }
++
++    /**
++     * @param Mage_Sales_Model_Order $order
++     * @return HpsCardHolder
++     */
++    protected function _getCardHolderData($order)
++    {
++        $billing = $order->getBillingAddress();
++
++        $address = new HpsAddress();
++        $address->address = substr($billing->getStreet(1), 0, 40);        // Actual limit unknown..
++        $address->city = substr($billing->getCity(), 0, 20);
++        $address->state = substr($billing->getRegion(), 0, 20);
++        $address->zip = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper($billing->getPostcode())), 0, 9);
++        $address->country = $billing->getCountry();
++
++        $cardHolder = new HpsCardHolder();
++        $cardHolder->firstName = substr($billing->getData('firstname'), 0, 26);
++        $cardHolder->lastName = substr($billing->getData('lastname'), 0, 26);
++        $cardHolder->phone = substr(preg_replace('/[^0-9]/', '', $billing->getTelephone()), 0, 10);
++        $cardHolder->emailAddress = substr($billing->getData('email'), 0, 40);
++        $cardHolder->address = $address;
++
++        return $cardHolder;
++    }
++
++    /**
++     * @param Mage_Sales_Model_Order $order
++     * @return HpsTransactionDetails
++     */
++    protected function _getTxnDetailsData($order)
++    {
++        $memo = array();
++        $ip = '';
++        if (isset($_SERVER['REMOTE_ADDR'])) {
++            $ip = $_SERVER['REMOTE_ADDR'];
++        }
++        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
++            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
++        }
++        if ($ip) {
++            $memo[] = 'Customer IP Address: '.$ip;
++        }
++        if (isset($_SERVER['HTTP_USER_AGENT'])) {
++            $memo[] = 'User Agent: '.$_SERVER['HTTP_USER_AGENT'];
++        }
++        $memo = implode(', ', $memo);
++
++        $details = new HpsTransactionDetails();
++        $details->memo = substr($memo, 0, 100);                           // Actual limit unknown..
++        $details->invoiceNumber = $order->getIncrementId();
++        $details->customerId = substr($order->getCustomerEmail(), 0, 25); // Actual limit unknown..
++
++        return $details;
++    }
++
++    /**
+      * @param HpsChargeService $chargeService
+      * @param Exception|null $exception
+      */
+-    public function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
++    protected function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
+     {
+         if ($this->getDebugFlag()) {
+             $this->_debug(array(
+
+From 62ae8eea59d7ebe65bb190c14494813c31630f09 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Tue, 4 Mar 2014 16:43:38 -0500
+Subject: [PATCH 05/13] Restore lastRequest and lastResponse for debugging.
+ Render XML only once. Close curl handle after request.
+
+---
+ lib/SecureSubmit/services/HpsService.php | 33 ++++++++++++++++++++++++++------
+ 1 file changed, 27 insertions(+), 6 deletions(-)
+
+diff --git a/lib/SecureSubmit/services/HpsService.php b/lib/SecureSubmit/services/HpsService.php
+index b5b0cc4..781417e 100644
+--- a/lib/SecureSubmit/services/HpsService.php
++++ b/lib/SecureSubmit/services/HpsService.php
+@@ -4,6 +4,8 @@ class HpsService {
+     public $exceptionMapper    = null,
+             $config             = null;
+
++    public $lastRequest, $lastResponse;
++
+     public function __construct(HpsConfiguration $config=null){
+         if($config != null){
+             $this->config = $config;
+@@ -51,11 +53,12 @@ public function doTransaction($transaction){
+
+         //cURL
+         try{
++            $requestData = $xml->saveXML();
+             $header = array(
+                 "Content-type: text/xml;charset=\"utf-8\"",
+                 "Accept: text/xml",
+                 "SOAPAction: \"\"",
+-                "Content-length: ".strlen($xml->saveXML()),
++                "Content-length: ".strlen($requestData),
+             );
+             $soap_do = curl_init();
+             curl_setopt($soap_do, CURLOPT_URL, $this->_gatewayUrlForKey($this->config->secretApiKey));
+@@ -64,18 +67,29 @@ public function doTransaction($transaction){
+             curl_setopt($soap_do, CURLOPT_RETURNTRANSFER, true );
+             curl_setopt($soap_do, CURLOPT_SSL_VERIFYPEER, false);
+             curl_setopt($soap_do, CURLOPT_SSL_VERIFYHOST, false);
+-            curl_setopt($soap_do, CURLOPT_POST, true);
+-            curl_setopt($soap_do, CURLOPT_POSTFIELDS, $xml->saveXML());
++            curl_setopt($soap_do, CURLOPT_POST,           true);
++            curl_setopt($soap_do, CURLOPT_POSTFIELDS,     $requestData);
+             curl_setopt($soap_do, CURLOPT_HTTPHEADER,     $header);
+
+             if($this->config->useProxy){
+                 curl_setopt($soap_do, CURLOPT_PROXY, $this->config->proxyOptions['proxy_host']);
+                 curl_setopt($soap_do, CURLOPT_PROXYPORT, $this->config->proxyOptions['proxy_port']);
+             }
++
+             $curlResponse = curl_exec($soap_do);
+-            $curlInfo = curl_getinfo($soap_do);
++            $curlError = curl_error($soap_do);
++            $responseCode = curl_getinfo($soap_do, CURLINFO_HTTP_CODE);
++            curl_close($soap_do);
+
+-            if($curlInfo['http_code'] == '200'){
++            // Set debug data
++            $this->lastRequest = $this->_redact($requestData);
++            $this->lastResponse = $curlError ? $curlError : $this->_redact($curlResponse);
++
++            if ($curlError) {
++                throw new Exception($curlError);
++            }
++
++            if($responseCode == '200'){
+                 $responseObject = $this->_XML2Array($curlResponse);
+                 $ver = "Ver1.0";
+                 return $responseObject->$ver;
+@@ -126,4 +140,11 @@ private function _XML2Array($xml){
+             }
+         }
+     }
+-}
+\ No newline at end of file
++
++    protected function _redact($data)
++    {
++        $data = str_replace(array($this->config->secretApiKey, $this->config->password), '*****', $data);
++        $data = preg_replace('/\d{11,12}(\d{4})/', '*****$1', $data);
++        return $data;
++    }
++}
+
+From 559adf1df313eca3a43b60f2795e625aa4424681 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Tue, 4 Mar 2014 16:54:08 -0500
+Subject: [PATCH 06/13] Revert moving JS back into template.
+
+---
+ .../base/default/template/securesubmit/form.phtml  | 96 ++--------------------
+ js/securesubmit/checkout-form.js                   | 90 ++++++++++++++++++++
+ 2 files changed, 95 insertions(+), 91 deletions(-)
+ create mode 100644 js/securesubmit/checkout-form.js
+
+diff --git a/app/design/frontend/base/default/template/securesubmit/form.phtml b/app/design/frontend/base/default/template/securesubmit/form.phtml
+index 4b90d43..014a8ea 100644
+--- a/app/design/frontend/base/default/template/securesubmit/form.phtml
++++ b/app/design/frontend/base/default/template/securesubmit/form.phtml
+@@ -72,6 +72,11 @@ if ($_loggedIn && $allow_card_saving) {
+     </li>
+     <?php endif ?>
+ </ul>
++
++<?php if ( ! $this->getRequest()->isAjax()): ?>
++<script type="text/javascript" src="<?php echo $this->getJsUrl('securesubmit/checkout-form.js') ?>"></script>
++<?php endif ?>
++
+ <script type="text/javascript">
+ //<![CDATA[
+ <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
+@@ -81,97 +86,6 @@ if ($_loggedIn && $allow_card_saving) {
+         $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
+     });
+ <?php endif ?>
+-
+-Payment.prototype._secureSubmitOldSave = Payment.prototype.save;
+-Object.extend(Payment.prototype, {
+-    save: function() {
+-        if (this.currentMethod != 'hps_securesubmit') {
+-            this._secureSubmitOldSave();
+-            return;
+-        }
+-
+-        if (checkout.loadWaiting != false) return;
+-
+-        // Use stored card checked, get existing token data
+-        if (this.secureSubmitUseStoredCard()) {
+-            var storedcardId = $('hps_securesubmit_stored_card_select').value;
+-            checkout.setLoadWaiting('payment');
+-            new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
+-                method: 'post',
+-                parameters: {storedcard_id: storedcardId},
+-                onSuccess: function(response) {
+-                    var data = response.responseJSON;
+-                    if (data && data.token) {
+-                        $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
+-                        $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
+-                    }
+-                    this.secureSubmitResponseHandler({
+-                        token_value:  data.token.token_value,
+-                        token_type:   null, // 'supt'?
+-                        token_expire: new Date().toISOString(),
+-                        card:         {
+-                            number: data.token.cc_last4
+-                        }
+-                    });
+-                }.bind(this),
+-                onFailure: function() {
+-                    alert('Unknown error. Please try again.');
+-                    checkout.setLoadWaiting(false);
+-                }
+-            });
+-        }
+-        // Use stored card not checked, get new token
+-        else {
+-            var validator = new Validation(this.form);
+-            if (this.validate() && validator.validate()) {
+-                checkout.setLoadWaiting('payment');
+-
+-                hps.tokenize({
+-                    data: {
+-                        public_key: this.secureSubmitPublicKey,
+-                        number: $('hps_securesubmit_cc_number').value,
+-                        cvc: $('hps_securesubmit_cc_cid').value,
+-                        exp_month: $('hps_securesubmit_expiration').value,
+-                        exp_year: $('hps_securesubmit_expiration_yr').value
+-                    },
+-                    success: this.secureSubmitResponseHandler.bind(this),
+-                    error: this.secureSubmitResponseHandler.bind(this)
+-                });
+-            }
+-        }
+-    },
+-    secureSubmitUseStoredCard: function () {
+-        var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
+-        return storedCheckbox && storedCheckbox.checked;
+-    },
+-    secureSubmitResponseHandler: function (response) {
+-        var tokenField = $('hps_securesubmit_token'),
+-            lastFourField = $('hps_securesubmit_cc_last_four');
+-        tokenField.value = lastFourField.value = null;
+-
+-        if (response && response.error) {
+-            if (response.message) {
+-                alert(response.message);
+-            }
+-            checkout.setLoadWaiting(false);
+-        } else if (response && response.token_value) {
+-            tokenField.value = response.token_value;
+-            lastFourField.value = response.card.number.substr(-4);
+-
+-            // Continue Magento checkout steps
+-            new Ajax.Request(this.saveUrl, {
+-                method:'post',
+-                onComplete: this.onComplete,
+-                onSuccess: this.onSave,
+-                onFailure: checkout.ajaxFailure.bind(checkout),
+-                parameters: Form.serialize(this.form)
+-            });
+-        } else {
+-            alert('Unexpected error.')
+-        }
+-    }
+-});
+-
+ payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
+ payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+ //]]>
+diff --git a/js/securesubmit/checkout-form.js b/js/securesubmit/checkout-form.js
+new file mode 100644
+index 0000000..70e3c85
+--- /dev/null
++++ b/js/securesubmit/checkout-form.js
+@@ -0,0 +1,90 @@
++// Override default Payment save handler
++Payment.prototype._secureSubmitOldSave = Payment.prototype.save;
++Object.extend(Payment.prototype, {
++    save: function() {
++        if (this.currentMethod != 'hps_securesubmit') {
++            this._secureSubmitOldSave();
++            return;
++        }
++
++        if (checkout.loadWaiting != false) return;
++
++        // Use stored card checked, get existing token data
++        if (this.secureSubmitUseStoredCard()) {
++            var storedcardId = $('hps_securesubmit_stored_card_select').value;
++            checkout.setLoadWaiting('payment');
++            new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
++                method: 'post',
++                parameters: {storedcard_id: storedcardId},
++                onSuccess: function(response) {
++                    var data = response.responseJSON;
++                    if (data && data.token) {
++                        $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
++                        $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
++                    }
++                    this.secureSubmitResponseHandler({
++                        token_value:  data.token.token_value,
++                        token_type:   null, // 'supt'?
++                        token_expire: new Date().toISOString(),
++                        card:         {
++                            number: data.token.cc_last4
++                        }
++                    });
++                }.bind(this),
++                onFailure: function() {
++                    alert('Unknown error. Please try again.');
++                    checkout.setLoadWaiting(false);
++                }
++            });
++        }
++        // Use stored card not checked, get new token
++        else {
++            var validator = new Validation(this.form);
++            if (this.validate() && validator.validate()) {
++                checkout.setLoadWaiting('payment');
++
++                hps.tokenize({
++                    data: {
++                        public_key: this.secureSubmitPublicKey,
++                        number: $('hps_securesubmit_cc_number').value,
++                        cvc: $('hps_securesubmit_cc_cid').value,
++                        exp_month: $('hps_securesubmit_expiration').value,
++                        exp_year: $('hps_securesubmit_expiration_yr').value
++                    },
++                    success: this.secureSubmitResponseHandler.bind(this),
++                    error: this.secureSubmitResponseHandler.bind(this)
++                });
++            }
++        }
++    },
++    secureSubmitUseStoredCard: function () {
++        var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
++        return storedCheckbox && storedCheckbox.checked;
++    },
++    secureSubmitResponseHandler: function (response) {
++        var tokenField = $('hps_securesubmit_token'),
++            lastFourField = $('hps_securesubmit_cc_last_four');
++        tokenField.value = lastFourField.value = null;
++
++        if (response && response.error) {
++            if (response.message) {
++                alert(response.message);
++            }
++            checkout.setLoadWaiting(false);
++        } else if (response && response.token_value) {
++            tokenField.value = response.token_value;
++            lastFourField.value = response.card.number.substr(-4);
++
++            // Continue Magento checkout steps
++            new Ajax.Request(this.saveUrl, {
++                method:'post',
++                onComplete: this.onComplete,
++                onSuccess: this.onSave,
++                onFailure: checkout.ajaxFailure.bind(checkout),
++                parameters: Form.serialize(this.form)
++            });
++        } else {
++            alert('Unexpected error.')
++        }
++    }
++});
+
+From 58946413e3941a0bf6df514508609a45e3209e29 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Tue, 4 Mar 2014 17:15:55 -0500
+Subject: [PATCH 07/13] Increase memo length to 200 characters (tested).
+
+---
+ app/code/community/Hps/Securesubmit/Model/Payment.php | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index 4852afd..24dcffa 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -414,7 +414,7 @@ protected function _getTxnDetailsData($order)
+         $memo = implode(', ', $memo);
+
+         $details = new HpsTransactionDetails();
+-        $details->memo = substr($memo, 0, 100);                           // Actual limit unknown..
++        $details->memo = substr($memo, 0, 200);                           // Actual limit unknown..
+         $details->invoiceNumber = $order->getIncrementId();
+         $details->customerId = substr($order->getCustomerEmail(), 0, 25); // Actual limit unknown..
+
+
+From 38709fb1bda959916ccb55c866def3ad49599410 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Wed, 5 Mar 2014 12:21:20 -0500
+Subject: [PATCH 08/13] Fix PHP Warning: "Illegal offset type..." and fix IDE
+ warnings.
+
+---
+ .../community/Hps/Securesubmit/Model/Payment.php   |  61 ++++----
+ lib/SecureSubmit/services/HpsChargeService.php     | 160 ++++++++++-----------
+ 2 files changed, 112 insertions(+), 109 deletions(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index 24dcffa..f5372c3 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -135,6 +135,22 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+                     $multiToken,
+                     $details);
+             }
++
++            $this->_debugChargeService($chargeService);
++            $payment->setStatus(self::STATUS_APPROVED);
++            $payment->setAmount($amount);
++            $payment->setLastTransId($response->transactionId);
++            $payment->setCcTransId($response->transactionId);
++            $payment->setTransactionId($response->transactionId);
++            $payment->setIsTransactionClosed(0);
++            if($multiToken){
++                if ($response->tokenData->tokenRspCode == '0') {
++                    Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
++                } else {
++                    Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
++                }
++            }
++
+         }
+         catch (CardException $e) {
+             $this->_debugChargeService($chargeService, $e);
+@@ -149,21 +165,6 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+             $this->throwUserError($e->getMessage());
+         }
+
+-        // No exception thrown so action was a success
+-        $this->_debugChargeService($chargeService);
+-        $payment->setStatus(self::STATUS_APPROVED);
+-        $payment->setAmount($amount);
+-        $payment->setLastTransId($response->transactionId);
+-        $payment->setCcTransId($response->transactionId);
+-        $payment->setTransactionId($response->transactionId);
+-        $payment->setIsTransactionClosed(0);
+-        if($multiToken){
+-            if ($response->tokenData->tokenRspCode == '0') {
+-                Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
+-            } else {
+-                Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
+-            }
+-        }
+         return $this;
+     }
+
+@@ -201,6 +202,11 @@ public function void(Varien_Object $payment)
+         $chargeService = $this->_getChargeService();
+         try {
+             $voidResponse = $chargeService->void($transactionId);
++            $payment
++                ->setTransactionId($voidResponse->transactionId)
++                ->setParentTransactionId($transactionId)
++                ->setIsTransactionClosed(1)
++                ->setShouldCloseParentTransaction(1);
+         }
+         catch (HpsException $e)
+         {
+@@ -214,12 +220,6 @@ public function void(Varien_Object $payment)
+         }
+         $this->_debugChargeService($chargeService);
+
+-        $payment
+-            ->setTransactionId($voidResponse->TransactionId)
+-            ->setParentTransactionId($transactionId)
+-            ->setIsTransactionClosed(1)
+-            ->setShouldCloseParentTransaction(1);
+-
+         return $this;
+     }
+
+@@ -246,6 +246,11 @@ protected function _refund(Varien_Object $payment, $amount)
+                 $details
+             );
+
++            $payment
++                ->setTransactionId($refundResponse->transactionId)
++                ->setParentTransactionId($transactionId)
++                ->setIsTransactionClosed(1)
++                ->setShouldCloseParentTransaction(1);
+         }
+         catch (HpsException $e)
+         {
+@@ -259,15 +264,13 @@ protected function _refund(Varien_Object $payment, $amount)
+         }
+         $this->_debugChargeService($chargeService);
+
+-        $payment
+-            ->setTransactionId($refundResponse->transactionId)
+-            ->setParentTransactionId($transactionId)
+-            ->setIsTransactionClosed(1)
+-            ->setShouldCloseParentTransaction(1);
+-
+         return $this;
+-    }
+-
++    }
++
++    /**
++     * @param null|Mage_Sales_Model_Quote $quote
++     * @return bool
++     */
+     public function isAvailable($quote = null)
+     {
+         if($quote && $quote->getBaseGrandTotal()<$this->_minOrderTotal) {
+diff --git a/lib/SecureSubmit/services/HpsChargeService.php b/lib/SecureSubmit/services/HpsChargeService.php
+index 59544b5..cd7195f 100644
+--- a/lib/SecureSubmit/services/HpsChargeService.php
++++ b/lib/SecureSubmit/services/HpsChargeService.php
+@@ -105,29 +105,29 @@ public function get($transactionId){
+
+         $header = $this->hydrateTransactionHeader($response->Header);
+         $result = new HpsReportTransactionDetails($header);
+-        $result->transactionId = $detail->GatewayTxnId;
+-        $result->originalTransactionId = (isset($detail->OriginalGatewayTxnId) ? $detail->OriginalGatewayTxnId : null);
+-        $result->authorizedAmount = (isset($detail->Data->AuthAmt) ? $detail->Data->AuthAmt : null);
+-        $result->authorizationCode = (isset($detail->Data->AuthCode) ? $detail->Data->AuthCode : null);
+-        $result->avsResultCode = (isset($detail->Data->AVSRsltCode) ? $detail->Data->AVSRsltCode : null);
+-        $result->avsResultText = (isset($detail->Data->AVSRsltText) ? $detail->Data->AVSRsltText : null);
+-        $result->cardType = (isset($detail->Data->CardType) ? $detail->Data->CardType : null);
+-        $result->maskedCardNumber = (isset($detail->Data->MaskedCardNbr) ? $detail->Data->MaskedCardNbr : null);
++        $result->transactionId = "{$detail->GatewayTxnId}";
++        $result->originalTransactionId = (isset($detail->OriginalGatewayTxnId) ? "{$detail->OriginalGatewayTxnId}" : null);
++        $result->authorizedAmount = (isset($detail->Data->AuthAmt) ? "{$detail->Data->AuthAmt}" : null);
++        $result->authorizationCode = (isset($detail->Data->AuthCode) ? "{$detail->Data->AuthCode}" : null);
++        $result->avsResultCode = (isset($detail->Data->AVSRsltCode) ? "{$detail->Data->AVSRsltCode}" : null);
++        $result->avsResultText = (isset($detail->Data->AVSRsltText) ? "{$detail->Data->AVSRsltText}" : null);
++        $result->cardType = (isset($detail->Data->CardType) ? "{$detail->Data->CardType}" : null);
++        $result->maskedCardNumber = (isset($detail->Data->MaskedCardNbr) ? "{$detail->Data->MaskedCardNbr}" : null);
+         $result->transactionType = (isset($detail->ServiceName) ? HpsTransaction::serviceNameToTransactionType($detail->ServiceName) : null);
+-        $result->transactionDate = (isset($detail->RspUtcDT) ? $detail->RspUtcDT : null);
+-        $result->cpcIndicator = (isset($detail->Data->CPCInd) ? $detail->Data->CPCInd : null);
+-        $result->cvvResultCode = (isset($detail->Data->CVVRsltCode) ? $detail->Data->CVVRsltCode : null);
+-        $result->cvvResultText = (isset($detail->Data->CVVRsltText) ? $detail->Data->CVVRsltText : null);
+-        $result->referenceNumber = (isset($detail->Data->RefNbr) ? $detail->Data->RefNbr : null);
+-        $result->responseCode = (isset($detail->Data->RspCode) ? $detail->Data->RspCode : null);
+-        $result->responseText = (isset($detail->Data->RspText) ? $detail->Data->RspText : null);
+-
+-        $tokenizationMessage =  (isset($detail->Data->TokenizationMsg) ? $detail->Data->TokenizationMsg : null);
++        $result->transactionDate = (isset($detail->RspUtcDT) ? "{$detail->RspUtcDT}" : null);
++        $result->cpcIndicator = (isset($detail->Data->CPCInd) ? "{$detail->Data->CPCInd}" : null);
++        $result->cvvResultCode = (isset($detail->Data->CVVRsltCode) ? "{$detail->Data->CVVRsltCode}" : null);
++        $result->cvvResultText = (isset($detail->Data->CVVRsltText) ? "{$detail->Data->CVVRsltText}" : null);
++        $result->referenceNumber = (isset($detail->Data->RefNbr) ? "{$detail->Data->RefNbr}" : null);
++        $result->responseCode = (isset($detail->Data->RspCode) ? "{$detail->Data->RspCode}" : null);
++        $result->responseText = (isset($detail->Data->RspText) ? "{$detail->Data->RspText}" : null);
++
++        $tokenizationMessage =  (isset($detail->Data->TokenizationMsg) ? "{$detail->Data->TokenizationMsg}" : null);
+         if($tokenizationMessage != null){
+             $result->tokenData = new HpsTokenData($tokenizationMessage);
+         }
+
+-        $headerResponseCode =  (isset($response->Header->GatewayRspCode) ? $response->Header->GatewayRspCode : null);
++        $headerResponseCode =  (isset($response->Header->GatewayRspCode) ? "{$response->Header->GatewayRspCode}" : null);
+         $dataResponseCode =  (isset($detail->Data->RspCode) ? $detail->Data->RspCode : null);
+
+         if($headerResponseCode != "0" || $dataResponseCode != "00"){
+@@ -170,9 +170,9 @@ public function listTransactions($startDate, $endDate, $filterBy=null){
+
+         // Gateway Exception
+         if($response->Header->GatewayRspCode !=0){
+-            $transactionId = $response->Header->GatewayTxnId;
+-            $responseCode = $response->Header->GatewayRspCode;
+-            $responseMessage = $response->Header->GatewayRspMessage;
++            $transactionId = "{$response->Header->GatewayTxnId}";
++            $responseCode = "{$response->Header->GatewayRspCode}";
++            $responseMessage = "{$response->Header->GatewayRspMessage}";
+             throw $this->exceptionMapper->map_gateway_exception($transactionId,$responseCode,$responseMessage);
+         }
+         $result = array();
+@@ -185,11 +185,11 @@ public function listTransactions($startDate, $endDate, $filterBy=null){
+                 continue;
+             }else{
+                 $summary = new HpsReportTransactionSummary();
+-                $summary->transactionId = (isset($charge->GatewayTxnId) ? $charge->GatewayTxnId : null);
+-                $summary->originalTransactionId = (isset($charge->OriginalGatewayTxnId) ? $charge->OriginalGatewayTxnId : null);
+-                $summary->maskedCardNumber = (isset($charge->MaskedCardNbr) ? $charge->MaskedCardNbr : null);
+-                $summary->responseCode = (isset($charge->IssuerRspCode) ? $charge->IssuerRspCode : null);
+-                $summary->responseText = (isset($charge->IssuerRspText) ? $charge->IssuerRspText : null);
++                $summary->transactionId = (isset($charge->GatewayTxnId) ? "{$charge->GatewayTxnId}" : null);
++                $summary->originalTransactionId = (isset($charge->OriginalGatewayTxnId) ? "{$charge->OriginalGatewayTxnId}" : null);
++                $summary->maskedCardNumber = (isset($charge->MaskedCardNbr) ? "{$charge->MaskedCardNbr}" : null);
++                $summary->responseCode = (isset($charge->IssuerRspCode) ? "{$charge->IssuerRspCode}" : null);
++                $summary->responseText = (isset($charge->IssuerRspText) ? "{$charge->IssuerRspText}" : null);
+
+                 if($filterBy != null ){
+                     $summary->transactionType = (isset($charge->ServiceName) ? HpsTransaction::transactionTypeToServiceName($charge->ServiceName) : null);
+@@ -344,18 +344,18 @@ public function verify($cardOrToken, $cardHolder=null, $requestMultiUseToken=fal
+
+         $accountVerify = $response->Transaction->CreditAccountVerify;
+         $result = new HpsAccountVerify($this->hydrateTransactionHeader($header));
+-        $result->transactionId = (isset($accountVerify->GatewayTxnId) ? $accountVerify->GatewayTxnId : null);
+-        $result->avsResultCode = (isset($accountVerify->AVSRsltCode) ? $accountVerify->AVSRsltCode : null);
+-        $result->avsResultText = (isset($accountVerify->AVSRsltText) ? $accountVerify->AVSRsltText : null);
+-        $result->referenceNumber = (isset($accountVerify->RefNbr) ? $accountVerify->RefNbr : null);
+-        $result->responseCode = (isset($accountVerify->RspCode) ? $accountVerify->RspCode : null);
+-        $result->responseText = (isset($accountVerify->RspText) ? $accountVerify->RspText : null);
+-        $result->cardType = (isset($accountVerify->CardType) ? $accountVerify->CardType : null);
+-        $result->cpcIndicator = (isset($accountVerify->CPCInd) ? $accountVerify->CPCInd : null);
+-        $result->cvvResultCode = (isset($accountVerify->CVVRsltCode) ? $accountVerify->CVVRsltCode : null);
+-        $result->cvvResultText = (isset($accountVerify->CVVRsltText) ? $accountVerify->CVVRsltText : null);
+-        $result->authorizationCode = (isset($accountVerify->AuthCode) ? $accountVerify->AuthCode : null);
+-        $result->authorizedAmount = (isset($accountVerify->AuthAmt) ? $accountVerify->AuthAmt : null);
++        $result->transactionId = (isset($accountVerify->GatewayTxnId) ? "{$accountVerify->GatewayTxnId}" : null);
++        $result->avsResultCode = (isset($accountVerify->AVSRsltCode) ? "{$accountVerify->AVSRsltCode}" : null);
++        $result->avsResultText = (isset($accountVerify->AVSRsltText) ? "{$accountVerify->AVSRsltText}" : null);
++        $result->referenceNumber = (isset($accountVerify->RefNbr) ? "{$accountVerify->RefNbr}" : null);
++        $result->responseCode = (isset($accountVerify->RspCode) ? "{$accountVerify->RspCode}" : null);
++        $result->responseText = (isset($accountVerify->RspText) ? "{$accountVerify->RspText}" : null);
++        $result->cardType = (isset($accountVerify->CardType) ? "{$accountVerify->CardType}" : null);
++        $result->cpcIndicator = (isset($accountVerify->CPCInd) ? "{$accountVerify->CPCInd}" : null);
++        $result->cvvResultCode = (isset($accountVerify->CVVRsltCode) ? "{$accountVerify->CVVRsltCode}" : null);
++        $result->cvvResultText = (isset($accountVerify->CVVRsltText) ? "{$accountVerify->CVVRsltText}" : null);
++        $result->authorizationCode = (isset($accountVerify->AuthCode) ? "{$accountVerify->AuthCode}" : null);
++        $result->authorizedAmount = (isset($accountVerify->AuthAmt) ? "{$accountVerify->AuthAmt}" : null);
+
+         if($result->responseCode != "00" && $result->responseCode != "85"){
+             throw $this->exceptionMapper->map_issuer_exception($result->transactionId, $result->responseCode, $result->responseText);
+@@ -379,7 +379,7 @@ public function void($transactionId){
+
+         $creditVoid = $response->Transaction->CreditVoid;
+         $result = new HpsVoid($this->hydrateTransactionHeader($header));
+-        $result->transactionId = (isset($creditVoid->GatewayTxnId) ? $creditVoid->GatewayTxnId : null);
++        $result->transactionId = (isset($creditVoid->GatewayTxnId) ? "{$creditVoid->GatewayTxnId}" : null);
+         $result->responseCode = "00";
+         $result->responseText = "";
+         return $result;
+@@ -491,24 +491,24 @@ private function _submitAuthorize($transaction, $amount, $currency){
+         $this->_processChargeIssuerResponse($authResponse->RspCode,$authResponse->RspText,$authResponse->GatewayTxnId,$amount,$currency);
+
+         $result = new HpsAuthorization($this->hydrateTransactionHeader($header));
+-        $result->transactionId = $header->GatewayTxnId;
+-        $result->authorizedAmount = (isset($authResponse->AuthAmt) ? $authResponse->AuthAmt : null);
+-        $result->authorizationCode = (isset($authResponse->AuthCode) ? $authResponse->AuthCode : null);
+-        $result->avsResultCode = (isset($authResponse->AVSRsltCode) ? $authResponse->AVSRsltCode : null);
+-        $result->avsResultText = (isset($authResponse->AVSRsltText) ? $authResponse->AVSRsltText : null);
+-        $result->cardType = (isset($authResponse->CardType) ? $authResponse->CardType : null);
+-        $result->cpcIndicator = (isset($authResponse->CPCInd) ? $authResponse->CPCInd : null);
+-        $result->cvvResultCode = (isset($authResponse->CVVRsltCode) ? $authResponse->CVVRsltCode : null);
+-        $result->cvvResultText = (isset($authResponse->CVVRsltText) ? $authResponse->CVVRsltText : null);
+-        $result->referenceNumber = (isset($authResponse->RefNbr) ? $authResponse->RefNbr : null);
+-        $result->responseCode = (isset($authResponse->RspCode) ? $authResponse->RspCode : null);
+-        $result->responseText = (isset($authResponse->RspText) ? $authResponse->RspText : null);
++        $result->transactionId = "{$header->GatewayTxnId}";
++        $result->authorizedAmount = (isset($authResponse->AuthAmt) ? "{$authResponse->AuthAmt}" : null);
++        $result->authorizationCode = (isset($authResponse->AuthCode) ? "{$authResponse->AuthCode}" : null);
++        $result->avsResultCode = (isset($authResponse->AVSRsltCode) ? "{$authResponse->AVSRsltCode}" : null);
++        $result->avsResultText = (isset($authResponse->AVSRsltText) ? "{$authResponse->AVSRsltText}" : null);
++        $result->cardType = (isset($authResponse->CardType) ? "{$authResponse->CardType}" : null);
++        $result->cpcIndicator = (isset($authResponse->CPCInd) ? "{$authResponse->CPCInd}" : null);
++        $result->cvvResultCode = (isset($authResponse->CVVRsltCode) ? "{$authResponse->CVVRsltCode}" : null);
++        $result->cvvResultText = (isset($authResponse->CVVRsltText) ? "{$authResponse->CVVRsltText}" : null);
++        $result->referenceNumber = (isset($authResponse->RefNbr) ? "{$authResponse->RefNbr}" : null);
++        $result->responseCode = (isset($authResponse->RspCode) ? "{$authResponse->RspCode}" : null);
++        $result->responseText = (isset($authResponse->RspText) ? "{$authResponse->RspText}" : null);
+
+         if(isset($header->TokenData) && is_object($header->TokenData)){
+             $result->tokenData = new HpsTokenData();
+-            $result->tokenData->responseCode = $header->TokenData->TokenRspCode;
+-            $result->tokenData->responseMessage = $header->TokenData->TokenRspMsg;
+-            $result->tokenData->tokenValue = $header->TokenData->TokenValue;
++            $result->tokenData->responseCode = "{$header->TokenData->TokenRspCode}";
++            $result->tokenData->responseMessage = "{$header->TokenData->TokenRspMsg}";
++            $result->tokenData->tokenValue = "{$header->TokenData->TokenValue}";
+         }
+
+         return $result;
+@@ -524,24 +524,24 @@ private function _submitCharge($transaction, $amount, $currency){
+         $this->_processChargeIssuerResponse($creditSaleRsp->RspCode,$creditSaleRsp->RspText,$creditSaleRsp->GatewayTxnId,$amount,$currency);
+
+         $result = new HpsCharge($this->hydrateTransactionHeader($header));
+-        $result->transactionId = $header->GatewayTxnId;
+-        $result->authorizedAmount = (isset($creditSaleRsp->AuthAmt) ? $creditSaleRsp->AuthAmt : null);
+-        $result->authorizationCode = (isset($creditSaleRsp->AuthCode) ? $creditSaleRsp->AuthCode : null);
+-        $result->avsResultCode = (isset($creditSaleRsp->AVSRsltCode) ? $creditSaleRsp->AVSRsltCode : null);
+-        $result->avsResultText = (isset($creditSaleRsp->AVSRsltText) ? $creditSaleRsp->AVSRsltText : null);
+-        $result->cardType = (isset($creditSaleRsp->CardType) ? $creditSaleRsp->CardType : null);
+-        $result->cpcIndicator = (isset($creditSaleRsp->CPCInd) ? $creditSaleRsp->CPCInd : null);
+-        $result->cvvResultCode = (isset($creditSaleRsp->CVVRsltCode) ? $creditSaleRsp->CVVRsltCode : null);
+-        $result->cvvResultText = (isset($creditSaleRsp->CVVRsltText) ? $creditSaleRsp->CVVRsltText : null);
+-        $result->referenceNumber = (isset($creditSaleRsp->RefNbr) ? $creditSaleRsp->RefNbr : null);
+-        $result->responseCode = (isset($creditSaleRsp->RspCode) ? $creditSaleRsp->RspCode : null);
+-        $result->responseText = (isset($creditSaleRsp->RspText) ? $creditSaleRsp->RspText : null);
++        $result->transactionId = "{$header->GatewayTxnId}";
++        $result->authorizedAmount = (isset($creditSaleRsp->AuthAmt) ? "{$creditSaleRsp->AuthAmt}" : null);
++        $result->authorizationCode = (isset($creditSaleRsp->AuthCode) ? "{$creditSaleRsp->AuthCode}" : null);
++        $result->avsResultCode = (isset($creditSaleRsp->AVSRsltCode) ? "{$creditSaleRsp->AVSRsltCode}" : null);
++        $result->avsResultText = (isset($creditSaleRsp->AVSRsltText) ? "{$creditSaleRsp->AVSRsltText}" : null);
++        $result->cardType = (isset($creditSaleRsp->CardType) ? "{$creditSaleRsp->CardType}" : null);
++        $result->cpcIndicator = (isset($creditSaleRsp->CPCInd) ? "{$creditSaleRsp->CPCInd}" : null);
++        $result->cvvResultCode = (isset($creditSaleRsp->CVVRsltCode) ? "{$creditSaleRsp->CVVRsltCode}" : null);
++        $result->cvvResultText = (isset($creditSaleRsp->CVVRsltText) ? "{$creditSaleRsp->CVVRsltText}" : null);
++        $result->referenceNumber = (isset($creditSaleRsp->RefNbr) ? "{$creditSaleRsp->RefNbr}" : null);
++        $result->responseCode = (isset($creditSaleRsp->RspCode) ? "{$creditSaleRsp->RspCode}" : null);
++        $result->responseText = (isset($creditSaleRsp->RspText) ? "{$creditSaleRsp->RspText}" : null);
+
+         if(isset($header->TokenData) && is_object($header->TokenData)){
+             $result->tokenData = new HpsTokenData();
+-            $result->tokenData->responseCode = $header->TokenData->TokenRspCode;
+-            $result->tokenData->responseMessage = $header->TokenData->TokenRspMsg;
+-            $result->tokenData->tokenValue = $header->TokenData->TokenValue;
++            $result->tokenData->responseCode = "{$header->TokenData->TokenRspCode}";
++            $result->tokenData->responseMessage = "{$header->TokenData->TokenRspMsg}";
++            $result->tokenData->tokenValue = "{$header->TokenData->TokenValue}";
+         }
+
+         return $result;
+@@ -556,7 +556,7 @@ private function _submitRefund($transaction){
+         }
+
+         $result = new HpsRefund($this->hydrateTransactionHeader($header));
+-        $result->transactionId = $header->GatewayTxnId;
++        $result->transactionId = "{$header->GatewayTxnId}";
+         $result->responseCode = "00";
+         $result->responseText = "";
+
+@@ -573,15 +573,15 @@ private function _submitReverse($transaction){
+
+         $reversal = (isset($response->Transaction->CreditReversal) ? $response->Transaction->CreditReversal : null);
+         $result = new HpsReversal($this->hydrateTransactionHeader($header));
+-        $result->transactionId = (isset($header->GatewayTxnId) ? $header->GatewayTxnId : null);
+-        $result->avsResultCode = (isset($reversal->AVSRsltCode) ? $reversal->AVSRsltCode : null);
+-        $result->avsResultText = (isset($reversal->AVSRsltText) ? $reversal->AVSRsltText : null);
+-        $result->cpcIndicator = (isset($reversal->CPCInd) ? $reversal->CPCInd : null);
+-        $result->cvvResultCode = (isset($reversal->CVVRsltCode) ? $reversal->CVVRsltCode : null);
+-        $result->cvvResultText = (isset($reversal->CVVRsltText) ? $reversal->CVVRsltText : null);
+-        $result->referenceNumber = (isset($reversal->RefNbr) ? $reversal->RefNbr : null);
+-        $result->responseCode = (isset($reversal->RspCode) ? $reversal->RspCode : null);
+-        $result->responseText = (isset($reversal->RspText) ? $reversal->RspText : null);
++        $result->transactionId = (isset($header->GatewayTxnId) ? "{$header->GatewayTxnId}" : null);
++        $result->avsResultCode = (isset($reversal->AVSRsltCode) ? "{$reversal->AVSRsltCode}" : null);
++        $result->avsResultText = (isset($reversal->AVSRsltText) ? "{$reversal->AVSRsltText}" : null);
++        $result->cpcIndicator = (isset($reversal->CPCInd) ? "{$reversal->CPCInd}" : null);
++        $result->cvvResultCode = (isset($reversal->CVVRsltCode) ? "{$reversal->CVVRsltCode}" : null);
++        $result->cvvResultText = (isset($reversal->CVVRsltText) ? "{$reversal->CVVRsltText}" : null);
++        $result->referenceNumber = (isset($reversal->RefNbr) ? "{$reversal->RefNbr}" : null);
++        $result->responseCode = (isset($reversal->RspCode) ? "{$reversal->RspCode}" : null);
++        $result->responseText = (isset($reversal->RspText) ? "{$reversal->RspText}" : null);
+         return $result;
+     }
+-}
+\ No newline at end of file
++}
+
+From 81409b293e86ebbf6a310258643981f6a79110be Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Wed, 5 Mar 2014 21:22:41 -0500
+Subject: [PATCH 09/13] Fix undefined property error.
+
+---
+ app/code/community/Hps/Securesubmit/Model/Payment.php | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index f5372c3..3d2b5c9 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -144,8 +144,9 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+             $payment->setTransactionId($response->transactionId);
+             $payment->setIsTransactionClosed(0);
+             if($multiToken){
+-                if ($response->tokenData->tokenRspCode == '0') {
+-                    Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
++                $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
++                if ($tokenData->responseCode == '0') {
++                    Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $response->cardType);
+                 } else {
+                     Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
+                 }
+
+From 0e197c6bdaea9aefa6c85228132c8bc78cac6200 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Thu, 6 Mar 2014 13:35:55 -0500
+Subject: [PATCH 10/13] Restore debugging of last request/response.
+
+---
+ app/code/community/Hps/Securesubmit/Model/Payment.php | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index b591f30..1b658fe 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -446,12 +446,15 @@ protected function _getTxnDetailsData($order)
+     protected function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
+     {
+         if ($this->getDebugFlag()) {
+-            $this->_debug(array(
++            $debugData = array(
+                 'store' => Mage::app()->getStore($this->getStore())->getFrontendName(),
+-                'exception_message' => $exception ? get_class($exception).': '.$exception->getMessage() : '',
+-                //'last_request' => $chargeService->lastRequest,
+-                //'last_response' => $chargeService->lastResponse,
+-            ));
++                'last_request' => $chargeService->lastRequest,
++                'last_response' => $chargeService->lastResponse,
++            );
++            if ($exception) {
++                $debugData['exception'] = get_class($exception).': '.$exception->getMessage();
++            }
++            $this->_debug($debugData);
+         }
+     }
+
+
+From 0afae8f0db4f8adc1c11cc4c337890b06cf76ec7 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Thu, 6 Mar 2014 14:15:01 -0500
+Subject: [PATCH 11/13] Restore 'result text' to CardException for better
+ declined card reporting.
+
+---
+ .../community/Hps/Securesubmit/Model/Payment.php   |  2 +-
+ lib/SecureSubmit/infrastructure/CardException.php  |  5 +--
+ lib/SecureSubmit/services/HpsChargeService.php     | 45 +++++++++++++++-------
+ 3 files changed, 35 insertions(+), 17 deletions(-)
+
+diff --git a/app/code/community/Hps/Securesubmit/Model/Payment.php b/app/code/community/Hps/Securesubmit/Model/Payment.php
+index 1b658fe..22c9a2f 100644
+--- a/app/code/community/Hps/Securesubmit/Model/Payment.php
++++ b/app/code/community/Hps/Securesubmit/Model/Payment.php
+@@ -164,7 +164,7 @@ private function _authorize(Varien_Object $payment, $amount, $capture)
+         {
+             $this->_debugChargeService($chargeService, $e);
+             $payment->setStatus(self::STATUS_DECLINED);
+-            $this->throwUserError($e->getMessage(), $e->ResultText, TRUE);
++            $this->throwUserError($e->getMessage(), $e->resultText, TRUE);
+         }
+         catch (HpsException $e)
+         {
+diff --git a/lib/SecureSubmit/infrastructure/CardException.php b/lib/SecureSubmit/infrastructure/CardException.php
+index 5809b9d..0c91984 100644
+--- a/lib/SecureSubmit/infrastructure/CardException.php
++++ b/lib/SecureSubmit/infrastructure/CardException.php
+@@ -2,11 +2,10 @@
+
+ class CardException extends HpsException{
+     public  $TransactionId = null;
+-    public  $ResultText = null;
++    public  $resultText = null;
+
+-    public function __construct($transactionId, $code, $message, $resultText = null) {
++    public function __construct($transactionId, $code, $message) {
+         $this->TransactionId = $transactionId;
+-        $this->ResultText = $resultText;
+         parent::__construct($message, $code);
+     }
+
+diff --git a/lib/SecureSubmit/services/HpsChargeService.php b/lib/SecureSubmit/services/HpsChargeService.php
+index cd7195f..89ee0f6 100644
+--- a/lib/SecureSubmit/services/HpsChargeService.php
++++ b/lib/SecureSubmit/services/HpsChargeService.php
+@@ -459,24 +459,41 @@ private function _processChargeGatewayResponse($responseCode, $responseText, $tr
+         }
+     }
+
+-    private function _processChargeIssuerResponse($responseCode, $responseText, $transactionId, $amount, $currency){
+-        if($responseCode == "91"){
++    /**
++     * @param HpsCharge|HpsAuthorization $response
++     * @param float $amount
++     * @param string $currency
++     * @throws CardException
++     * @throws ApiConnectionException|HpsException|InvalidRequestException
++     */
++    private function _processChargeIssuerResponse($response, $amount, $currency){
++        if($response->responseCode == "91"){
+             try{
+-                $this->reverseTransaction($transactionId, $amount, $currency);
++                $this->reverseTransaction($response->transactionId, $amount, $currency);
+             }catch (Exception $e){
+                 $exception = $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$reversalErrorAfterIssuerTimeout, $e);
+-                $exception->responseCode = $responseCode;
+-                $exception->responseText = $responseText;
++                $exception->responseCode = $response->responseCode;
++                $exception->responseText = $response->responseText;
+                 throw $exception;
+             }
+             $exception = $this->exceptionMapper->map_sdk_exception(HpsSdkCodes::$processingError);
+-            $exception->responseCode = $responseCode;
+-            $exception->responseText = $responseText;
++            $exception->responseCode = $response->responseCode;
++            $exception->responseText = $response->responseText;
+             throw $exception;
+-        }else if($responseCode != "00"){
+-            $exception = $this->exceptionMapper->map_issuer_exception($transactionId, $responseCode, $responseText);
+-            $exception->responseCode = $responseCode;
+-            $exception->responseText = $responseText;
++        }else if($response->responseCode != "00"){
++            $exception = $this->exceptionMapper->map_issuer_exception($response->transactionId, $response->responseCode, $response->responseText);
++            $exception->responseCode = $response->responseCode;
++            $exception->responseText = $response->responseText;
++
++            $resultText = "{$response->responseText} ({$response->responseText})";
++            if ($response->avsResultCode) {
++                $resultText .= ", AVS Result: {$response->avsResultText} ({$response->avsResultCode})";
++            }
++            if ($response->cvvResultCode) {
++                $resultText = ", CVV Result: {$response->cvvResultText} ({$response->cvvResultCode})";
++            }
++            $exception->resultText = $resultText;
++
+             throw $exception;
+         }
+     }
+@@ -488,7 +505,6 @@ private function _submitAuthorize($transaction, $amount, $currency){
+         $this->_processChargeGatewayResponse($header->GatewayRspCode,$header->GatewayRspMsg,$header->GatewayTxnId,$amount,$currency);
+
+         $authResponse = $response->Transaction->CreditAuth;
+-        $this->_processChargeIssuerResponse($authResponse->RspCode,$authResponse->RspText,$authResponse->GatewayTxnId,$amount,$currency);
+
+         $result = new HpsAuthorization($this->hydrateTransactionHeader($header));
+         $result->transactionId = "{$header->GatewayTxnId}";
+@@ -511,6 +527,8 @@ private function _submitAuthorize($transaction, $amount, $currency){
+             $result->tokenData->tokenValue = "{$header->TokenData->TokenValue}";
+         }
+
++        $this->_processChargeIssuerResponse($result, $amount, $currency);
++
+         return $result;
+     }
+
+@@ -521,7 +539,6 @@ private function _submitCharge($transaction, $amount, $currency){
+         $this->_processChargeGatewayResponse($header->GatewayRspCode,$header->GatewayRspMsg,$header->GatewayTxnId,$amount,$currency);
+
+         $creditSaleRsp = $response->Transaction->CreditSale;
+-        $this->_processChargeIssuerResponse($creditSaleRsp->RspCode,$creditSaleRsp->RspText,$creditSaleRsp->GatewayTxnId,$amount,$currency);
+
+         $result = new HpsCharge($this->hydrateTransactionHeader($header));
+         $result->transactionId = "{$header->GatewayTxnId}";
+@@ -544,6 +561,8 @@ private function _submitCharge($transaction, $amount, $currency){
+             $result->tokenData->tokenValue = "{$header->TokenData->TokenValue}";
+         }
+
++        $this->_processChargeIssuerResponse($result, $amount, $currency);
++
+         return $result;
+     }
+
+
+From 9ee40661ded3e38df5d9ad65072b8f2f33a98330 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Mon, 10 Mar 2014 12:24:49 -0400
+Subject: [PATCH 12/13] Fix result text minor bugs.
+
+---
+ lib/SecureSubmit/services/HpsChargeService.php | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/SecureSubmit/services/HpsChargeService.php b/lib/SecureSubmit/services/HpsChargeService.php
+index 89ee0f6..8d1d7bb 100644
+--- a/lib/SecureSubmit/services/HpsChargeService.php
++++ b/lib/SecureSubmit/services/HpsChargeService.php
+@@ -485,12 +485,12 @@ private function _processChargeIssuerResponse($response, $amount, $currency){
+             $exception->responseCode = $response->responseCode;
+             $exception->responseText = $response->responseText;
+
+-            $resultText = "{$response->responseText} ({$response->responseText})";
++            $resultText = "{$response->responseText} ({$response->responseCode})";
+             if ($response->avsResultCode) {
+                 $resultText .= ", AVS Result: {$response->avsResultText} ({$response->avsResultCode})";
+             }
+             if ($response->cvvResultCode) {
+-                $resultText = ", CVV Result: {$response->cvvResultText} ({$response->cvvResultCode})";
++                $resultText .= ", CVV Result: {$response->cvvResultText} ({$response->cvvResultCode})";
+             }
+             $exception->resultText = $resultText;
+
+
+From ef83e3325d26f28c59c7f71bbe6f84e3eb1eff09 Mon Sep 17 00:00:00 2001
+From: Colin Mollenhour <colin@mollenhour.com>
+Date: Tue, 11 Mar 2014 14:46:35 -0400
+Subject: [PATCH 13/13] Add CC type to post data for better troubleshooting.
+
+---
+ .../base/default/template/securesubmit/form.phtml     |  5 +++--
+ js/securesubmit/checkout-form.js                      | 19 ++++++++++++++++---
+ 2 files changed, 19 insertions(+), 5 deletions(-)
+
+diff --git a/app/design/frontend/base/default/template/securesubmit/form.phtml b/app/design/frontend/base/default/template/securesubmit/form.phtml
+index 014a8ea..5d8dffc 100644
+--- a/app/design/frontend/base/default/template/securesubmit/form.phtml
++++ b/app/design/frontend/base/default/template/securesubmit/form.phtml
+@@ -29,9 +29,10 @@ if ($_loggedIn && $allow_card_saving) {
+     <li class="stored_cards_selected">
+         <label for="<?php echo $_code ?>_cc_number"><?php echo $this->__('Credit Card Number') ?> <span class="required">*</span></label>
+         <div class="input-box">
+-            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="" autocomplete="off" />
++            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number" value="" autocomplete="off" />
+             <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="">
+             <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="">
++            <input type="hidden" id="<?php echo $_code ?>_cc_type" name="payment[cc_type]" value="">
+         </div>
+     </li>
+     <li class="stored_cards_selected">
+@@ -58,7 +59,7 @@ if ($_loggedIn && $allow_card_saving) {
+         <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label>
+         <div class="input-box">
+             <div class="v-fix">
+-                <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" value="" autocomplete="off" />
++                <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text" id="<?php echo $_code ?>_cc_cid" value="" autocomplete="off" />
+             </div>
+             <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
+         </div>
+diff --git a/js/securesubmit/checkout-form.js b/js/securesubmit/checkout-form.js
+index 70e3c85..7d858cd 100644
+--- a/js/securesubmit/checkout-form.js
++++ b/js/securesubmit/checkout-form.js
+@@ -27,7 +27,8 @@ Object.extend(Payment.prototype, {
+                         token_type:   null, // 'supt'?
+                         token_expire: new Date().toISOString(),
+                         card:         {
+-                            number: data.token.cc_last4
++                            number: data.token.cc_last4,
++                            type: data.token.cc_type
+                         }
+                     });
+                 }.bind(this),
+@@ -63,8 +64,9 @@ Object.extend(Payment.prototype, {
+     },
+     secureSubmitResponseHandler: function (response) {
+         var tokenField = $('hps_securesubmit_token'),
+-            lastFourField = $('hps_securesubmit_cc_last_four');
+-        tokenField.value = lastFourField.value = null;
++            lastFourField = $('hps_securesubmit_cc_last_four'),
++            ccTypeField = $('hps_securesubmit_cc_type');
++        tokenField.value = lastFourField.value = ccTypeField.value = null;
+
+         if (response && response.error) {
+             if (response.message) {
+@@ -74,6 +76,7 @@ Object.extend(Payment.prototype, {
+         } else if (response && response.token_value) {
+             tokenField.value = response.token_value;
+             lastFourField.value = response.card.number.substr(-4);
++            ccTypeField.value = response.card.type || this.getCcType($('hps_securesubmit_cc_number').value);
+
+             // Continue Magento checkout steps
+             new Ajax.Request(this.saveUrl, {
+@@ -86,5 +89,15 @@ Object.extend(Payment.prototype, {
+         } else {
+             alert('Unexpected error.')
+         }
++    },
++    getCcType: function(value) {
++        var ccMatchedType = null;
++        Validation.creditCartTypes.each(function (pair) {
++            if (pair.value[0] && value.match(pair.value[0])) {
++                ccMatchedType = pair.key;
++                throw $break;
++            }
++        });
++        return ccMatchedType;
+     }
+ });
