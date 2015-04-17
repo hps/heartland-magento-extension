@@ -17,19 +17,23 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * @param string $token
+     * @param string        $token
      * @param HpsCreditCard $cardData
-     * @param string $cardType
+     * @param string        $cardType
+     * @param integer|null  $customerId
      * @return Hps_Securesubmit_Model_Storedcard
      */
-    public function saveMultiToken($token,$cardData,$cardType)
+    public function saveMultiToken($token,$cardData,$cardType, $customerId = null)
     {
         $_session = Mage::getSingleton('customer/session');
         $_loggedIn = $_session->isLoggedIn();
 
-        if($_loggedIn){
-            $_customerId = $_session->getCustomer()->getId();
-
+        if($_loggedIn || $customerId != null){
+            if($customerId == null){
+                $_customerId = $_session->getCustomer()->getId();
+            }else{
+                $_customerId = $customerId;
+            }
             $storedCard = Mage::getModel('hps_securesubmit/storedcard');
             $storedCard->setDt(Varien_Date::now())
                 ->setCustomerId($_customerId)

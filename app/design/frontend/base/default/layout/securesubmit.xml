@@ -19,6 +19,11 @@
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
         </reference>
     </onepagecheckout_index_index>
+    <checkout_multishipping_billing>
+        <reference name="head">
+            <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
+        </reference>
+    </checkout_multishipping_billing>
     <customer_account>
         <reference name="customer_account_navigation">
           <action method="addLink" >
