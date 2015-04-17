@@ -74,10 +74,6 @@ if ($_loggedIn && $allow_card_saving) {
     <?php endif ?>
 </ul>
 
-<?php if ( ! $this->getRequest()->isAjax()): ?>
-<script type="text/javascript" src="<?php echo $this->getJsUrl('securesubmit/checkout-form.js') ?>"></script>
-<?php endif ?>
-
 <script type="text/javascript">
 //<![CDATA[
 <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
@@ -89,5 +85,9 @@ if ($_loggedIn && $allow_card_saving) {
 <?php endif ?>
 payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
 payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+if (typeof OPC !== 'undefined') {
+    OPC.prototype.secureSubmitPublicKey = '<?php echo $public_key ?>';
+    OPC.prototype.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+}
 //]]>
 </script>

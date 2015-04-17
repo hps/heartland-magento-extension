@@ -2,6 +2,7 @@
 $_code = $this->getMethodCode();
 $customerStoredCards = $this->getCustomerStoredCards();
 $useStoredCard = !! $this->getInfoData('securesubmit_use_stored_card');
+$public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey');
 ?>
 <ul id="payment_form_<?php echo $_code ?>" style="display:none">
     <?php if (count($customerStoredCards)) : ?>
@@ -33,17 +34,6 @@ $useStoredCard = !! $this->getInfoData('securesubmit_use_stored_card');
                 <?php $_ccType = $this->getInfoData('cc_type') ?>
                 <?php foreach ($this->getCcAvailableTypes() as $_typeCode => $_typeName) : ?>
                     <option value="<?php echo $_typeCode ?>"<?php if($_typeCode == $_ccType) : ?> selected="selected"<?php endif ?>><?php echo $_typeName ?></option>
-                <?php endforeach ?>
-            </select>
-        </div>
-    </li>
-    <li class="stored_cards_selected">
-        <div class="input-box">
-            <select id="<?php echo $_code ?>_cc_type" name="payment[cc_type]" class="required-entry validate-cc-type-select">
-                <option value=""><?php echo Mage::helper('payment')->__('--Please Select--')?></option>
-                <?php $_ccType = $this->getInfoData('cc_type') ?>
-                <?php foreach ($this->getCcAvailableTypes() as $_typeCode => $_typeName): ?>
-                    <option value="<?php echo $_typeCode ?>"<?php if($_typeCode==$_ccType): ?> selected="selected"<?php endif ?>><?php echo $_typeName ?></option>
                 <?php endforeach ?>
             </select>
         </div>
@@ -84,6 +74,9 @@ $useStoredCard = !! $this->getInfoData('securesubmit_use_stored_card');
 </ul>
 <script type="text/javascript">
 //<![CDATA[
+order.secureSubmitPublicKey = '<?php echo $public_key ?>';
+order.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+
 <?php if (count($customerStoredCards)) : ?>
     var customerStoredCards = <?php echo json_encode($this->getJsConfig()) ?>;
     $('<?php echo $_code ?>_stored_card_checkbox').observe('click',function() {
