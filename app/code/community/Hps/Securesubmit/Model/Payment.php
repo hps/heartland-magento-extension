@@ -167,6 +167,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
         catch (CardException $e)
         {
+            Mage::logException($e);
             $this->_debugChargeService($chargeService, $e);
             $payment->setStatus(self::STATUS_DECLINED);
             $this->throwUserError($e->getMessage(), $e->resultText, TRUE);

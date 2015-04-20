@@ -93,20 +93,6 @@ document.observe('dom:loaded', function () {
                 }
             }
         });
-
-        payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
-        payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
-    }
-    else if( !document.getElementById('multishipping-billing-form').empty() ){
-
-        secureSubmit = multishipping(document.getElementById('multishipping-billing-form'));
-        console.log(secureSubmit);
-        secureSubmit.secureSubmitPublicKey = '<?php echo $public_key ?>';
-        secureSubmit.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
-
-        document.addEventListener('DOMContentLoaded', function() {
-            Event.observe('payment-continue', 'click', function(e){ Event.stop(e); secureSubmit.save(); });
-        });
     }
 
     function multishipping(multiForm){

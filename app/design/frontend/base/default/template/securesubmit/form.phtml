@@ -1,7 +1,7 @@
 <?php /* @var $this Hps_Securesubmit_Block_Form */
 $_code = $this->getMethodCode();
 $public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey');
-$allow_card_saving = (bool)Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
+$allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
 $_loggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
 if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
@@ -29,10 +29,9 @@ if ($_loggedIn && $allow_card_saving) {
     <li class="stored_cards_selected">
         <label for="<?php echo $_code ?>_cc_number"><?php echo $this->__('Credit Card Number') ?> <span class="required">*</span></label>
         <div class="input-box">
-            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number" value="" autocomplete="off" />
+            <input type="text" id="<?php echo $_code ?>_cc_number" title="<?php echo $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" value="" autocomplete="off" />
             <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="">
             <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="">
-            <input type="hidden" id="<?php echo $_code ?>_cc_type" name="payment[cc_type]" value="">
         </div>
     </li>
     <li class="stored_cards_selected">
@@ -59,7 +58,7 @@ if ($_loggedIn && $allow_card_saving) {
         <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">*</span></label>
         <div class="input-box">
             <div class="v-fix">
-                <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text" id="<?php echo $_code ?>_cc_cid" value="" autocomplete="off" />
+                <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" value="" autocomplete="off" />
             </div>
             <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
         </div>
@@ -83,8 +82,21 @@ if ($_loggedIn && $allow_card_saving) {
         $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
     });
 <?php endif ?>
-payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
-payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+
+if (typeof Payment !== 'undefined') {
+    payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
+    payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+} else if( !document.getElementById('multishipping-billing-form').empty() ){
+    secureSubmit = multishipping(document.getElementById('multishipping-billing-form'));
+    console.log(secureSubmit);
+    secureSubmit.secureSubmitPublicKey = '<?php echo $public_key ?>';
+    secureSubmit.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+
+    document.observe('dom:loaded', function() {
+        Event.observe('payment-continue', 'click', function(e){ Event.stop(e); secureSubmit.save(); });
+    });
+}
+
 if (typeof OPC !== 'undefined') {
     OPC.prototype.secureSubmitPublicKey = '<?php echo $public_key ?>';
     OPC.prototype.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
