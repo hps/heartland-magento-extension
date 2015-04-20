@@ -1,4 +1,4 @@
-AdminOrder.prototype.__secureSubmitOldSubmit = AdminOrder.prototype.submit;
+AdminOrder.prototype._secureSubmitOldSubmit = AdminOrder.prototype.submit;
 Object.extend(AdminOrder.prototype, {
     submit: function() {
         if (this.paymentMethod != 'hps_securesubmit') {
