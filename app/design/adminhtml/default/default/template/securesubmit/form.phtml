@@ -44,7 +44,6 @@ $allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('
         <label for="<?php echo $_code ?>_cc_number"><?php echo Mage::helper('payment')->__('Credit Card Number') ?><span class="required">*</span></label>
         <div class="input-box">
             <input type="text" id="<?php echo $_code ?>_cc_number" data-encrypted-name="payment[cc_number]"  title="<?php echo Mage::helper('payment')->__('Credit Card Number') ?>"  class="input-text validate-cc-number validate-cc-type" value=""/>
-            <input type="hidden" id="<?php echo $_code ?>_use_credit_card" name="payment[use_credit_card]" value="1" />
             <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="">
             <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="">
         </div>
@@ -109,7 +108,6 @@ order.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/store
         $('<?php echo $_code ?>_cc_type').toggleClassName('validate-cc-type-select').toggleClassName('required-entry');
         $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
         $('<?php echo $_code ?>_cc_cid').toggleClassName('validate-cc-cvn').toggleClassName('required-entry');
-        $('<?php echo $_code ?>_use_credit_card').value = $('<?php echo $_code ?>_stored_card_checkbox').checked ? '0' : '1';
 
         // Set credit card information
         var creditCardId = $('<?php echo $_code ?>_stored_card_select').value;

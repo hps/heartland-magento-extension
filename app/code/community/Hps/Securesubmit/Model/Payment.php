@@ -31,10 +31,12 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $info = $this->getInfoInstance();
         $additionalData = new Varien_Object($info->getAdditionalData() ? unserialize($info->getAdditionalData()) : null);
+        $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
 
-        // Only validate when not using token
-        if ($additionalData->getUseCreditCard()) {
-            parent::validate();
+        // Gracefully handle javascript errors.
+        if (!$secureToken) {
+            Mage::log('Payment information submitted without token.', Zend_Log::ERR);
+            $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), NULL, TRUE);
         }
 
         return $this;
@@ -80,10 +82,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $additionalData = new Varien_Object($payment->getAdditionalData() ? unserialize($payment->getAdditionalData()) : null);
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
         $saveCreditCard = !! (bool)$additionalData->getCcSaveFuture();
-        $useCreditCard = !! (bool)$additionalData->getUseCreditCard();
         $customerId = $additionalData->getCustomerId();
 
-        if ($saveCreditCard && ! $useCreditCard) {
+        if ($saveCreditCard) {
             $multiToken = true;
             $cardData = new HpsCreditCard();
             $cardData->number = $payment->getCcLast4();
@@ -95,16 +96,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $cardHolder = $this->_getCardHolderData($order);
         $details = $this->_getTxnDetailsData($order);
 
-        if ($useCreditCard) {
-            $cardOrToken = new HpsCreditCard();
-            $cardOrToken->number = $payment->getCcNumber();
-            $cardOrToken->expYear = $payment->getCcExpYear();
-            $cardOrToken->expMonth = $payment->getCcExpMonth();
-            $cardOrToken->cvv = $payment->getCcCid();
-        } else {
-            $cardOrToken = new HpsTokenData();
-            $cardOrToken->tokenValue = $secureToken;
-        }
+        $cardOrToken = new HpsTokenData();
+        $cardOrToken->tokenValue = $secureToken;
 
         try
         {
