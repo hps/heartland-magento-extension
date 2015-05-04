@@ -4,7 +4,7 @@ $customerStoredCards = $this->getCustomerStoredCards();
 $useStoredCard = !! $this->getInfoData('securesubmit_use_stored_card');
 $public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey');
 $customerId = Mage::getSingleton('adminhtml/session_quote')->getCustomerId();
-$customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( $customerId );
+// $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( $customerId );
 $allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
 ?>
 
@@ -87,20 +87,20 @@ $allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('
 </ul>
 <script type="text/javascript">
 //<![CDATA[
+(function () {
+    <?php if($allow_card_saving && count($customerStoredCards)): ?>
+    $('<?php echo $_code ?>_stored_card_checkbox').observe('click',function() {
+        $$('.stored_cards_selected').invoke('toggle');
+        $('<?php echo $_code ?>_stored_cards').toggle();
+        $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
+    });
+    <?php endif ?>
 
-<?php if($allow_card_saving && count($customerStoredCards)): ?>
-$('<?php echo $_code ?>_stored_card_checkbox').observe('click',function() {
-    $$('.stored_cards_selected').invoke('toggle');
-    $('<?php echo $_code ?>_stored_cards').toggle();
-    $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
-});
-<?php endif ?>
+    order.secureSubmitPublicKey = '<?php echo $public_key ?>';
+    order.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 
-order.secureSubmitPublicKey = '<?php echo $public_key ?>';
-order.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
-
-<?php if (count($customerStoredCards)) : ?>
-    var customerStoredCards = <?php echo json_encode($this->getJsConfig()) ?>;
+    <?php if (count($customerStoredCards)) : ?>
+    order.customerStoredCards = <?php echo json_encode($this->getJsConfig()) ?>;
     $('<?php echo $_code ?>_stored_card_checkbox').stopObserving('click').observe('click', toggleStoredCards);
     function toggleStoredCards() {
         // Toggle between the saved credit cards and a new card form
@@ -110,20 +110,11 @@ order.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/store
         $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
         $('<?php echo $_code ?>_cc_cid').toggleClassName('validate-cc-cvn').toggleClassName('required-entry');
         $('<?php echo $_code ?>_use_credit_card').value = $('<?php echo $_code ?>_stored_card_checkbox').checked ? '0' : '1';
-
-        // Set credit card information
-        var creditCardId = $('<?php echo $_code ?>_stored_card_select').value;
-        if (customerStoredCards[creditCardId]) {
-            var creditCardData = customerStoredCards[creditCardId];
-            $('<?php echo $_code ?>_expiration').value = parseInt(creditCardData.cc_exp_month);
-            $('<?php echo $_code ?>_expiration_yr').value = creditCardData.cc_exp_year;
-            $('<?php echo $_code ?>_token').value = creditCardData.token_value;
-            $('<?php echo $_code ?>_cc_last_four').value = creditCardData.cc_last_four;
-        }
     }
     <?php if ($useStoredCard) : ?>
         toggleStoredCards();
     <?php endif ?>
-<?php endif ?>
+    <?php endif ?>
+})();
 //]]>
 </script>

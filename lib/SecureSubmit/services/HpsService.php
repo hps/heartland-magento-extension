@@ -54,6 +54,7 @@ class HpsService {
         //cURL
         try{
             $requestData = $xml->saveXML();
+            // print_r($requestData);
             $header = array(
                 "Content-type: text/xml;charset=\"utf-8\"",
                 "Accept: text/xml",
@@ -77,6 +78,7 @@ class HpsService {
             }
             
             $curlResponse = curl_exec($soap_do);
+            // print_r($curlResponse);die();
             $curlError = curl_error($soap_do);
             $responseCode = curl_getinfo($soap_do, CURLINFO_HTTP_CODE);
             curl_close($soap_do);

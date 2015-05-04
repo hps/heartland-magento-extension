@@ -1,4 +1,7 @@
-AdminOrder.prototype.__secureSubmitOldSubmit = AdminOrder.prototype.submit;
+if (typeof AdminOrder.prototype._secureSubmitOldSubmit === 'undefined') {
+    var oldAdminOrder = Object.clone(AdminOrder.prototype);
+    AdminOrder.prototype._secureSubmitOldSubmit = oldAdminOrder.submit;
+}
 Object.extend(AdminOrder.prototype, {
     submit: function() {
         if (this.paymentMethod != 'hps_securesubmit') {
@@ -9,30 +12,23 @@ Object.extend(AdminOrder.prototype, {
         if (this.secureSubmitUseStoredCard()) {
             var storedcardId = $('hps_securesubmit_stored_card_select').value;
             var customerId = $('hps_securesubmit_customer_id').value;
-            //checkout.setLoadWaiting('payment');                                                                                                                                                                                           
-            new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
-                method: 'post',
-                parameters: {storedcard_id: storedcardId, customer_id: customerId},
-                onSuccess: function(response) {
-                    var data = response.responseJSON;
-                    if (data && data.token) {
-                        $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
-                        $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
+            // Set credit card information
+            var creditCardId = $('hps_securesubmit_stored_card_select').value;
+            if (order.customerStoredCards[creditCardId]) {
+                var creditCardData = order.customerStoredCards[creditCardId];
+                $('hps_securesubmit_expiration').value = parseInt(creditCardData.cc_exp_month);
+                $('hps_securesubmit_expiration_yr').value = creditCardData.cc_exp_year;
+                $('hps_securesubmit_token').value = creditCardData.token_value;
+                $('hps_securesubmit_cc_last_four').value = creditCardData.cc_last_four;
+                this.secureSubmitResponseHandler({
+                    token_value:  creditCardData.token_value,
+                    token_type:   null, // 'supt'?                                                                                                                                                                                      
+                    token_expire: new Date().toISOString(),
+                    card: {
+                        number: creditCardData.cc_last_four
                     }
-                    this.secureSubmitResponseHandler({
-                        token_value:  data.token.token_value,
-                        token_type:   null, // 'supt'?                                                                                                                                                                                      
-                        token_expire: new Date().toISOString(),
-                        card:         {
-                            number: data.token.cc_last4
-                        }
-                    });
-                }.bind(this),
-                onFailure: function() {
-                    alert('Unknown error. Please try again.');
-                    //checkout.setLoadWaiting(false);                                                                                                                                                                                       
-                }
-            });
+                });
+            }
         }
         // Use stored card not checked, get new token                                                                                                                                                                                       
         else{
