@@ -1,4 +1,7 @@
-AdminOrder.prototype.__secureSubmitOldSubmit = AdminOrder.prototype.submit;
+if (typeof AdminOrder.prototype._secureSubmitOldSubmit === 'undefined') {
+    var oldAdminOrder = Object.clone(AdminOrder.prototype);
+    AdminOrder.prototype._secureSubmitOldSubmit = oldAdminOrder.submit;
+}
 Object.extend(AdminOrder.prototype, {
     submit: function() {
         if (this.paymentMethod != 'hps_securesubmit') {
@@ -11,8 +14,8 @@ Object.extend(AdminOrder.prototype, {
             var customerId = $('hps_securesubmit_customer_id').value;
             // Set credit card information
             var creditCardId = $('hps_securesubmit_stored_card_select').value;
-            if (customerStoredCards[creditCardId]) {
-                var creditCardData = customerStoredCards[creditCardId];
+            if (order.customerStoredCards[creditCardId]) {
+                var creditCardData = order.customerStoredCards[creditCardId];
                 $('hps_securesubmit_expiration').value = parseInt(creditCardData.cc_exp_month);
                 $('hps_securesubmit_expiration_yr').value = creditCardData.cc_exp_year;
                 $('hps_securesubmit_token').value = creditCardData.token_value;
