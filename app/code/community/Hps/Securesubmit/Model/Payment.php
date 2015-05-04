@@ -1,6 +1,12 @@
 <?php
 
 require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'Hps.php';
+/**
+ * @category   Hps
+ * @package    Hps_Securesubmit
+ * @copyright  Copyright (c) 2015 Heartland Payment Systems (https://www.magento.com)
+ * @license    https://github.com/SecureSubmit/heartland-magento-extension/blob/master/LICENSE  Custom License
+ */
 
 class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 {
@@ -101,12 +107,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         try
         {
-            // Gracefully handle javascript errors.
-            if ( ! $secureToken) {
-                Mage::log('Payment information submitted without token.', Zend_Log::ERR);
-                $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), NULL, TRUE);
-            }
-
             if ($capture)
             {
                 if ($payment->getCcTransId())
@@ -158,7 +158,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
         }
-        catch (CardException $e)
+        catch (HpsCreditException $e)
         {
             Mage::logException($e);
             $this->_debugChargeService($chargeService, $e);
