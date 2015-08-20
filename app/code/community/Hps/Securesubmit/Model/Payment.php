@@ -26,10 +26,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_formBlockTypeAdmin = 'hps_securesubmit/adminhtml_form';
     protected $_infoBlockType = 'hps_securesubmit/info';
 
-	protected $_allow_fraud					= Mage::getStoreConfig('payment/hps_securesubmit/allow_fraud');
-	protected $_email_fraud					= Mage::getStoreConfig('payment/hps_securesubmit/email_fraud');
-	protected $_fraud_address				= Mage::getStoreConfig('payment/hps_securesubmit/fraud_address');
-	protected $_fraud_text					= Mage::getStoreConfig('payment/hps_securesubmit/fraud_text');
+    protected $_allow_fraud                 = null;
+    protected $_email_fraud                 = null;
+    protected $_fraud_address               = null;
+    protected $_fraud_text                  = null;
 
     /**
      * Fields that should be replaced in debug with '***'
@@ -37,6 +37,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      * @var array
      */
     protected $_debugReplacePrivateDataKeys = array('SecretAPIKey');
+
+    public function _construct()
+    {
+        $this->_allow_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/allow_fraud');
+        $this->_email_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/email_fraud');
+        $this->_fraud_address = Mage::getStoreConfig('payment/hps_securesubmit/fraud_address');
+        $this->_fraud_text    = Mage::getStoreConfig('payment/hps_securesubmit/fraud_text');
+    }
 
     public function validate()
     {
@@ -47,7 +55,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         // Gracefully handle javascript errors.
         if (!$secureToken) {
             Mage::log('Payment information submitted without token.', Zend_Log::ERR);
-            $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), NULL, TRUE);
+            $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), null, true);
         }
 
         return $this;
@@ -110,36 +118,32 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $cardOrToken = new HpsTokenData();
         $cardOrToken->tokenValue = $secureToken;
 
-        try
-        {
-            if ($capture)
-            {
-                if ($payment->getCcTransId())
-                {
+        try {
+            if ($capture) {
+                if ($payment->getCcTransId()) {
                     $response = $chargeService->capture(
                         $payment->getCcTransId(),
-                        $amount);
-                }
-                else
-                {
+                        $amount
+                    );
+                } else {
                     $response = $chargeService->charge(
                         $amount,
                         strtolower($order->getBaseCurrencyCode()),
                         $cardOrToken,
                         $cardHolder,
                         $multiToken,
-                        $details);
+                        $details
+                    );
                 }
-            }
-            else
-            {
+            } else {
                 $response = $chargeService->authorize(
                     $amount,
                     strtolower($order->getBaseCurrencyCode()),
                     $cardOrToken,
                     $cardHolder,
                     $multiToken,
-                    $details);
+                    $details
+                );
             }
 
             $this->_debugChargeService($chargeService);
@@ -149,56 +153,50 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $payment->setCcTransId($response->transactionId);
             $payment->setTransactionId($response->transactionId);
             $payment->setIsTransactionClosed(0);
-            if($multiToken){
+            if ($multiToken) {
                 $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
                 if ($tokenData->responseCode == '0') {
-                    if( $customerId > 0 ){
-                        Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType, $customerId);
+                    if ($customerId > 0) {
+                        Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType, $customerId);
                     } else {
-                        Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue,$cardData,$response->cardType);
+                        Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
                     }
                 } else {
                     Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
                 }
             }
 
-        }
-        catch (HpsCreditException $e)
-        {
+        } catch (HpsCreditException $e) {
             Mage::logException($e);
             $this->_debugChargeService($chargeService, $e);
             $payment->setStatus(self::STATUS_DECLINED);
-            $this->throwUserError($e->getMessage(), $e->resultText, TRUE);
-        }
-        catch (HpsException $e)
-        {
-			$this->_debugChargeService($chargeService, $e);
-			if($this->_allow_fraud == 'yes' && $e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
-				// we can skip the card saving if it fails for possible fraud there will be no token.
+            $this->throwUserError($e->getMessage(), $e->resultText, true);
+        } catch (HpsException $e) {
+            $this->_debugChargeService($chargeService, $e);
+            if ($this->_allow_fraud == 'yes' && $e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
+                // we can skip the card saving if it fails for possible fraud there will be no token.
 
-				if($this->_email_fraud == 'yes' && $this->_fraud_address != '') {
-					// EMAIL THE PEOPLE
-					mail(
-						$this->_fraud_address,
-						'Suspicious order allowed',
-						'Hello,<br><br>Heartland has determined that you should review order ' . $order->getRealOrderId() . ' for the amount of ' . $amount . '.'
-					);
-				}
+                if ($this->_email_fraud == 'yes' && $this->_fraud_address != '') {
+                    // EMAIL THE PEOPLE
+                    mail(
+                        $this->_fraud_address,
+                        'Suspicious order allowed',
+                        'Hello,<br><br>Heartland has determined that you should review order ' . $order->getRealOrderId() . ' for the amount of ' . $amount . '.'
+                    );
+                }
 
-				$payment->setStatus(self::STATUS_APPROVED);
-				$payment->setAmount($amount);
-				$payment->setIsTransactionClosed(0);
-			} else {
-				$payment->setStatus(self::STATUS_ERROR);
-				if($e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
-					$this->throwUserError($this->_fraud_text, NULL, TRUE);
-				} else {
-					$this->throwUserError($e->getMessage(), NULL, TRUE);
-				}
-			}
-        }
-        catch (Exception $e)
-        {
+                $payment->setStatus(self::STATUS_APPROVED);
+                $payment->setAmount($amount);
+                $payment->setIsTransactionClosed(0);
+            } else {
+                $payment->setStatus(self::STATUS_ERROR);
+                if ($e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
+                    $this->throwUserError($this->_fraud_text, null, true);
+                } else {
+                    $this->throwUserError($e->getMessage(), null, true);
+                }
+            }
+        } catch (Exception $e) {
             $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
             $payment->setStatus(self::STATUS_ERROR);
@@ -247,13 +245,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 ->setParentTransactionId($transactionId)
                 ->setIsTransactionClosed(1)
                 ->setShouldCloseParentTransaction(1);
-        }
-        catch (HpsException $e)
-        {
+        } catch (HpsException $e) {
             $this->_debugChargeService($chargeService, $e);
             Mage::throwException($e->getMessage());
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
             Mage::throwException(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try again or contact a system administrator.'));
@@ -291,13 +286,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 ->setParentTransactionId($transactionId)
                 ->setIsTransactionClosed(1)
                 ->setShouldCloseParentTransaction(1);
-        }
-        catch (HpsException $e)
-        {
+        } catch (HpsException $e) {
             $this->_debugChargeService($chargeService, $e);
             $this->throwUserError($e->getMessage());
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
             $this->throwUserError($e->getMessage());
@@ -313,7 +305,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      */
     public function isAvailable($quote = null)
     {
-        if($quote && $quote->getBaseGrandTotal()<$this->_minOrderTotal) {
+        if ($quote && $quote->getBaseGrandTotal()<$this->_minOrderTotal) {
             return false;
         }
 
@@ -334,12 +326,12 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         parent::assignData($data);
 
-        if ( ! ($data instanceof Varien_Object)) {
+        if (!($data instanceof Varien_Object)) {
             $data = new Varien_Object($data);
         }
         $info = $this->getInfoInstance();
 
-        if ( ! $info->getCcLast4() && $data->getCcLastFour()) {
+        if (!$info->getCcLast4() && $data->getCcLastFour()) {
             $info->setCcLast4($data->getCcLastFour());
         }
 
@@ -353,10 +345,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         if ($data->getData('use_credit_card')) {
             $details['use_credit_card'] = 1;
         }
-        if ($data->getData('customer_id')){
+        if ($data->getData('customer_id')) {
             $details['customer_id'] = $data->getData('customer_id');
         }
-        if ( ! empty($details)) {
+        if (!empty($details)) {
             $this->getInfoInstance()->setAdditionalData(serialize($details));
         }
 
@@ -369,7 +361,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      * @param bool $goToPaymentSection
      * @throws Mage_Core_Exception
      */
-    public function throwUserError($error, $detailedError = NULL, $goToPaymentSection = FALSE)
+    public function throwUserError($error, $detailedError = null, $goToPaymentSection = null)
     {
         // Register detailed error for error reporting elsewhere
         $detailedError = $detailedError ?  $error.' ['.$detailedError.']' : $error;
@@ -390,7 +382,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     }
 
     /**
-     * @return HpsChargeService
+     * @return HpsCreditService
      */
     protected function _getChargeService()
     {
@@ -468,10 +460,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     }
 
     /**
-     * @param HpsChargeService $chargeService
+     * @param HpsCreditService $chargeService
      * @param Exception|null $exception
      */
-    protected function _debugChargeService(HpsChargeService $chargeService, $exception = NULL)
+    protected function _debugChargeService(HpsCreditService $chargeService, $exception = null)
     {
         if ($this->getDebugFlag()) {
             $debugData = array(
