@@ -25,7 +25,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_formBlockType = 'hps_securesubmit/form';
     protected $_formBlockTypeAdmin = 'hps_securesubmit/adminhtml_form';
     protected $_infoBlockType = 'hps_securesubmit/info';
-	
+
 	protected $_allow_fraud					= Mage::getStoreConfig('payment/hps_securesubmit/allow_fraud');
 	protected $_email_fraud					= Mage::getStoreConfig('payment/hps_securesubmit/email_fraud');
 	protected $_fraud_address				= Mage::getStoreConfig('payment/hps_securesubmit/fraud_address');
@@ -173,24 +173,24 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         catch (HpsException $e)
         {
 			$this->_debugChargeService($chargeService, $e);
-			if($this->_allow_fraud == 'yes' && $e->getCode() == 27) {
+			if($this->_allow_fraud == 'yes' && $e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
 				// we can skip the card saving if it fails for possible fraud there will be no token.
-				
+
 				if($this->_email_fraud == 'yes' && $this->_fraud_address != '') {
 					// EMAIL THE PEOPLE
 					mail(
-						$this->_fraud_address, 
-						'Suspicious order allowed', 
+						$this->_fraud_address,
+						'Suspicious order allowed',
 						'Hello,<br><br>Heartland has determined that you should review order ' . $order->getRealOrderId() . ' for the amount of ' . $amount . '.'
 					);
 				}
-				
+
 				$payment->setStatus(self::STATUS_APPROVED);
 				$payment->setAmount($amount);
 				$payment->setIsTransactionClosed(0);
 			} else {
 				$payment->setStatus(self::STATUS_ERROR);
-				if($e->getCode() == 27) {
+				if($e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
 					$this->throwUserError($this->_fraud_text, NULL, TRUE);
 				} else {
 					$this->throwUserError($e->getMessage(), NULL, TRUE);
@@ -394,7 +394,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      */
     protected function _getChargeService()
     {
-        $config = new HpsConfiguration();
+        $config = new HpsServicesConfig();
 
         // Support HTTP proxy
         if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
@@ -409,7 +409,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $config->versionNumber = '1573';
         $config->developerId = '002914';
 
-        return new HpsChargeService($config);
+        return new HpsCreditService($config);
     }
 
     /**
