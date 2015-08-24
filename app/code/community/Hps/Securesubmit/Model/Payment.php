@@ -38,14 +38,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      */
     protected $_debugReplacePrivateDataKeys = array('SecretAPIKey');
 
-    public function _construct()
-    {
-        $this->_allow_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/allow_fraud');
-        $this->_email_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/email_fraud');
-        $this->_fraud_address = Mage::getStoreConfig('payment/hps_securesubmit/fraud_address');
-        $this->_fraud_text    = Mage::getStoreConfig('payment/hps_securesubmit/fraud_text');
-    }
-
     public function validate()
     {
         $info = $this->getInfoInstance();
@@ -168,19 +160,17 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         } catch (HpsCreditException $e) {
             Mage::logException($e);
+            $this->getFraudSettings();
             $this->_debugChargeService($chargeService, $e);
-            $payment->setStatus(self::STATUS_DECLINED);
-            $this->throwUserError($e->getMessage(), $e->resultText, true);
-        } catch (HpsException $e) {
-            $this->_debugChargeService($chargeService, $e);
-            if ($this->_allow_fraud == 'yes' && $e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
+            if ($this->_allow_fraud && $e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
                 // we can skip the card saving if it fails for possible fraud there will be no token.
 
-                if ($this->_email_fraud == 'yes' && $this->_fraud_address != '') {
+                if ($this->_email_fraud && $this->_fraud_address != '') {
                     // EMAIL THE PEOPLE
-                    mail(
+                    $this->sendEmail(
                         $this->_fraud_address,
-                        'Suspicious order allowed',
+                        $this->_fraud_address,
+                        'Suspicious order (' . $order->getIncrementId() . ') allowed',
                         'Hello,<br><br>Heartland has determined that you should review order ' . $order->getRealOrderId() . ' for the amount of ' . $amount . '.'
                     );
                 }
@@ -196,6 +186,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $this->throwUserError($e->getMessage(), null, true);
                 }
             }
+        } catch (HpsException $e) {
+            $this->_debugChargeService($chargeService, $e);
+            $payment->setStatus(self::STATUS_ERROR);
+            $this->throwUserError($e->getMessage(), null, true);
         } catch (Exception $e) {
             $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
@@ -204,6 +198,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         return $this;
+    }
+
+    protected function getFraudSettings()
+    {
+        $this->_allow_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/allow_fraud') == 1;
+        $this->_email_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/email_fraud') == 1;
+        $this->_fraud_address = Mage::getStoreConfig('payment/hps_securesubmit/fraud_address');
+        $this->_fraud_text    = Mage::getStoreConfig('payment/hps_securesubmit/fraud_text');
     }
 
     /**
@@ -474,6 +476,20 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             );
             $this->_debug($debugData);
         }
+    }
+
+    public function sendEmail($to, $from, $subject, $body, $headers = array(), $isHtml = true)
+    {
+        $headers[] = sprintf('From: %s', $from);
+        $headers[] = sprintf('Reply-To: %s', $from);
+        $message = $body;
+        if ($isHtml) {
+            $message = sprintf('<html><body>%s</body></html>', $body);
+            $headers[] = 'MIME-Version: 1.0';
+            $headers[] = 'Content-Type: text/html; charset=ISO-8859-1';
+        }
+        $message = wordwrap($message, 70, "\r\n");
+        mail($to, $subject, $message, implode("\r\n", $headers));
     }
 
     /**
