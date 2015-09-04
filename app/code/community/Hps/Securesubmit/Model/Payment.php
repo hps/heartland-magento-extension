@@ -377,10 +377,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         // Send checkout session back to payment section to avoid double-attempt to charge single-use token
-        if ($goToPaymentSection && Mage::app()->getRequest()->getOriginalPathInfo() == '/checkout/onepage/saveOrder') {
-            Mage::getSingleton('checkout/session')->setGotoSection('payment');
+        if ($goToPaymentSection === true) {
+            throw new Mage_Payment_Model_Info_Exception($error);
+        } else {
+            throw new Mage_Core_Exception($error);
         }
-        throw new Mage_Core_Exception($error);
     }
 
     /**
