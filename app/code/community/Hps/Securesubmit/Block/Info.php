@@ -6,8 +6,13 @@ class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
         $transport = parent::_prepareSpecificInformation($transport);
         $data = array();
         $info = $this->getInfo();
+        $additionalData = $info->getAdditionalData();
 
-        $data[Mage::helper("payment")->__("Payment Type")] = "Secure Token";
+        if (strpos($additionalData, 'giftcard_number') !== false) {
+        	$gift = "Gift Card & ";
+    	}
+
+        $data[Mage::helper("payment")->__("Payment Type")] = $gift . "Credit Card ending in " . $info->getCcLast4();
 
         return $transport->setData(array_merge($data, $transport->getData()));
     }

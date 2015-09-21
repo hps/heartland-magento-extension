@@ -95,6 +95,61 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $saveCreditCard = !! (bool)$additionalData->getCcSaveFuture();
         $customerId = $additionalData->getCustomerId();
 
+        $giftService = $this->_getGiftService();
+        $giftCardNumber = $additionalData->getGiftcardNumber();
+
+        if ($giftCardNumber) {
+            // 1. check balance
+            $giftcard = new HpsGiftCard();
+            $giftcard->number = $giftCardNumber;
+
+            $giftResponse = $giftService->balance($giftcard);
+           
+            // 2. is balance > amount?
+            if ($giftResponse->balanceAmount > $amount) {
+                //  2.yes. process full to gift
+                try {
+                    if (strpos($this->getConfigData('secretapikey'), '_cert_') !== false) {
+                        $giftresp = $giftService->sale($giftcard, 10.00);
+                    } else {
+                        $giftresp = $giftService->sale($giftcard, $amount);
+                    }
+
+                    $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $amount . '. [full payment]');
+                    $payment->setTransactionAdditionalInfo(Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS, 
+                        array(
+                            'gift_card_number' => $giftCardNumber, 
+                            'gift_card_transaction' => $giftresp->transactionId,
+                            'gift_card_amount_charged' => $amount));
+                    $payment->setStatus(self::STATUS_APPROVED);
+                    $payment->setAmount($amount);
+                    $payment->setLastTransId($response->transactionId);
+                    $payment->setTransactionId($response->transactionId);
+                    $payment->setIsTransactionClosed(0);
+
+                    return $this;
+                } catch (Exception $e) {
+                    Mage::logException($e);
+                    $payment->setStatus(self::STATUS_ERROR);
+                    $this->throwUserError($e->getMessage(), null, true);
+                }
+            } else {
+                //  2.no. process full gift card amt and card process remainder
+                $giftresp = $giftService->sale($giftcard, $giftResponse->balanceAmount);
+                $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [partial payment]')->save();
+                $payment->setTransactionAdditionalInfo(Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS, 
+                    array(
+                        'gift_card_number' => $giftCardNumber, 
+                        'gift_card_transaction' => $giftresp->transactionId,
+                        'gift_card_amount_charged' => $giftResponse->balanceAmount));
+
+                $payment->setAmount($giftResponse->balanceAmount)->save();
+                $amount = $amount - $giftResponse->balanceAmount; // remainder
+
+                // 3. TODO: if the card payment fails later, refund the gift transaction
+            }
+        }
+
         if ($saveCreditCard) {
             $multiToken = true;
             $cardData = new HpsCreditCard();
@@ -162,6 +217,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             Mage::logException($e);
             $this->getFraudSettings();
             $this->_debugChargeService($chargeService, $e);
+
+            // refund gift (if used)
+            if ($giftCardNumber) {
+                $order->addStatusHistoryComment('Reversed Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [full reversal]')->save();
+                $giftResponse = $giftService->reverse($giftcard, $giftResponse->balanceAmount);
+            }
+
             if ($this->_allow_fraud && $e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
                 // we can skip the card saving if it fails for possible fraud there will be no token.
 
@@ -344,6 +406,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         if ($data->getData('securesubmit_token')) {
             $details['securesubmit_token'] = $data->getData('securesubmit_token');
         }
+        if ($data->getData('giftcard_number')) {
+            $details['giftcard_number'] = $data->getData('giftcard_number');
+        }
         if ($data->getData('use_credit_card')) {
             $details['use_credit_card'] = 1;
         }
@@ -404,6 +469,26 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $config->developerId = '002914';
 
         return new HpsCreditService($config);
+    }
+
+    protected function _getGiftService()
+    {
+        $config = new HpsServicesConfig();
+
+        // Support HTTP proxy
+        if (Mage::getStoreConfig('payment/hps_securesubmit/use_http_proxy')) {
+            $config->useProxy = true;
+            $config->proxyOptions = array(
+                'proxy_host' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_host'),
+                'proxy_port' => Mage::getStoreConfig('payment/hps_securesubmit/http_proxy_port'),
+            );
+        }
+
+        $config->secretApiKey = $this->getConfigData('secretapikey');
+        $config->versionNumber = '1573';
+        $config->developerId = '002914';
+
+        return new HpsGiftCardService($config);
     }
 
     /**
