@@ -12,7 +12,7 @@ class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
         	$gift = "Gift Card & ";
     	}
 
-        $data[Mage::helper("payment")->__("Payment Type")] = $gift . "Credit Card ending in " . $info->getCcLast4();
+        $data[Mage::helper("payment")->__("Payment Type")] = $gift . "Credit Card ending in " . $info->getCcLast4() . " (" . $info->getCcExpMonth() . "/" . $info->getCcExpYear() . ")";
 
         return $transport->setData(array_merge($data, $transport->getData()));
     }
