@@ -97,7 +97,7 @@ if ($_loggedIn && $allow_card_saving) {
 
 Event.observe('apply-gift-card', 'click', function(event) {
     $j.ajax({
-        url: "<?php echo Mage::getUrl('securesubmit/storedcard/getBalance', array('_secure' => TRUE)) ?>",
+        url: "<?php echo Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => TRUE)) ?>",
         type: "GET",
         data: "giftcard_number=" + $j("#<?php echo $_code; ?>_giftcard_number").val(),
         success: function(data) {
