@@ -200,6 +200,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $payment->setCcTransId($response->transactionId);
             $payment->setTransactionId($response->transactionId);
             $payment->setIsTransactionClosed(0);
+            if ($giftCardNumber) {
+                $order->addStatusHistoryComment('Remaining amount to be charged to credit card  ' .$this->_formatAmount($amount) . '. [partial payment]')->save();
+            }
             if ($multiToken) {
                 $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
                 if ($tokenData->responseCode == '0') {
