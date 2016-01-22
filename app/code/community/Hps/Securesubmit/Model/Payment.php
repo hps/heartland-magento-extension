@@ -201,7 +201,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $payment->setTransactionId($response->transactionId);
             $payment->setIsTransactionClosed(0);
             if ($giftCardNumber) {
-                $order->addStatusHistoryComment('Remaining amount to be charged to credit card  ' .$this->_formatAmount($amount) . '. [partial payment]')->save();
+                $order->addStatusHistoryComment('Remaining amount to be charged to credit card  ' .$this->_formatAmount((string)$amount) . '. [partial payment]')->save();
             }
             if ($multiToken) {
                 $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
@@ -263,6 +263,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         return $this;
+    }
+
+    protected function _formatAmount($amount) {
+        return Mage::helper('core')->currency($amount, true, false);
     }
 
     protected function getFraudSettings()
