@@ -95,34 +95,36 @@ if ($_loggedIn && $allow_card_saving) {
     });
 <?php endif ?>
 
-Event.observe('apply-gift-card', 'click', function(event) {
-    $j.ajax({
-        url: "<?php echo Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => TRUE)) ?>",
-        type: "GET",
-        data: "giftcard_number=" + $j("#<?php echo $_code; ?>_giftcard_number").val(),
-        success: function(data) {
-            if (data.error) {
-                alert('Error adding gift card: ' + data.message);
-            } else {
-                //successful gift, show things
-                $j('#apply-gift-card').hide();
-                $j("#<?php echo $_code; ?>_giftcard_number").hide();
-                $j('#gift-card-number-label').text($j("#<?php echo $_code; ?>_giftcard_number").val() + " - $" + data.balance);
-                $j('#gift-card-number-label').show();
-                $j('#remove-gift-card').show();
+<?php if ($allow_heartland_gift): ?>
+    Event.observe('apply-gift-card', 'click', function(event) {
+        $j.ajax({
+            url: "<?php echo Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => TRUE)) ?>",
+            type: "GET",
+            data: "giftcard_number=" + $j("#<?php echo $_code; ?>_giftcard_number").val(),
+            success: function(data) {
+                if (data.error) {
+                    alert('Error adding gift card: ' + data.message);
+                } else {
+                    //successful gift, show things
+                    $j('#apply-gift-card').hide();
+                    $j("#<?php echo $_code; ?>_giftcard_number").hide();
+                    $j('#gift-card-number-label').text($j("#<?php echo $_code; ?>_giftcard_number").val() + " - $" + data.balance);
+                    $j('#gift-card-number-label').show();
+                    $j('#remove-gift-card').show();
+                }
             }
-        }
+        });
     });
-});
 
-Event.observe('remove-gift-card', 'click', function(event) {
-    $j('#apply-gift-card').show();
-    $j("#<?php echo $_code; ?>_giftcard_number").val('');
-    $j("#<?php echo $_code; ?>_giftcard_number").show();
-    $j('#gift-card-number-label').text('');
-    $j('#gift-card-number-label').hide();
-    $j('#remove-gift-card').hide();
-});
+    Event.observe('remove-gift-card', 'click', function(event) {
+        $j('#apply-gift-card').show();
+        $j("#<?php echo $_code; ?>_giftcard_number").val('');
+        $j("#<?php echo $_code; ?>_giftcard_number").show();
+        $j('#gift-card-number-label').text('');
+        $j('#gift-card-number-label').hide();
+        $j('#remove-gift-card').hide();
+    });
+<?php endif; ?>
 
 if (typeof Payment !== 'undefined') {
     payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
