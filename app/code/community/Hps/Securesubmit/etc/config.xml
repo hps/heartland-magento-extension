@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Hps_Securesubmit>
-            <version>1.0.1</version>
+            <version>1.1.0</version>
         </Hps_Securesubmit>
     </modules>
     <global>
@@ -13,6 +13,16 @@
                     <class>Hps_Securesubmit_Model_Resource_Setup</class>
                 </setup>
             </hps_securesubmit_setup>
+            <hps_securesubmit_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </hps_securesubmit_write>
+            <hps_securesubmit_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </hps_securesubmit_read>
         </resources>
         <models>
             <hps_securesubmit>
@@ -25,6 +35,9 @@
                     <storedcard>
                         <table>storedcard</table>
                     </storedcard>
+                    <report>
+                        <table>report_settlement</table>
+                    </report>
                 </entities>
             </hps_securesubmit_resource>
         </models>
@@ -45,6 +58,11 @@
                 </securesubmit_use_stored_card>
             </sales_convert_quote_payment>
         </fieldsets>
+        <payment>
+            <groups>
+                <hps_paypal>HPS PayPal</hps_paypal>
+            </groups>
+        </payment>
     </global>
     <default>
         <payment>
@@ -54,12 +72,34 @@
                 <title>Credit Card (SecureSubmit)</title>
                 <cctypes>AE,VI,MC,DI,JCB</cctypes>
                 <useccv>1</useccv>
-                <min_order_total>0.50</min_order_total>
+                <min_order_total/>
                 <secretapikey backend_model="adminhtml/system_config_backend_encrypted" />
                 <publicapikey backend_model="adminhtml/system_config_backend_encrypted" />
                 <use_http_proxy>0</use_http_proxy>
                 <debug>0</debug>
             </hps_securesubmit>
+            <hps_paypal>
+                <model>hps_securesubmit/paypal</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>PayPal</title>
+                <secretapikey backend_model="adminhtml/system_config_backend_encrypted" />
+                <publicapikey backend_model="adminhtml/system_config_backend_encrypted" />
+                <use_sandbox>0</use_sandbox>
+                <username backend_model="adminhtml/system_config_backend_encrypted" />
+                <password backend_model="adminhtml/system_config_backend_encrypted" />
+                <device_id backend_model="adminhtml/system_config_backend_encrypted" />
+                <license_id backend_model="adminhtml/system_config_backend_encrypted" />
+                <site_id backend_model="adminhtml/system_config_backend_encrypted" />
+                <use_http_proxy>0</use_http_proxy>
+                <debug>0</debug>
+                <paypal_credit>1</paypal_credit>
+                <group>hps_paypal</group>
+            </hps_paypal>
+            <hps_paypal_credit>
+                <model>hps_securesubmit/paypal_credit</model>
+                <title>PayPal Credit</title>
+                <group>hps_paypal</group>
+            </hps_paypal_credit>
         </payment>
     </default>
     <frontend>
@@ -89,7 +129,7 @@
         </secure_url>
         <layout>
             <updates>
-                <hps_securesubmit module="Hps_Securesubmit">
+                <hps_securesubmit>
                     <file>securesubmit.xml</file>
                 </hps_securesubmit>
             </updates>
@@ -104,4 +144,15 @@
             </hps_securesubmit>
         </routers>
     </adminhtml>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <Hps_Securesubmit before="Mage_Adminhtml">Hps_Securesubmit_Adminhtml</Hps_Securesubmit>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
 </config>

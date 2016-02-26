@@ -45,7 +45,7 @@ if ($_loggedIn && $allow_card_saving) {
             <input type="hidden" id="<?php echo $_code ?>_token" name="payment[securesubmit_token]" value="">
             <input type="hidden" id="<?php echo $_code ?>_cc_last_four" name="payment[cc_last_four]" value="">
         </div>
-    </li>  
+    </li>
     <li class="stored_cards_selected">
         <label for="<?php echo $_code ?>_expiration"><?php echo $this->__('Expiration Date') ?> <span class="required">&nbsp;</span></label>
         <div class="input-box">
@@ -56,16 +56,16 @@ if ($_loggedIn && $allow_card_saving) {
                     <option value="<?php echo $k?$k:'' ?>" <?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
                 <?php endforeach ?>
                 </select>
-            </div>  
-            <div class="v-fix">  
+            </div>
+            <div class="v-fix">
                 <select id="<?php echo $_code ?>_expiration_yr" name="payment[cc_exp_year]" class="year required-entry"  autocomplete="off">
                 <?php foreach ($this->getCcYears() as $k=>$v): ?>
                     <option value="<?php echo $k?$k:'' ?>" <?php if($k==$this->getInfoData('cc_exp_year')):?> selected="selected"<?php endif ?>><?php echo $v ?></option>
                 <?php endforeach ?>
                 </select>
-            </div>  
-        </div>  
-    </li>  
+            </div>
+        </div>
+    </li>
     <li class="stored_cards_selected">
         <label for="<?php echo $_code ?>_cc_cid"><?php echo $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label>
         <div class="input-box">
@@ -73,7 +73,7 @@ if ($_loggedIn && $allow_card_saving) {
                 <input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" value="" autocomplete="off" />
             </div>
             <a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
-        </div>  
+        </div>
     </li>
     <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
     <li class="stored_cards_selected">
@@ -89,7 +89,7 @@ if ($_loggedIn && $allow_card_saving) {
 //<![CDATA[
 <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
     $('<?php echo $_code ?>_stored_card_checkbox').observe('click',function() {
-        $('.stored_cards_selected').invoke('toggle');
+        $$('.stored_cards_selected').invoke('toggle');
         $('<?php echo $_code ?>_stored_cards').toggle();
         $('<?php echo $_code ?>_cc_number').toggleClassName('validate-cc-number');
     });

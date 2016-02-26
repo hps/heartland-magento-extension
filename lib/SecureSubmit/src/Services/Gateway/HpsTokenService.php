@@ -43,7 +43,7 @@ class HpsTokenService extends HpsRestGatewayService
         if (isset($response->error) && is_object($response->error)) {
             throw new HpsException($response->error->message, $response->error->code);
         }
-        
+
         return $response;
     }
 

@@ -3,6 +3,7 @@ app/code/community/Hps/Securesubmit                          app/code/community/
 app/etc/modules/Hps_Securesubmit.xml                         app/etc/modules/Hps_Securesubmit.xml
 app/design/frontend/base/default/template/securesubmit       app/design/frontend/base/default/template/securesubmit
 app/design/frontend/base/default/layout/securesubmit.xml     app/design/frontend/base/default/layout/securesubmit.xml
+app/design/adminhtml/default/default/layout/securesubmit.xml app/design/adminhtml/default/default/layout/securesubmit.xml
 app/design/adminhtml/default/default/template/securesubmit   app/design/adminhtml/default/default/template/securesubmit
 js/securesubmit                                              js/securesubmit
 lib/SecureSubmit                                             lib/SecureSubmit
