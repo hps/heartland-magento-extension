@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Hps_Securesubmit>
-            <version>1.1.0</version>
+            <version>1.2.0</version>
         </Hps_Securesubmit>
     </modules>
     <global>
@@ -107,9 +107,9 @@
                 <processor_id backend_model="adminhtml/system_config_backend_encrypted" />
                 <merchant_id backend_model="adminhtml/system_config_backend_encrypted" />
                 <transaction_pwd backend_model="adminhtml/system_config_backend_encrypted" />
+                <merchant_checkout_id backend_model="adminhtml/system_config_backend_encrypted" />
                 <use_sandbox>0</use_sandbox>
                 <debug>0</debug>
-                <group>hps_masterpass</group>
             </hps_masterpass>
         </payment>
     </default>

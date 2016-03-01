@@ -477,6 +477,14 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </transaction_pwd>
+                        <merchant_checkout_id translate="label">
+                            <label>Merchant Checkout ID</label>
+                            <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
+                            <sort_order>33</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </merchant_checkout_id>
                         <use_sandbox translate="label">
                             <label>Use Sandbox</label>
                             <frontend_type>select</frontend_type>

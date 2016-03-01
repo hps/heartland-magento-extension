@@ -5,17 +5,10 @@
  * @copyright  Copyright (c) 2015 Heartland Payment Systems (https://www.magento.com)
  * @license    https://github.com/SecureSubmit/heartland-magento-extension/blob/master/LICENSE  Custom License
  */
-/**
- * PayPal-specific model for shopping cart items and totals
- * The main idea is to accommodate all possible totals into PayPal-compatible 4 totals and line items
- */
-class Hps_Securesubmit_Model_Paypal_Cart
+
+class Hps_Securesubmit_Model_Altpayment_Cart
 {
-    /**
-     * Totals that PayPal suppports when passing shopping cart
-     *
-     * @var string
-     */
+
     const TOTAL_SUBTOTAL = 'subtotal';
     const TOTAL_DISCOUNT = 'discount';
     const TOTAL_TAX      = 'tax';
