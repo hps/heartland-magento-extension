@@ -7,8 +7,9 @@
  */
 require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'Hps.php';
 
-class Hps_Securesubmit_Helper_Paypal extends Mage_Core_Helper_Abstract
+class Hps_Securesubmit_Helper_Paypal extends Hps_Securesubmit_Helper_Altpayment_Abstract
 {
+    protected $_methodCode = 'hps_paypal';
 
     /**
      * Reserve order ID for specified quote and start checkout on PayPal
@@ -30,21 +31,9 @@ class Hps_Securesubmit_Helper_Paypal extends Mage_Core_Helper_Abstract
                 $credit = $params['credit'];
             }
         }
-        $quote->collectTotals();
 
-        if (!$quote->getGrandTotal() && !$quote->hasNominalItems()) {
-            Mage::throwException(Mage::helper('hps_securesubmit')->__('PayPal does not support processing orders with zero amount. To complete your purchase, proceed to the standard checkout process.'));
-        }
+        $response = parent::start($quote, $returnUrl, $cancelUrl, $credit);
 
-        $quote->reserveOrderId()->save();
-
-        // call API and redirect with token
-        $response = $this->startCheckout(
-            $quote,
-            $returnUrl,
-            $cancelUrl,
-            $credit
-        );
         $token = $response->sessionId;
         $this->_redirectUrl = $response->redirectUrl;
 
@@ -56,16 +45,13 @@ class Hps_Securesubmit_Helper_Paypal extends Mage_Core_Helper_Abstract
         }
 
         // Set flag that we came from Credit Checkout button
-        Mage::log('setting code without credit');
-        $quote->getPayment()->setAdditionalInformation('code', 'hps_paypal');
+        $quote->getPayment()->setAdditionalInformation('code', $this->_methodCode);
         if (!empty($credit)) {
             $quote->getPayment()->setAdditionalInformation('credit', 1);
-            Mage::log('setting code with credit');
-            $quote->getPayment()->setAdditionalInformation('code', 'hps_paypal_credit');
+            $quote->getPayment()->setAdditionalInformation('code', $this->_methodCode . '_credit');
         } elseif ($quote->getPayment()->hasAdditionalInformation('credit')) {
             $quote->getPayment()->unsAdditionalInformation('credit');
-            Mage::log('setting code without credit');
-            $quote->getPayment()->setAdditionalInformation('code', 'hps_paypal');
+            $quote->getPayment()->setAdditionalInformation('code', $this->_methodCode);
         }
 
         $quote->getPayment()->save();
@@ -133,107 +119,11 @@ class Hps_Securesubmit_Helper_Paypal extends Mage_Core_Helper_Abstract
 
         // import payment info
         $payment = $quote->getPayment();
-        Mage::log('method: ' . $payment->getMethod());
         $payment->setMethod($payment->getAdditionalInformation('code'));
-        Mage::log('method: ' . $payment->getMethod());
         $payment->setAdditionalInformation('payer_id', $payerId)
             ->setAdditionalInformation('checkout_token', $token)
         ;
         $quote->collectTotals()->save();
-    }
-
-    /**
-     * SetExpressCheckout call
-     * @link https://cms.paypal.com/us/cgi-bin/?&cmd=_render-content&content_ID=developer/e_howto_api_nvp_r_SetExpressCheckout
-     * TODO: put together style and giropay settings
-     */
-    public function startCheckout(
-        $quote,
-        $returnUrl,
-        $cancelUrl,
-        $credit = null
-    ) {
-        $amount = $quote->getBaseGrandTotal();
-        $currency = $quote->getBaseCurrencyCode();
-        $address = null;
-        // supress or export shipping address
-        if ($quote->getIsVirtual()) {
-            $this->setRequireBillingAddress(1);
-            $this->setSuppressShipping(true);
-        } else {
-            $address = $quote->getShippingAddress();
-            $isOverriden = 0;
-            if (true === $address->validate()) {
-                $isOverriden = 1;
-            }
-            $quote->getPayment()->setAdditionalInformation(
-                'shipping_overriden',
-                $isOverriden
-            );
-            $quote->getPayment()->save();
-        }
-
-        // add line items
-        $paypalCart = Mage::getModel('hps_securesubmit/paypal_cart', array($quote));
-        $totals = $paypalCart->getTotals();
-
-        $buyer = new HpsBuyerData();
-        $buyer->returnUrl = $returnUrl;
-        $buyer->cancelUrl = $cancelUrl;
-        $buyer->credit = $credit;
-
-        $payment = new HpsPaymentData();
-        $payment->subtotal = sprintf("%0.2f", round($totals[Mage_Paypal_Model_Cart::TOTAL_SUBTOTAL], 3));
-        $payment->shippingAmount = sprintf("%0.2f", round($totals[Mage_Paypal_Model_Cart::TOTAL_SHIPPING], 3));
-        $payment->taxAmount = sprintf("%0.2f", round($totals[Mage_Paypal_Model_Cart::TOTAL_TAX], 3));
-        $payment->paymentType = (Mage::getStoreConfig('payment/hps_paypal/payment_action') == 'authorize_capture'
-            ? 'Sale' : 'Authorization');
-
-        $discount = 0;
-        if (isset($totals[Mage_Paypal_Model_Cart::TOTAL_DISCOUNT])) {
-            $discount = sprintf("-%0.2f", round($totals[Mage_Paypal_Model_Cart::TOTAL_DISCOUNT], 3));
-            $payment->subtotal += $discount;
-        }
-
-        // import/suppress shipping address, if any
-        $shippingInfo = null;
-        if ($address !== null && $address->getRegionId() !== null) {
-            Mage::log(sprintf('address region id: %i', $address->getRegionId()));
-            Mage::log(sprintf('address city: %s', $address->getCity()));
-            $regionModel = Mage::getModel('directory/region')->load($address->getRegionId());
-            $shippingInfo = new HpsShippingInfo();
-            $shippingInfo->name = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
-            $shippingInfo->address = new HpsAddress();
-            $shippingInfo->address->address = $address->getData('street');
-            $shippingInfo->address->city = $address->getCity();
-            $shippingInfo->address->state = $regionModel->getCode();
-            $shippingInfo->address->zip = $address->getPostcode();
-            $shippingInfo->address->country = $address->getCountryId();
-
-            if ($address->getEmail()) {
-                $buyer->emailAddress = $address->getEmail();
-            }
-        }
-
-        $lineItems = $this->exportLineItems($paypalCart);
-
-        if ($discount != 0) {
-            $discountItem = new HpsLineItem();
-            $discountItem->name = 'Discount';
-            $discountItem->number = 'discount';
-            $discountItem->amount = $discount;
-            $lineItems[] = $discountItem;
-            unset($discountItem);
-        }
-
-        return $this->getService()->createSession(
-            $amount,
-            $currency,
-            $buyer,
-            $payment,
-            $shippingInfo,
-            $lineItems
-        );
     }
 
     public function getRedirectUrl()
@@ -251,262 +141,9 @@ class Hps_Securesubmit_Helper_Paypal extends Mage_Core_Helper_Abstract
     {
         $payment = $quote->getPayment();
         if (!$payment || !$payment->getAdditionalInformation('payer_id')) {
-            Mage::throwException(Mage::helper('paypal')->__('Payer is not identified.'));
+            Mage::throwException(Mage::helper('hps_securesubmit')->__('Payer is not identified.'));
         }
-        $quote->setMayEditShippingAddress(false);
-        $quote->setMayEditShippingMethod(
-            '' == $quote->getPayment()->getAdditionalInformation('shipping_method')
-        );
-        $this->ignoreAddressValidation($quote);
-        $quote->collectTotals()->save();
-    }
-
-    /**
-     * Place the order and recurring payment profiles when customer returned from paypal
-     * Until this moment all quote data must be valid
-     *
-     * @param string $token
-     * @param string $shippingMethodCode
-     */
-    public function place($quote, $token, $shippingMethodCode = null)
-    {
-        if ($shippingMethodCode) {
-            $this->updateShippingMethod($shippingMethodCode);
-        }
-
-        $isNewCustomer = false;
-        switch ($this->getCheckoutMethod($quote)) {
-            case Mage_Checkout_Model_Type_Onepage::METHOD_GUEST:
-                $quote = $this->_prepareGuestQuote($quote);
-                break;
-            case Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER:
-                $quote = $this->_prepareNewCustomerQuote($quote);
-                $isNewCustomer = true;
-                break;
-            default:
-                $quote = $this->_prepareCustomerQuote($quote);
-                break;
-        }
-
-        $this->ignoreAddressValidation($quote);
-        $quote->collectTotals();
-        $service = Mage::getModel('sales/service_quote', $quote);
-        $service->submitAll();
-        $quote->save();
-
-        if ($isNewCustomer) {
-            try {
-                $this->_involveNewCustomer();
-            } catch (Exception $e) {
-                Mage::logException($e);
-            }
-        }
-
-        /** @var $order Mage_Sales_Model_Order */
-        $order = $service->getOrder();
-        if (!$order) {
-            return false;
-        }
-
-        switch ($order->getState()) {
-            // even after placement paypal can disallow to authorize/capture, but will wait until bank transfers money
-            case Mage_Sales_Model_Order::STATE_PENDING_PAYMENT:
-                // TODO
-                break;
-            // regular placement, when everything is ok
-            case Mage_Sales_Model_Order::STATE_PROCESSING:
-            case Mage_Sales_Model_Order::STATE_COMPLETE:
-            case Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW:
-                $order->sendNewOrderEmail();
-                break;
-        }
-        return $order;
-    }
-
-    /**
-     * Make sure addresses will be saved without validation errors
-     */
-    public function ignoreAddressValidation($quote)
-    {
-        $quote->getBillingAddress()->setShouldIgnoreValidation(true);
-        if (!$quote->getIsVirtual()) {
-            $quote->getShippingAddress()->setShouldIgnoreValidation(true);
-        }
-    }
-
-    /**
-     * Get checkout method
-     *
-     * @return string
-     */
-    protected function getCheckoutMethod($quote)
-    {
-        if (Mage::getSingleton('customer/session')->isLoggedIn()) {
-            return Mage_Checkout_Model_Type_Onepage::METHOD_CUSTOMER;
-        }
-        if (!$quote->getCheckoutMethod()) {
-            if (Mage::helper('checkout')->isAllowedGuestCheckout($quote)) {
-                $quote->setCheckoutMethod(Mage_Checkout_Model_Type_Onepage::METHOD_GUEST);
-            } else {
-                $quote->setCheckoutMethod(Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER);
-            }
-        }
-        return $quote->getCheckoutMethod();
-    }
-
-    /**
-     * GetExpressCheckoutDetails call
-     * @link https://cms.paypal.com/us/cgi-bin/?&cmd=_render-content&content_ID=developer/e_howto_api_nvp_r_GetExpressCheckoutDetails
-     */
-    protected function getCheckoutDetails($token)
-    {
-        return $this->getService()->sessionInfo($token);
-    }
-
-    /**
-     * Prepare quote for guest checkout order submit
-     *
-     * @return Hps_Securesubmit_Model_Paypal_Checkout
-     */
-    protected function _prepareGuestQuote($quote)
-    {
-        $quote->setCustomerId(null)
-            ->setCustomerEmail($quote->getBillingAddress()->getEmail())
-            ->setCustomerIsGuest(true)
-            ->setCustomerGroupId(Mage_Customer_Model_Group::NOT_LOGGED_IN_ID);
-        return $quote;
-    }
-
-    /**
-     * Checks if customer with email coming from Express checkout exists
-     *
-     * @return int
-     */
-    protected function _lookupCustomerId($quote)
-    {
-        return Mage::getModel('customer/customer')
-            ->setWebsiteId(Mage::app()->getWebsite()->getId())
-            ->loadByEmail($quote->getCustomerEmail())
-            ->getId();
-    }
-
-    /**
-     * Prepare quote for customer registration and customer order submit
-     * and restore magento customer data from quote
-     *
-     * @return Hps_Securesubmit_Model_Paypal_Checkout
-     */
-    protected function _prepareNewCustomerQuote($quote)
-    {
-        $billing    = $quote->getBillingAddress();
-        $shipping   = $quote->isVirtual() ? null : $quote->getShippingAddress();
-
-        $customerId = $this->_lookupCustomerId($quote);
-        if ($customerId) {
-            Mage::getSingleton('customer/session')->loginById($customerId);
-            return $this->_prepareCustomerQuote($quote);
-        }
-
-        $customer = $quote->getCustomer();
-        /** @var $customer Mage_Customer_Model_Customer */
-        $customerBilling = $billing->exportCustomerAddress();
-        $customer->addAddress($customerBilling);
-        $billing->setCustomerAddress($customerBilling);
-        $customerBilling->setIsDefaultBilling(true);
-        if ($shipping && !$shipping->getSameAsBilling()) {
-            $customerShipping = $shipping->exportCustomerAddress();
-            $customer->addAddress($customerShipping);
-            $shipping->setCustomerAddress($customerShipping);
-            $customerShipping->setIsDefaultShipping(true);
-        } elseif ($shipping) {
-            $customerBilling->setIsDefaultShipping(true);
-        }
-
-        if ($quote->getCustomerDob() && !$billing->getCustomerDob()) {
-            $billing->setCustomerDob($quote->getCustomerDob());
-        }
-
-        if ($quote->getCustomerTaxvat() && !$billing->getCustomerTaxvat()) {
-            $billing->setCustomerTaxvat($quote->getCustomerTaxvat());
-        }
-
-        if ($quote->getCustomerGender() && !$billing->getCustomerGender()) {
-            $billing->setCustomerGender($quote->getCustomerGender());
-        }
-
-        Mage::helper('core')->copyFieldset('checkout_onepage_billing', 'to_customer', $billing, $customer);
-        $customer->setEmail($quote->getCustomerEmail());
-        $customer->setPrefix($quote->getCustomerPrefix());
-        $customer->setFirstname($quote->getCustomerFirstname());
-        $customer->setMiddlename($quote->getCustomerMiddlename());
-        $customer->setLastname($quote->getCustomerLastname());
-        $customer->setSuffix($quote->getCustomerSuffix());
-        $customer->setPassword($customer->decryptPassword($quote->getPasswordHash()));
-        $customer->setPasswordHash($customer->hashPassword($customer->getPassword()));
-        $customer->save();
-        $quote->setCustomer($customer);
-
-        return $quote;
-    }
-
-    /**
-     * Prepare quote for customer order submit
-     *
-     * @return Hps_Securesubmit_Model_Paypal_Checkout
-     */
-    protected function _prepareCustomerQuote($quote)
-    {
-        $billing    = $quote->getBillingAddress();
-        $shipping   = $quote->isVirtual() ? null : $quote->getShippingAddress();
-
-        $customer = Mage::getSingleton('customer/session')->getCustomer();
-        if (!$billing->getCustomerId() || $billing->getSaveInAddressBook()) {
-            $customerBilling = $billing->exportCustomerAddress();
-            $customer->addAddress($customerBilling);
-            $billing->setCustomerAddress($customerBilling);
-        }
-        if ($shipping && ((!$shipping->getCustomerId() && !$shipping->getSameAsBilling())
-            || (!$shipping->getSameAsBilling() && $shipping->getSaveInAddressBook()))) {
-            $customerShipping = $shipping->exportCustomerAddress();
-            $customer->addAddress($customerShipping);
-            $shipping->setCustomerAddress($customerShipping);
-        }
-
-        if (isset($customerBilling) && !$customer->getDefaultBilling()) {
-            $customerBilling->setIsDefaultBilling(true);
-        }
-        if ($shipping && isset($customerBilling) && !$customer->getDefaultShipping() && $shipping->getSameAsBilling()) {
-            $customerBilling->setIsDefaultShipping(true);
-        } elseif ($shipping && isset($customerShipping) && !$customer->getDefaultShipping()) {
-            $customerShipping->setIsDefaultShipping(true);
-        }
-        $quote->setCustomer($customer);
-
-        return $quote;
-    }
-
-    protected function exportLineItems($cart)
-    {
-        if (!$cart) {
-            return;
-        }
-
-        // add cart line items
-        $items = $cart->getItems();
-        if (empty($items)) {
-            return;
-        }
-
-        $result = array();
-        foreach ($items as $item) {
-            $lineItem = new HpsLineItem();
-            $lineItem->number = $item->getDataUsingMethod('id');
-            $lineItem->quantity = $item->getDataUsingMethod('qty');
-            $lineItem->name = $item->getDataUsingMethod('name');
-            $lineItem->amount = $item->getDataUsingMethod('amount');
-            $result[] = $lineItem;
-        }
-        return $result;
+        parent::prepareOrderReview($quote);
     }
 
     protected function getService()

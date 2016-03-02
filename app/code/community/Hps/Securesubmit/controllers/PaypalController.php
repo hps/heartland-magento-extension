@@ -62,14 +62,12 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
 
             $customer = Mage::getSingleton('customer/session')->getCustomer();
             $quoteCheckoutMethod = $this->_getQuote()->getCheckoutMethod();
-            Mage::log('checkout method: ' . $quoteCheckoutMethod);
             if ($customer && $customer->getId()) {
                 $this->_getQuote()->assignCustomerWithAddressChange(
                     $customer,
                     $this->_getQuote()->getBillingAddress(),
                     $this->_getQuote()->getShippingAddress()
                 );
-                Mage::log('customer: ' . $customer->getId());
             } elseif ((!$quoteCheckoutMethod
                 || $quoteCheckoutMethod != Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER)
                 && !Mage::helper('checkout')->isAllowedGuestCheckout(
@@ -100,16 +98,13 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
             );
 
             $this->_initRedirectUrl($url = $helper->getRedirectUrl());
-            Mage::log('url: ' . $url);
 
             if ($token && $incontext && $url) {
-                Mage::log('incontext');
                 $this->_initToken($token);
                 $this->getResponse()->setBody($url);
                 return;
             }
             if ($token && $url) {
-                Mage::log('standard');
                 $this->_initToken($token);
                 $this->getResponse()->setRedirect($url);
                 return;

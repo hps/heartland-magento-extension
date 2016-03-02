@@ -285,10 +285,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     public function refund(Varien_Object $payment, $amount)
     {
         if ($this->canVoid($payment) && $this->transactionActiveOnGateway($payment)) {
-            Mage::log('trying to void');
             $this->void($payment);
         } else {
-            Mage::log('refunding');
             $this->_refund($payment, $amount);
         }
         return $this;

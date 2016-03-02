@@ -14,7 +14,6 @@ class Hps_Securesubmit_GiftcardController extends Mage_core_Controller_Front_Act
             $config = new HpsServicesConfig();
 
             $config->secretApiKey = Mage::getModel('hps_securesubmit/payment')->getConfigData('secretapikey');
-            Mage::log($config->secretApiKey);
             $config->versionNumber = '1573';
             $config->developerId = '002914';
 

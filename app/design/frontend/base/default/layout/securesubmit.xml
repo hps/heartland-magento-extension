@@ -5,23 +5,39 @@
         <reference name="head">
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
+            <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
         </reference>
     </onestepcheckout_index_index>
     <checkout_onepage_index>
         <reference name="head">
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
+            <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
         </reference>
     </checkout_onepage_index>
     <onepagecheckout_index_index>
         <reference name="head">
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
+            <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
         </reference>
     </onepagecheckout_index_index>
     <checkout_multishipping_billing>
         <reference name="head">
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
+            <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
         </reference>
     </checkout_multishipping_billing>
     <customer_account>
@@ -30,6 +46,11 @@
             <name>save_token</name>
             <path>securesubmit/storedcard/index</path>
             <label>Manage Cards</label>
+          </action>
+          <action method="addLink">
+            <name>masterpass_connect</name>
+            <path>securesubmit/masterpass/connect</path>
+            <label>MasterPass</label>
           </action>
         </reference>
     </customer_account>
@@ -40,6 +61,19 @@
             <block type="core/template" name="hps_securesubmit_content" template="securesubmit/storedcards.phtml"/>
         </reference>
     </hps_securesubmit_storedcard_index>
+
+    <hps_securesubmit_masterpass_connect>
+        <update handle="customer_account" />
+        <reference name="my.account.wrapper">
+            <block type="hps_securesubmit/masterpass_connect" name="hps_securesubmit_masterpass_connect" template="securesubmit/masterpass/connect.phtml" />
+        </reference>
+        <reference name="head">
+            <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
+        </reference>
+    </hps_securesubmit_masterpass_connect>
 
     <checkout_cart_index>
         <reference name="checkout.cart.top_methods">
@@ -105,4 +139,39 @@
             <action method="setTemplate"><template>securesubmit/paypal/incontext/payment.phtml</template></action>
         </reference>
     </checkout_onepage_index>
+
+    <hps_securesubmit_masterpass_review translate="label">
+        <label>MasterPass Order Review Form</label>
+        <remove name="right"/>
+        <remove name="left"/>
+
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="hps_securesubmit/masterpass_review" name="hps.securesubmit.masterpass.review" template="securesubmit/masterpass/review.phtml">
+                <block type="hps_securesubmit/masterpass_review" name="hps.securesubmit.review.shipping.method" as="shipping_method" template="securesubmit/masterpass/review/shipping/method.phtml"/>
+                <block type="hps_securesubmit/masterpass_review_details" name="hps.securesubmit.masterpass.review.details" as="details" template="securesubmit/masterpass/review/details.phtml">
+                    <action method="addItemRender"><type>default</type><block>checkout/cart_item_renderer</block><template>checkout/onepage/review/item.phtml</template></action>
+                    <action method="addItemRender"><type>grouped</type><block>checkout/cart_item_renderer_grouped</block><template>checkout/onepage/review/item.phtml</template></action>
+                    <action method="addItemRender"><type>configurable</type><block>checkout/cart_item_renderer_configurable</block><template>checkout/onepage/review/item.phtml</template></action>
+                    <block type="checkout/cart_totals" name="hps.securesubmit.masterpass.review.details.totals" as="totals" template="checkout/onepage/review/totals.phtml"/>
+                </block>
+                <block type="checkout/agreements" name="hps.securesubmit.masterpass.review.details.agreements" as="agreements" template="checkout/onepage/agreements.phtml"/>
+            </block>
+        </reference>
+        <reference name="head">
+            <action method="addItem"><type>skin_js</type><name>js/checkout/review.js</name></action>
+        </reference>
+        <block type="core/text_list" name="additional.product.info" />
+    </hps_securesubmit_masterpass_review>
+
+    <hps_securesubmit_masterpass_review_details>
+        <block type="hps_securesubmit/masterpass_review_details" name="root" output="toHtml" template="securesubmit/masterpass/review/details.phtml">
+            <action method="addItemRender"><type>default</type><block>checkout/cart_item_renderer</block><template>checkout/onepage/review/item.phtml</template></action>
+            <action method="addItemRender"><type>grouped</type><block>checkout/cart_item_renderer_grouped</block><template>checkout/onepage/review/item.phtml</template></action>
+            <action method="addItemRender"><type>configurable</type><block>checkout/cart_item_renderer_configurable</block><template>checkout/onepage/review/item.phtml</template></action>
+            <block type="checkout/cart_totals" name="hps.securesubmit.masterpass.review.details.totals" as="totals" template="checkout/onepage/review/totals.phtml"/>
+        </block>
+    </hps_securesubmit_masterpass_review_details>
 </layout>

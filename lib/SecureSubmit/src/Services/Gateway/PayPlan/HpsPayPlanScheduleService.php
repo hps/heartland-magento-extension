@@ -7,14 +7,20 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
         $data = $schedule->getEditableFieldsWithValues();
         $data['customerKey'] = $schedule->customerKey;
         $data['numberOfPayments'] = $schedule->numberOfPayments;
-        $result = $this->doRequest('POST', 'schedules', $data);
+        $result = $this->doRequest($data, array(
+            'verb'     => 'POST',
+            'endpoint' => 'schedules',
+        ));
         return $this->hydrateObject($result, 'HpsPayPlanSchedule');
     }
 
     public function edit(HpsPayPlanSchedule $schedule)
     {
         $data = $schedule->getEditableFieldsWithValues();
-        $result = $this->doRequest('PUT', 'schedules/'.$schedule->scheduleKey, $data);
+        $result = $this->doRequest($data, array(
+            'verb'     => 'PUT',
+            'endpoint' => 'schedules/'.$schedule->scheduleKey,
+        ));
         return $this->hydrateObject($result, 'HpsPayPlanSchedule');
     }
 
@@ -24,7 +30,10 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
         // in a JSON document
         $data = $searchFields === array() ? (object)array() : $searchFields;
         $results = $this
-            ->doRequest('POST', 'searchSchedules', $data);
+            ->doRequest($data, array(
+                'verb'     => 'POST',
+                'endpoint' => 'searchSchedules',
+            ));
 
         return $this->hydrateSearchResults($results, 'HpsPayPlanSchedule');
     }
@@ -37,7 +46,10 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
         } else {
             $id = $schedule;
         }
-        $result = $this->doRequest('GET', 'schedules/'.$id);
+        $result = $this->doRequest(null, array(
+            'verb'     => 'GET',
+            'endpoint' => 'schedules/'.$id,
+        ));
         return $this->hydrateObject($result, 'HpsPayPlanSchedule');
     }
 
@@ -53,6 +65,9 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
         $data = array(
             'forceDelete' => $forceDelete,
         );
-        return $this->doRequest('DELETE', 'schedules/'.$id, $data);
+        return $this->doRequest($data, array(
+            'verb'     => 'DELETE',
+            'endpoint' => 'schedules/'.$id,
+        ));
     }
 }

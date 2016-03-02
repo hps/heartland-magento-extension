@@ -95,7 +95,7 @@ class HpsFluentCheckService extends HpsSoapGatewayService
 
     public function _submitTransaction($transaction, $txnType, $clientTransactionId = null)
     {
-        $rsp = $this->doTransaction($transaction, $clientTransactionId);
+        $rsp = $this->doRequest($transaction, $clientTransactionId);
         HpsGatewayResponseValidation::checkResponse($rsp, $txnType);
         $response = HpsCheckResponse::fromDict($rsp, $txnType);
 
