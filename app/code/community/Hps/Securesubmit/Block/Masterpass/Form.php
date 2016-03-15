@@ -78,3 +78,4 @@ class Hps_Securesubmit_Block_Masterpass_Form extends Mage_Payment_Block_Form
     {
         return Mage::getSingleton('hps_securesubmit/session');
     }
+}
