@@ -45,22 +45,24 @@
       checkout.ajaxFailure = checkout.ajaxFailure || function () { };
       return function (e) {
         e.preventDefault();
-        var request = new Ajax.Request(lookupUrl, {
-          method:     'post',
-          onComplete: function () {},
-          onSuccess:  function (response) {
-            var resp = JSON.parse(response.responseText);
-            if (resp.result === 'error' && resp.redirect) {
-              window.location.href = resp.redirect;
-            }
-            if (resp.result === 'error') {
-              checkout.ajaxFailure.bind(checkout);
-            }
-            callback(resp.data);
-          },
-          onFailure:  checkout.ajaxFailure.bind(checkout),
-          parameters: data
-        });
+        if (payment.currentMethod.indexOf('hps_masterpass') === 0) {
+          var request = new Ajax.Request(lookupUrl, {
+            method:     'post',
+            onComplete: function () {},
+            onSuccess:  function (response) {
+              var resp = JSON.parse(response.responseText);
+              if (resp.result === 'error' && resp.redirect) {
+                window.location.href = resp.redirect;
+              }
+              if (resp.result === 'error') {
+                checkout.ajaxFailure.bind(checkout);
+              }
+              callback(resp.data);
+            },
+            onFailure:  checkout.ajaxFailure.bind(checkout),
+            parameters: data
+          });
+        }
       };
     }
 
