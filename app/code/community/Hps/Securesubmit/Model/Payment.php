@@ -299,7 +299,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             ->addAttributeToFilter('txn_type', array('eq' => 'capture'))
             ->toArray();
         if ($transaction['totalRecords'] == 1) {
-            return $transaction['items'][0]['parent_txn_id'];
+            return isset($transaction['items'][0]['parent_txn_id'])
+                ? $transaction['items'][0]['parent_txn_id'] : false;
         } else {
             return false;
         }
