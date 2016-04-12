@@ -322,6 +322,34 @@ class HpsCreditService extends HpsSoapGatewayService
         return $this->_submitTransaction($hpsTransaction, 'CreditReversal', (isset($details->clientTransactionId) ? $details->clientTransactionId : null));
     }
 
+    public function updateTokenExpiration($multiUseToken, $newExpMonth, $newExpYear)
+    {
+        $xml = new DOMDocument();
+        $transaction = $xml->createElement('hps:Transaction');
+
+        $manageTokens = $xml->createElement('hps:ManageTokens');
+        $manageTokens->appendChild($xml->createElement('hps:TokenValue', $multiUseToken));
+
+        $tokenActions = $xml->createElement('hps:TokenActions');
+        $setAction = $xml->createElement('hps:Set');
+
+        $expMonth = $xml->createElement('hps:Attribute');
+        $expMonth->appendChild($xml->createElement('hps:Name', 'ExpMonth'));
+        $expMonth->appendChild($xml->createElement('hps:Value', $newExpMonth));
+        $setAction->appendChild($expMonth);
+
+        $expYear = $xml->createElement('hps:Attribute');
+        $expYear->appendChild($xml->createElement('hps:Name', 'ExpYear'));
+        $expYear->appendChild($xml->createElement('hps:Value', $newExpYear));
+        $setAction->appendChild($expYear);
+
+        $tokenActions->appendChild($setAction);
+        $manageTokens->appendChild($tokenActions);
+        $transaction->appendChild($manageTokens);
+
+        return $this->_submitTransaction($transaction, 'ManageTokens');
+    }
+
     public function verify($cardOrToken, $cardHolder = null, $requestMultiUseToken = false, $clientTransactionId = null)
     {
         $xml = new DOMDocument();
@@ -484,6 +512,9 @@ class HpsCreditService extends HpsSoapGatewayService
                 break;
             case 'RecurringBilling':
                 $rvalue = HpsRecurringBilling::fromDict($response, $txnType);
+                break;
+            case 'ManageTokens':
+                $rvalue = HpsTransaction::fromDict($response, $txnType);
                 break;
             default:
                 break;
