@@ -205,16 +205,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
             if ($multiToken) {
-                $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
-                if ($tokenData->responseCode == '0') {
-                    if ($customerId > 0) {
-                        Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType, $customerId);
-                    } else {
-                        Mage::helper('hps_securesubmit')->saveMultiToken($response->tokenData->tokenValue, $cardData, $response->cardType);
-                    }
-                } else {
-                    Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
-                }
+                $this->saveMultiUseToken($response, $cardData, $customerId);
             }
         } catch (HpsCreditException $e) {
             Mage::logException($e);
@@ -263,6 +254,25 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         return $this;
+    }
+
+    protected function saveMultiUseToken($response, $cardData, $customerId)
+    {
+        $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
+        if ($tokenData->responseCode == '0') {
+            try {
+                $this->_getChargeService()->updateTokenExpiration($tokenData->tokenValue, $cardData->expMonth, $cardData->expYear);
+            } catch (Exception $e) {
+                Mage::logException($e);
+            }
+            if ($customerId > 0) {
+                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $response->cardType, $customerId);
+            } else {
+                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $response->cardType);
+            }
+        } else {
+            Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
+        }
     }
 
     protected function _formatAmount($amount) {
