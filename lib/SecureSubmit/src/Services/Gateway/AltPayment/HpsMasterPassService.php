@@ -419,6 +419,7 @@ class HpsMasterPassService
     {
         return array(
             'BillingAddress1'    => $buyer->address->address,
+            'BillingAddress2'    => $buyer->address->address2,
             'BillingCity'        => $buyer->address->city,
             'BillingCountryCode' => $buyer->countryCode,
             'BillingFirstName'   => $buyer->firstName,
@@ -486,6 +487,7 @@ class HpsMasterPassService
     {
         return array(
             'ShippingAddress1'    => $shipping->address->address,
+            'ShippingAddress2'    => $shipping->address->address2,
             'ShippingCity'        => $shipping->address->city,
             'ShippingCountryCode' => $shipping->countryCode,
             'ShippingFirstName'   => $shipping->firstName,

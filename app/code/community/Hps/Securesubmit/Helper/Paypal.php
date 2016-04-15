@@ -83,7 +83,10 @@ class Hps_Securesubmit_Helper_Paypal extends Hps_Securesubmit_Helper_Altpayment_
                     && $quote->getPayment()->getAdditionalInformation('button') == 1
                 ) {
                     $regionModel = Mage::getModel('directory/region')->loadByCode($exportedShippingAddress->address->state, $exportedShippingAddress->address->country);
-                    $shippingAddress->setData('street', $exportedShippingAddress->address->address);
+                    $shippingAddress->setStreetFull(array(
+                        $exportedShippingAddress->address->address,
+                        $exportedShippingAddress->address->address2,
+                    ));
                     $shippingAddress->setCity($exportedShippingAddress->address->city);
                     $shippingAddress->setRegionId($regionModel->getId());
                     $shippingAddress->setPostcode($exportedShippingAddress->address->zip);
@@ -93,6 +96,7 @@ class Hps_Securesubmit_Helper_Paypal extends Hps_Securesubmit_Helper_Altpayment_
                     $shippingAddress->setMiddlename(null);
                     $shippingAddress->setLastname($response->buyer->lastName);
                     $shippingAddress->setEmail($response->buyer->emailAddress);
+                    $shippingAddress->setTelephone($response->buyer->phoneNumber);
                     $shippingAddress->setSuffix(null);
                     $shippingAddress->setCollectShippingRates(true);
                     $shippingAddress->setSameAsBilling(0);

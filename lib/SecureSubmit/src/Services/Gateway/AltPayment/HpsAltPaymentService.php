@@ -254,12 +254,27 @@ class HpsAltPaymentService extends HpsSoapGatewayService
         $shipping = $xml->createElement('hps:Shipping');
         $address = $xml->createElement('hps:Address');
         $address->appendChild($this->hydrateNameValuePair('AllowAddressOverride', 'false', $xml));
-        $address->appendChild($this->hydrateNameValuePair('ShipName', $info->name, $xml));
-        $address->appendChild($this->hydrateNameValuePair('ShipAddress', $info->address->address, $xml));
-        $address->appendChild($this->hydrateNameValuePair('ShipCity', $info->address->city, $xml));
-        $address->appendChild($this->hydrateNameValuePair('ShipState', $info->address->state, $xml));
-        $address->appendChild($this->hydrateNameValuePair('ShipZip', $info->address->zip, $xml));
-        $address->appendChild($this->hydrateNameValuePair('ShipCountryCode', $info->address->country, $xml));
+        if (isset($info->name)) {
+            $address->appendChild($this->hydrateNameValuePair('ShipName', $info->name, $xml));
+        }
+        if (isset($info->address->address)) {
+            $address->appendChild($this->hydrateNameValuePair('ShipAddress', $info->address->address, $xml));
+        }
+        if (isset($info->address->address2)) {
+            $address->appendChild($this->hydrateNameValuePair('ShipAddress2', $info->address->address2, $xml));
+        }
+        if (isset($info->address->city)) {
+            $address->appendChild($this->hydrateNameValuePair('ShipCity', $info->address->city, $xml));
+        }
+        if (isset($info->address->state)) {
+            $address->appendChild($this->hydrateNameValuePair('ShipState', $info->address->state, $xml));
+        }
+        if (isset($info->address->zip)) {
+            $address->appendChild($this->hydrateNameValuePair('ShipZip', $info->address->zip, $xml));
+        }
+        if (isset($info->address->country)) {
+            $address->appendChild($this->hydrateNameValuePair('ShipCountryCode', $info->address->country, $xml));
+        }
         $shipping->appendChild($address);
         return $shipping;
     }
