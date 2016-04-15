@@ -69,11 +69,13 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
             $buyer->address = new HpsAddress();
             $buyer->name = $billingAddress->getFirstname() . ' ' . $billingAddress->getMiddlename() . ' ' . $billingAddress->getLastname();
             $buyer->address = new HpsAddress();
-            $buyer->address->address = $billingAddress->getData('street');
+            $buyer->address->address = $billingAddress->getStreet(1);
+            $buyer->address->address2 = $billingAddress->getStreet(2);
             $buyer->address->city = $billingAddress->getCity();
             $buyer->address->state = $regionModel->getCode();
             $buyer->address->zip = $billingAddress->getPostcode();
             $buyer->address->country = $billingAddress->getCountryId();
+            $buyer->phoneNumber = $billingAddress->getTelephone();
         }
 
         $payment = new HpsPaymentData();
@@ -96,7 +98,8 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
             $shippingInfo = new HpsShippingInfo();
             $shippingInfo->name = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
             $shippingInfo->address = new HpsAddress();
-            $shippingInfo->address->address = $address->getData('street');
+            $shippingInfo->address->address = $address->getStreet(1);
+            $shippingInfo->address->address2 = $address->getStreet(2);
             $shippingInfo->address->city = $address->getCity();
             $shippingInfo->address->state = $regionModel->getCode();
             $shippingInfo->address->zip = $address->getPostcode();
