@@ -1,7 +1,7 @@
-function securesubmitMultishipping(multiForm){
+function securesubmitMultishipping(multiForm) {
     var secureSubmit = {
         save: function() {
-            if (payment.currentMethod != 'hps_securesubmit') {
+            if (payment && payment.currentMethod != 'hps_securesubmit') {
                 multiForm.submit();
                 return;
             }
@@ -75,7 +75,7 @@ function securesubmitMultishipping(multiForm){
                 document.getElementById('payment-continue').enable();
                 multiForm.submit();
             } else {
-                alert('Unexpected error.')
+                alert('Unexpected error.');
             }
         }
     };
@@ -96,7 +96,7 @@ document.observe('dom:loaded', function () {
                     return;
                 }
 
-                if (checkout.loadWaiting != false) return;
+                if (checkout.loadWaiting !== false) return;
 
                 // Use stored card checked, get existing token data
                 if (this.secureSubmitUseStoredCard()) {
@@ -173,7 +173,7 @@ document.observe('dom:loaded', function () {
                         parameters: Form.serialize(this.form)
                     });
                 } else {
-                    alert('Unexpected error.')
+                    alert('Unexpected error.');
                 }
             }
         });
@@ -223,11 +223,108 @@ document.observe('dom:loaded', function () {
                         parameters: params,
                         onSuccess: this.setResponse.bind(this),
                         onFailure: this.ajaxFailure.bind(this)
-                    });;
+                    });
                 } else {
-                    alert('Unexpected error.')
+                    alert('Unexpected error.');
                 }
             }
         });
+    }
+
+    // MageStore One Step Checkout
+    if (typeof oscPlaceOrder == 'function') {
+        var oscPlaceOrderOriginal = oscPlaceOrder;
+        oscPlaceOrder = function (btn) {
+            var validator = new Validation('one-step-checkout-form');
+            var form = $('one-step-checkout-form');
+            if (validator.validate()) {
+                var currentPayment = $RF(form, 'payment[method]');
+                if (currentPayment!='hps_securesubmit') {
+                    oscPlaceOrderOriginal(btn);
+                    return;
+                }
+                $('onestepcheckout-place-order-loading').hide();
+                $('onestepcheckout-button-place-order').removeClassName('place-order-loader');
+                $('onestepcheckout-button-place-order').addClassName('onestepcheckout-btn-checkout');
+                if (secureSubmitUseStoredCardOSC()) {
+                    var storedcardId = $('hps_securesubmit_stored_card_select').value;
+                    new Ajax.Request(secureSubmitGetTokenDataUrlOSC, {
+                      method: 'post',
+                      parameters: {storedcard_id: storedcardId},
+                      onSuccess: function (response) {
+                          var data = response.responseJSON;
+                          if (data && data.token) {
+                              $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
+                              $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
+                          }
+                          secureSubmitResponseHandlerOSC({
+                              token_value:  data.token.token_value,
+                              token_type:   null, // 'supt'?
+                              token_expire: new Date().toISOString(),
+                              card: {
+                                  number: data.token.cc_last4
+                              }
+                          }, btn);
+                      },
+                      onFailure: function() {
+                          alert('Unknown error. Please try again.');
+                          $('onestepcheckout-place-order-loading').show();
+                          $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
+                          $('onestepcheckout-button-place-order').addClassName('place-order-loader');
+                      }
+                    });
+                } else {
+                    hps.tokenize({
+                        data: {
+                            public_key: secureSubmitPublicKeyOSC,
+                            number: $('hps_securesubmit_cc_number').value,
+                            cvc: $('hps_securesubmit_cc_cid').value,
+                            exp_month: $('hps_securesubmit_expiration').value,
+                            exp_year: $('hps_securesubmit_expiration_yr').value
+                        },
+                        success: function(response){
+                            secureSubmitResponseHandlerOSC(response, btn);
+                        },
+                        error: function(response){
+                            secureSubmitResponseHandlerOSC(response, btn);
+                        }
+                    });
+                }
+            }
+        };
+
+        secureSubmitUseStoredCardOSC = function () {
+            var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
+            return storedCheckbox && storedCheckbox.checked;
+        };
+
+        secureSubmitResponseHandlerOSC = function (response, btn) {
+            var tokenField = $('hps_securesubmit_token'),
+                lastFourField = $('hps_securesubmit_cc_last_four');
+            tokenField.value = lastFourField.value = null;
+
+            if (response && response.error) {
+                if (response.message) {
+                    alert(response.message);
+                }
+
+                $('onestepcheckout-place-order-loading').hide();
+                $('onestepcheckout-button-place-order').removeClassName('place-order-loader');
+                $('onestepcheckout-button-place-order').addClassName('onestepcheckout-btn-checkout');
+            } else if (response && response.token_value) {
+                tokenField.value = response.token_value;
+                lastFourField.value = response.card.number.substr(-4);
+
+                $('onestepcheckout-place-order-loading').show();
+                $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
+                $('onestepcheckout-button-place-order').addClassName('place-order-loader');
+                oscPlaceOrderOriginal(btn);
+            } else {
+                alert('Unexpected error.');
+                $('onestepcheckout-place-order-loading').show();
+                $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
+                $('onestepcheckout-button-place-order').addClassName('place-order-loader');
+            }
+        };
     }
 });

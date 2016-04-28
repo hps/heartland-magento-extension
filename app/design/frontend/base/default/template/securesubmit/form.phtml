@@ -127,6 +127,7 @@ if ($_loggedIn && $allow_card_saving) {
 <?php endif; ?>
 
 if (typeof Payment !== 'undefined') {
+    payment = payment || {};
     payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
     payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 } else if( !document.getElementById('multishipping-billing-form').empty() ){
@@ -142,6 +143,11 @@ if (typeof Payment !== 'undefined') {
 if (typeof OPC !== 'undefined') {
     OPC.prototype.secureSubmitPublicKey = '<?php echo $public_key ?>';
     OPC.prototype.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+}
+
+ if (typeof oscPlaceOrder == 'function') {
+    secureSubmitPublicKeyOSC = '<?php echo $public_key ?>';
+    secureSubmitGetTokenDataUrlOSC = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 }
 //]]>
 </script>
