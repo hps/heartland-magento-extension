@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
 
 <layout version="0.1.0">
+    <opc_index_index>
+        <reference name="head">
+            <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
+            <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
+            <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
+        </reference>
+    </opc_index_index>
     <onestepcheckout_index_index>
         <reference name="head">
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>

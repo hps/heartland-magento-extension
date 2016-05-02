@@ -327,4 +327,59 @@ document.observe('dom:loaded', function () {
             }
         };
     }
+
+    // IWD OPC
+    if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
+      if (typeof IWD.OPC._secureSubmitOldSavePayment === 'undefined') {
+          var oldOPC = Object.clone(IWD.OPC);
+          IWD.OPC._secureSubmitOldSavePayment = oldOPC.savePayment;
+      }
+      Object.extend(IWD.OPC, {
+          savePayment: function() {
+              if (payment.currentMethod != 'hps_securesubmit') {
+                  this._secureSubmitOldSavePayment();
+                  return;
+              }
+              hps.tokenize({
+                  data: {
+                      public_key: this.secureSubmitPublicKey,
+                      number: $('hps_securesubmit_cc_number').value,
+                      cvc: $('hps_securesubmit_cc_cid').value,
+                      exp_month: $('hps_securesubmit_expiration').value,
+                      exp_year: $('hps_securesubmit_expiration_yr').value
+                  },
+                  success: this.secureSubmitResponseHandler.bind(this),
+                  error: this.secureSubmitResponseHandler.bind(this)
+              });
+          },
+          secureSubmitResponseHandler: function (response) {
+              var tokenField = $('hps_securesubmit_token'),
+                  lastFourField = $('hps_securesubmit_cc_last_four');
+              tokenField.value = lastFourField.value = null;
+
+              if (response && response.error) {
+                  IWD.OPC.Checkout.hideLoader();
+                  IWD.OPC.Checkout.xhr = null;
+                  IWD.OPC.Checkout.unlockPlaceOrder();
+                  alert(response.error.message);
+              } else if (response && response.token_value) {
+                  tokenField.value = response.token_value;
+                  lastFourField.value = response.card.number.substr(-4);
+
+    							var form = $j_opc('#co-payment-form').serializeArray();
+                  IWD.OPC.Checkout.xhr = $j_opc.post(
+                      IWD.OPC.Checkout.config.baseUrl + 'onepage/json/savePayment',
+                      form,
+                      IWD.OPC.preparePaymentResponse,
+                      'json'
+                  );
+              } else {
+                  IWD.OPC.Checkout.hideLoader();
+                  IWD.OPC.Checkout.xhr = null;
+                  IWD.OPC.Checkout.unlockPlaceOrder();
+                  alert('Unexpected error.');
+              }
+          }
+      });
+    }
 });
