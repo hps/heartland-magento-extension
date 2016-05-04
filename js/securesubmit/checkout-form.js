@@ -39,14 +39,17 @@ function securesubmitMultishipping(multiForm) {
             else {
                 var validator = new Validation(multiForm);
                 if (validator.validate()) {
+                  var date = $('hps_securesubmit_exp_date').value.split('/');
+                  var hps_securesubmit_expiration = date[0].trim();
+                  var hps_securesubmit_expiration_yr = date[1].trim();
 
                     hps.tokenize({
                         data: {
                             public_key: this.secureSubmitPublicKey,
                             number: $('hps_securesubmit_cc_number').value,
                             cvc: $('hps_securesubmit_cc_cid').value,
-                            exp_month: $('hps_securesubmit_expiration').value,
-                            exp_year: $('hps_securesubmit_expiration_yr').value
+                            exp_month: hps_securesubmit_expiration,
+                            exp_year: hps_securesubmit_expiration_yr
                         },
                         success: this.secureSubmitResponseHandler.bind(this),
                         error: this.secureSubmitResponseHandler.bind(this),
@@ -131,14 +134,17 @@ document.observe('dom:loaded', function () {
                     var validator = new Validation(this.form);
                     if (this.validate() && validator.validate()) {
                         checkout.setLoadWaiting('payment');
+                        var date = $('hps_securesubmit_exp_date').value.split('/');
+                        var hps_securesubmit_expiration = date[0].trim();
+                        var hps_securesubmit_expiration_yr = date[1].trim();
 
                         hps.tokenize({
                             data: {
                                 public_key: this.secureSubmitPublicKey,
                                 number: $('hps_securesubmit_cc_number').value,
                                 cvc: $('hps_securesubmit_cc_cid').value,
-                                exp_month: $('hps_securesubmit_expiration').value,
-                                exp_year: $('hps_securesubmit_expiration_yr').value
+                                exp_month: hps_securesubmit_expiration,
+                                exp_year: hps_securesubmit_expiration_yr
                             },
                             success: this.secureSubmitResponseHandler.bind(this),
                             error: this.secureSubmitResponseHandler.bind(this)
