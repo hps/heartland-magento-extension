@@ -20,11 +20,16 @@ if ($_loggedIn && $allow_card_saving) {
         <?php if ($allow_heartland_gift): ?>
             <li id="<?php echo $_code; ?>_gift_card">
                 <label for="<?php echo $_code ?>_giftcard_number"><?php echo $this->__('Optional Gift Card Number') ?></label><br />
-                     <input type="text" id="<?php echo $_code; ?>_giftcard_number" title="<?php echo $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" value ="" autocomplete="off" name="payment[giftcard_number]" />
-                <label id="gift-card-number-label" style="display: none;"></label>
-                    <a id="remove-gift-card" class="button" style="display: none;"><?php echo $this->__('Remove Gift Card') ?></a>
-                    <a id="apply-gift-card" class="button"><?php echo $this->__('Apply Gift Card') ?></a>
-            </li>
+
+        <input type="text" id="<?php echo $_code; ?>_giftcard_number" title="<?php echo $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" value ="" autocomplete="off" name="payment[giftcard_number]" placeholder="<?php echo $this->__('GIFT CARD NUMBER') ?>" />
+
+
+        <input width="100px" type="text" id="<?php echo $_code; ?>_giftcard_pin" title="<?php echo $this->__('Gift Card Pin') ?>" class="cvv input-text " value ="" placeholder="<?php echo $this->__('PIN') ?>" autocomplete="off" name="payment[giftcard_pin]" />
+
+        <label id="gift-card-number-label" style="display: none;"></label>
+        <a id="remove-gift-card" class="button" style="display: none;"><?php echo $this->__('Remove Gift Card') ?></a>
+        <a id="apply-gift-card" class="button"><?php echo $this->__('Apply Gift Card') ?></a>
+    </li>
 
     <?php endif ?>
 
@@ -152,7 +157,6 @@ if ($_loggedIn && $allow_card_saving) {
         $j('#gift-card-number-label').hide();
         $j('#remove-gift-card').hide();
     });
-<?php endif; ?>
 
 if (typeof Payment !== 'undefined') {
     window.payment = window.payment || {};
@@ -162,12 +166,10 @@ if (typeof Payment !== 'undefined') {
     secureSubmit = securesubmitMultishipping(document.getElementById('multishipping-billing-form'));
     secureSubmit.secureSubmitPublicKey = '<?php echo $public_key ?>';
     secureSubmit.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
-
     document.observe('dom:loaded', function() {
         Event.observe('payment-continue', 'click', function(e){ Event.stop(e); secureSubmit.save(); });
     });
 }
-
 if (typeof OPC !== 'undefined') {
     OPC.prototype.secureSubmitPublicKey = '<?php echo $public_key ?>';
     OPC.prototype.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
@@ -185,5 +187,8 @@ if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
 }
 //]]>
 </script>
+<?php endif; ?>
+
+
 
 

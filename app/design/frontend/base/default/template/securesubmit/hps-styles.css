@@ -195,6 +195,9 @@
 
 
 /*stored cards section in form.phtml*/
+#hps_securesubmit_giftcard_pin  {
+  width:20%;
+}
 .stored_cards_label .label {
   display:inline;
   text-transform:uppercase;
