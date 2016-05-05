@@ -95,7 +95,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $saveCreditCard = !! (bool)$additionalData->getCcSaveFuture();
         $customerId = $additionalData->getCustomerId();
 
-        error_log($customerId);
         $giftService = $this->_getGiftService();
         $giftCardNumber = $additionalData->getGiftcardNumber();
         $giftCardPin = filter_var($additionalData->getGiftcardPin(),FILTER_VALIDATE_INT, ARRAY('default' => FILTER_NULL_ON_FAILURE));
@@ -105,7 +104,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $giftcard = new HpsGiftCard();
             $giftcard->number = $giftCardNumber;
             $giftcard->pin = $giftCardPin;
-            error_log($giftcard->number);
             $giftResponse = $giftService->balance($giftcard);
 
             // 2. is balance > amount?
