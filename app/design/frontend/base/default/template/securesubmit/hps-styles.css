@@ -195,6 +195,24 @@
 
 
 /*stored cards section in form.phtml*/
+#checkout-step-payment #dd_method_hps_securesubmit input[type=text] {
+   height:40px;
+   border-radius:0px;
+   letter-spacing:2.5px;
+   margin:5px 0px 15px 0px;
+   
+}
+#checkout-step-payment #dd_method_hps_securesubmit input[type=date]{
+   height:40px;
+   border-radius:0px;
+}
+#checkout-step-payment #dd_method_hps_securesubmit input[type=text]:focus {
+ border:1px solid #3939e3;
+   
+}
+#checkout-step-payment #dd_method_hps_securesubmit input[type=date]:focus{
+   border:1px solid #3939e3;
+}
 #hps_securesubmit_giftcard_pin  {
   width:20%;
 }
