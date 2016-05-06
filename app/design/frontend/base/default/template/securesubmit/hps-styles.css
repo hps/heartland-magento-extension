@@ -207,11 +207,11 @@
    border-radius:0px;
 }
 #checkout-step-payment #dd_method_hps_securesubmit input[type=text]:focus {
- border:1px solid #3939e3;
+ border:1px solid #3989e3;
    
 }
 #checkout-step-payment #dd_method_hps_securesubmit input[type=date]:focus{
-   border:1px solid #3939e3;
+   border:1px solid #3989e3;
 }
 #hps_securesubmit_giftcard_pin  {
   width:20%;
@@ -369,6 +369,7 @@ body.customer-account .data-table span.a-center {
   display:inline;
   margin-left:10px;
   padding-left:10px;
+  color:#666666;
 }
 #credit_cards {
   border:1px solid #e3e3e3;
