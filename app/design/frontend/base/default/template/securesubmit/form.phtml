@@ -14,6 +14,10 @@ if ($_loggedIn && $allow_card_saving) {
     <li id="<?php echo $_code; ?>_gift_card">
         <label for="<?php echo $_code ?>_giftcard_number"><?php echo $this->__('Optional Gift Card Number') ?></label><br />
         <input type="text" id="<?php echo $_code; ?>_giftcard_number" title="<?php echo $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" value ="" autocomplete="off" name="payment[giftcard_number]" />
+
+
+        <input width="100px" type="text" id="<?php echo $_code; ?>_giftcard_pin" title="<?php echo $this->__('Gift Card Pin') ?>" class="cvv input-text " value ="" placeholder="<?php echo $this->__('PIN') ?>" autocomplete="off" name="payment[giftcard_pin]" />
+
         <label id="gift-card-number-label" style="display: none;"></label>
         <a id="remove-gift-card" class="button" style="display: none;"><?php echo $this->__('Remove Gift Card') ?></a>
         <a id="apply-gift-card" class="button"><?php echo $this->__('Apply Gift Card') ?></a>
@@ -100,7 +104,8 @@ if ($_loggedIn && $allow_card_saving) {
         $j.ajax({
             url: "<?php echo Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => TRUE)) ?>",
             type: "GET",
-            data: "giftcard_number=" + $j("#<?php echo $_code; ?>_giftcard_number").val(),
+            data: "giftcard_number=" + $j("#<?php echo $_code; ?>_giftcard_number").val()
+                   + "&giftcard_pin=" + $j("#<?php echo $_code; ?>_giftcard_pin").val(),
             success: function(data) {
                 if (data.error) {
                     alert('Error adding gift card: ' + data.message);
@@ -108,6 +113,7 @@ if ($_loggedIn && $allow_card_saving) {
                     //successful gift, show things
                     $j('#apply-gift-card').hide();
                     $j("#<?php echo $_code; ?>_giftcard_number").hide();
+                    $j("#<?php echo $_code; ?>_giftcard_pin").hide();
                     $j('#gift-card-number-label').text($j("#<?php echo $_code; ?>_giftcard_number").val() + " - $" + data.balance);
                     $j('#gift-card-number-label').show();
                     $j('#remove-gift-card').show();

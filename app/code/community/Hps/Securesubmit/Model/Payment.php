@@ -97,12 +97,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         $giftService = $this->_getGiftService();
         $giftCardNumber = $additionalData->getGiftcardNumber();
+        $giftCardPin = filter_var($additionalData->getGiftcardPin(),FILTER_VALIDATE_INT, ARRAY('default' => FILTER_NULL_ON_FAILURE));
 
         if ($giftCardNumber) {
             // 1. check balance
             $giftcard = new HpsGiftCard();
             $giftcard->number = $giftCardNumber;
-
+            $giftcard->pin = $giftCardPin;
             $giftResponse = $giftService->balance($giftcard);
 
             // 2. is balance > amount?
