@@ -73,10 +73,9 @@
 .btn-group {
   margin-top:10px;
 }
-.description {
-  border-top:1px solid #ececec;
+.logos {
   border-bottom:1px solid #ececec;
-  padding:20px 15px 20px 15px;
+  padding:20px 15px 0px 15px;
   margin-bottom:25px;
   text-transform:none;
 }
@@ -121,7 +120,7 @@
   margin-right:21px;
 }
 
-.icon-dc {
+.icon-discover {
   background-image:url(../images/ss-saved-discover@2x.png);
   background-repeat:no-repeat;
   height:30px;
@@ -166,7 +165,7 @@
 #credit_cards:hover .icon-mc {
    background-position:0px 0px;
 }
-#credit_cards:hover .icon-dc {
+#credit_cards:hover .icon-discover {
    background-position:0px 0px;
 }
 #credit_cards:hover .icon-jcb {
@@ -195,26 +194,31 @@
 
 
 /*stored cards section in form.phtml*/
-#checkout-step-payment #dd_method_hps_securesubmit input[type=text] {
+#checkout-step-payment #dd_method_hps_securesubmit input[type=tel] {
    height:40px;
    border-radius:0px;
    letter-spacing:2.5px;
    margin:5px 0px 15px 0px;
-   
+
 }
 #checkout-step-payment #dd_method_hps_securesubmit input[type=date]{
    height:40px;
    border-radius:0px;
 }
-#checkout-step-payment #dd_method_hps_securesubmit input[type=text]:focus {
+#checkout-step-payment #dd_method_hps_securesubmit input[type=tel]:focus {
  border:1px solid #3989e3;
-   
+
 }
 #checkout-step-payment #dd_method_hps_securesubmit input[type=date]:focus{
    border:1px solid #3989e3;
 }
 #hps_securesubmit_giftcard_pin  {
   width:20%;
+}
+#hps_securesubmit_gift_card {
+    border-top: 1px solid #ececec;
+    margin-top: 20px;
+    padding-top: 20px;
 }
 .stored_cards_label .label {
   display:inline;
@@ -227,6 +231,9 @@
 .hps_securesubmit_stored_card_checkbox  {
    display:inline;
   text-transform:uppercase;
+}
+.hps_securesubmit_stored_card_label {
+    display: inherit !important;
 }
 .inline-li {
   font-weight:500;
@@ -280,7 +287,7 @@
   display:inline-block;
   float:right;
 }
-.icon-dc-form {
+.icon-discover-form {
   background-image:url(../images/ss-saved-discover@2x.png);
   background-repeat:no-repeat;
   width:200px;
@@ -323,7 +330,7 @@
 .card-menu-item:hover .icon-mc-form {
    background-position:0px 0px;
 }
-.card-menu-item:hover .icon-dc-form {
+.card-menu-item:hover .icon-discover-form {
    background-position:0px 0px;
 }
 .card-menu-item:hover .cc-option {
@@ -419,10 +426,6 @@ body.customer-account .data-table span.a-center {
   padding:6px 19px 9px 0px;
 }
 #credit_cards a:hover  {
-  text-decoration:none; 
+  text-decoration:none;
 
 }
-
-
-
-

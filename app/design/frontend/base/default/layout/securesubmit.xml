@@ -6,6 +6,10 @@
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
             <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+            <action method="addItem">
+                <type>skin_css</type>
+                <name>securesubmit/css/hps-styles.css</name>
+            </action>
         </reference>
         <reference name="before_body_end">
             <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
@@ -16,6 +20,10 @@
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
             <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+            <action method="addItem">
+                <type>skin_css</type>
+                <name>securesubmit/css/hps-styles.css</name>
+            </action>
         </reference>
         <reference name="before_body_end">
             <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
@@ -26,6 +34,10 @@
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
             <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+            <action method="addItem">
+                <type>skin_css</type>
+                <name>securesubmit/css/hps-styles.css</name>
+            </action>
         </reference>
         <reference name="before_body_end">
             <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
@@ -36,6 +48,10 @@
             <action method="addJs"><file>securesubmit/secure.submit-1.0.1.js</file></action>
             <action method="addJs"><file>securesubmit/checkout-form.js</file></action>
             <action method="addJs"><file>securesubmit/masterpass/lightbox.js</file></action>
+            <action method="addItem">
+                <type>skin_css</type>
+                <name>securesubmit/css/hps-styles.css</name>
+            </action>
         </reference>
         <reference name="before_body_end">
             <block type="hps_securesubmit/masterpass_client_js" name="hps_securesubmit_masterpass_js" />
@@ -70,6 +86,12 @@
         <update handle="customer_account" />
         <reference name="my.account.wrapper">
             <block type="core/template" name="hps_securesubmit_content" template="securesubmit/storedcards.phtml"/>
+        </reference>
+        <reference name="head">
+            <action method="addItem">
+                <type>skin_css</type>
+                <name>securesubmit/css/hps-styles.css</name>
+            </action>
         </reference>
     </hps_securesubmit_storedcard_index>
 
