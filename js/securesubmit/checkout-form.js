@@ -10,7 +10,7 @@ function securesubmitMultishipping(multiForm) {
 
             // Use stored card checked, get existing token data
             if (this.secureSubmitUseStoredCard()) {
-                var storedcardId = $('hps_securesubmit_stored_card_select').value;
+                var storedcardId = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0].value;
 
                 new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
                     method: 'post',
@@ -18,8 +18,8 @@ function securesubmitMultishipping(multiForm) {
                     onSuccess: function(response) {
                         var data = response.responseJSON;
                         if (data && data.token) {
-                            $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
-                            $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
+                            $('hps_securesubmit_cc_exp_month').value = parseInt(data.token.cc_exp_month);
+                            $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                         }
                         this.secureSubmitResponseHandler({
                             token_value:  data.token.token_value,
@@ -58,12 +58,15 @@ function securesubmitMultishipping(multiForm) {
             }
         },
         secureSubmitUseStoredCard: function () {
-            var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
-            return storedCheckbox && storedCheckbox.checked;
+            var newRadio = $('hps_securesubmit_stored_card_select_new');
+            return !newRadio.checked;
         },
         secureSubmitResponseHandler: function (response) {
             var tokenField = $('hps_securesubmit_token'),
                 lastFourField = $('hps_securesubmit_cc_last_four');
+            var date = $('hps_securesubmit_exp_date').value.split('/');
+            $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+            $('hps_securesubmit_cc_exp_year').value = date[1].trim();
             tokenField.value = lastFourField.value = null;
 
             if (response && response.error) {
@@ -103,7 +106,7 @@ document.observe('dom:loaded', function () {
 
                 // Use stored card checked, get existing token data
                 if (this.secureSubmitUseStoredCard()) {
-                    var storedcardId = $('hps_securesubmit_stored_card_select').value;
+                    var storedcardId = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0].value;
                     checkout.setLoadWaiting('payment');
                     new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
                         method: 'post',
@@ -111,8 +114,8 @@ document.observe('dom:loaded', function () {
                         onSuccess: function(response) {
                             var data = response.responseJSON;
                             if (data && data.token) {
-                                $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
-                                $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
+                                $('hps_securesubmit_cc_exp_month').value = parseInt(data.token.cc_exp_month);
+                                $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                             }
                             this.secureSubmitResponseHandler({
                                 token_value:  data.token.token_value,
@@ -153,12 +156,15 @@ document.observe('dom:loaded', function () {
                 }
             },
             secureSubmitUseStoredCard: function () {
-                var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
-                return storedCheckbox && storedCheckbox.checked;
+                var newRadio = $('hps_securesubmit_stored_card_select_new');
+                return !newRadio.checked;
             },
             secureSubmitResponseHandler: function (response) {
                 var tokenField = $('hps_securesubmit_token'),
                     lastFourField = $('hps_securesubmit_cc_last_four');
+                var date = $('hps_securesubmit_exp_date').value.split('/');
+                $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                $('hps_securesubmit_cc_exp_year').value = date[1].trim();
                 tokenField.value = lastFourField.value = null;
 
                 if (response && response.error) {
@@ -211,6 +217,9 @@ document.observe('dom:loaded', function () {
             secureSubmitResponseHandler: function (response) {
                 var tokenField = $('hps_securesubmit_token'),
                     lastFourField = $('hps_securesubmit_cc_last_four');
+                var date = $('hps_securesubmit_exp_date').value.split('/');
+                $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                $('hps_securesubmit_cc_exp_year').value = date[1].trim();
                 tokenField.value = lastFourField.value = null;
 
                 if (response && response.error) {
