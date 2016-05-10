@@ -1,0 +1,439 @@
+@media only screen and (max-width: 599px) {
+  .checkout-multishipping-addresses .linearize-table tbody td[data-rwd-label] {
+    text-align: left;
+    padding-left: 10px;
+    margin-top: 12px;
+  }
+}
+@media only screen and (max-width: 479px) {
+  body[class*="checkout-multishipping-"] .buttons-set .back-link {
+    display: block;
+  }
+}
+
+@media only screen and (max-width: 770px) {
+  .col2-set .buttons-set .button,
+  .col2-set .buttons-set .button2 {
+    float: none;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .col2-set .buttons-set .back-link {
+    display: none;
+  }
+  .col2-set .buttons-set .required {
+    display: none;
+  }
+}
+@media only screen and (max-width: 479px) {
+  .buttons-set .button {
+    float: none;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 7px;
+  }
+  .buttons-set .back-link {
+    display: none;
+  }
+  .buttons-set .required {
+    display: none;
+  }
+}
+/* =========================================
+    securesubmit css
+   ========================================= */
+
+/*header*/
+.icon-ss {
+  background-image:url(../images/icon_sprite@2x.png);
+}
+.ss-logo {
+  background-image:url(../images/ss-logo.png);
+  background-size:104px 19px;
+  height:60px;
+  width:120px;
+  background-color:transparent;
+  border:none;
+  background-repeat:no-repeat;
+  vertical-align:top;
+  margin-left:20px;
+  margin-top:15px;
+}
+.ss-icon {
+  background-image:url(../images/ss-shield@2x.png);
+  background-size:50px 50px;
+  height:50px;
+  width:50px;
+  background-color:transparent;
+  border:none;
+  vertical-align:top;
+}
+.btn-group {
+  margin-top:10px;
+}
+.logos {
+  border-bottom:1px solid #ececec;
+  padding:20px 15px 0px 15px;
+  margin-bottom:25px;
+  text-transform:none;
+}
+
+/*manage cards section in storedcards.phtml*/
+/*card icons*/
+.icon-visa {
+  background-image:url(../images/ss-saved-visa@2x.png);
+  background-repeat:no-repeat;
+  height:40px;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:6em;
+  display:inline-block;
+  float:left;
+  border-right:1px solid #ececec;
+  margin-right:21px;
+}
+.icon-jcb {
+  background-image:url(../images/ss-saved-jcb@2x.png);
+  background-repeat:no-repeat;
+  height:40px;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:6em;
+  display:inline-block;
+  float:left;
+  border-right:1px solid #ececec;
+  margin-right:21px;
+}
+
+.icon-amex {
+  background-image:url(../images/ss-saved-amex@2x.png);
+  background-repeat:no-repeat;
+  height:30px;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:6em;
+  display:inline-block;
+  float:left;
+  border-right:1px solid #ececec;
+  margin-right:21px;
+}
+
+.icon-discover {
+  background-image:url(../images/ss-saved-discover@2x.png);
+  background-repeat:no-repeat;
+  height:30px;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:6em;
+  display:inline-block;
+  float:left;
+  border-right:1px solid #ececec;
+  margin-right:21px;
+}
+
+.icon-mc {
+  background-image:url(../images/ss-saved-mastercard@2x.png);
+  background-repeat:no-repeat;
+  height:30px;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:6em;
+  display:inline-block;
+  float:left;
+  border-right:1px solid #ececec;
+  margin-right:21px;
+}
+/*hover saved-cards.phtml*/
+#credit_cards:hover .icon-visa {
+    background-position:0px 0px;
+    border-right:1px solid #3989e3;
+}
+#credit_cards:hover .saved-cc-number {
+    color:#3989e3;
+}
+#credit_cards:hover .exp-date {
+    color:#3989e3;
+}
+#credit_cards:hover .icon-trash {
+    background-image:url(../images/delete-hover.svg);
+}
+#credit_cards:hover .icon-amex {
+  background-position:0px 0px;
+}
+#credit_cards:hover .icon-mc {
+   background-position:0px 0px;
+}
+#credit_cards:hover .icon-discover {
+   background-position:0px 0px;
+}
+#credit_cards:hover .icon-jcb {
+   background-position:0px 0px;
+}
+
+
+#credit_cards .exp-date {
+  margin-top:-4px;
+  margin-bottom:1px;
+}
+
+
+#hps_securesubmit_exp_date {
+  letter-spacing:2.5px;
+}
+.tool-tip-content{
+  background-image:url(../images/cvv.png);
+  z-index:1000;
+  background-size:200px;
+  background-repeat:no-repeat;
+}
+.saved-card-table #credit_cards {
+  padding-top:5px;
+}
+
+
+/*stored cards section in form.phtml*/
+#checkout-step-payment #dd_method_hps_securesubmit input[type=tel] {
+   height:40px;
+   border-radius:0px;
+   letter-spacing:2.5px;
+   margin:5px 0px 15px 0px;
+
+}
+#checkout-step-payment #dd_method_hps_securesubmit input[type=date]{
+   height:40px;
+   border-radius:0px;
+}
+#checkout-step-payment #dd_method_hps_securesubmit input[type=tel]:focus {
+ border:1px solid #3989e3;
+
+}
+#checkout-step-payment #dd_method_hps_securesubmit input[type=date]:focus{
+   border:1px solid #3989e3;
+}
+#hps_securesubmit_giftcard_pin  {
+  width:20%;
+}
+#hps_securesubmit_gift_card {
+    border-top: 1px solid #ececec;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+.stored_cards_label .label {
+  display:inline;
+  text-transform:uppercase;
+}
+.hps_securesubmit_stored_card_checkbox .label {
+   display:inline;
+  text-transform:uppercase;
+}
+.hps_securesubmit_stored_card_checkbox  {
+   display:inline;
+  text-transform:uppercase;
+}
+.hps_securesubmit_stored_card_label {
+    display: inherit !important;
+}
+.inline-li {
+  font-weight:500;
+}
+.icon-trash {
+  background-image:url(../images/delete.svg);
+  background-repeat:no-repeat;
+  width:25px;
+  height:25px;
+  margin:auto;
+  float:right;
+  margin-top:-2.5em;
+}
+/*card icons*/
+.icon-visa-form {
+  background-image:url(../images/ss-saved-visa@2x.png);
+  background-repeat:no-repeat;
+  width:200px;
+  height:30px;
+  margin:auto;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:5em;
+  margin-left:-10px;
+  display:inline-block;
+  float:right;
+}
+.icon-amex-form {
+  background-image:url(../images/ss-saved-amex@2x.png);
+  background-repeat:no-repeat;
+  height:40px;
+  margin:auto;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:5em;
+  margin-left:-10px;
+  display:inline-block;
+  float:right;
+  margin-top:1px;
+}
+.icon-mc-form {
+  background-image:url(../images/ss-saved-mastercard@2x.png);
+  background-repeat:no-repeat;
+  height:30px;
+  margin:auto;
+  background-size:65px 65px;
+  background-position:5px -33px;
+  width:5em;
+  margin-left:-10px;
+  display:inline-block;
+  float:right;
+  margin-top:6px;
+}
+.icon-discover-form {
+  background-image:url(../images/ss-saved-discover@2x.png);
+  background-repeat:no-repeat;
+  width:200px;
+  height:30px;
+  margin:auto;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:5em;
+  margin-left:-10px;
+  display:inline-block;
+  float:right;
+}
+.icon-jcb-form {
+  background-image:url(../images/ss-saved-jcb@2x.png);
+  background-repeat:no-repeat;
+  width:200px;
+  height:30px;
+  margin:auto;
+  background-size:80px 80px;
+  background-position:0px -40px;
+  width:5em;
+  margin-left:-10px;
+  display:inline-block;
+  float:right;
+}
+/*hover cards in form.phtml*/
+/**/
+.card-menu-item:hover .icon-visa-form {
+    background-position:0px 0px;
+}
+.card-menu-item:hover .saved-cc-number {
+    color:#3989e3;
+}
+.card-menu-item:hover .exp-date {
+    color:#3989e3;
+}
+.card-menu-item:hover .icon-amex-form {
+  background-position:0px 0px;
+}
+.card-menu-item:hover .icon-mc-form {
+   background-position:5px -1px;
+}
+.card-menu-item:hover .icon-discover-form {
+   background-position:0px 0px;
+}
+.card-menu-item:hover .cc-option {
+  border-right:1px solid #3989e3;
+}
+
+
+body.customer-account .data-table span.a-center {
+  text-transform:none;
+}
+.card-checkbox {
+  display:inline;
+}
+.checkbox-box {
+  margin-right:-10px;
+}
+.saved-card-list {
+  border-radius:0px;
+}
+.input-text .validate-cc-number .validate-cc-type
+{border-radius:0px;}
+
+
+.saved-card-table {
+  border:1px solid transparent;
+}
+
+.card-menu-item {
+  border:1px solid #e3e3e3;
+  margin: 5px 0px 5px 0px;
+  padding:4px 10px 0px 15px;
+}
+.card-menu-item:hover {
+  border:1px solid #3989e3;
+}
+.card-menu-item:active {
+  border:1px solid #3989e3;
+}
+.card-menu-item:focus {
+  border:1px solid #3989e3;
+}
+.card-menu-item option{
+  display:inline;
+  margin-left:10px;
+  padding-left:10px;
+  color:#666666;
+}
+#credit_cards {
+  border:1px solid #e3e3e3;
+  margin:5px 0px 5px 0px;
+  padding:5px 5px 5px 5px;
+}
+#credit_cards:hover {
+  border:1.5px solid #3989e3;
+}
+#credit_cards:active {
+  border:1.5px solid #3989e3;
+}
+.saved-cc-number {
+  font-weight:600;
+  color:#888888;
+  vertical-align:super;
+  padding-left:1.4em;
+}
+.exp-date {
+  padding-left:1.8em;
+  text-transform:uppercase;
+  font-weight:200;
+  font-size:smaller;
+  color:#b1b1b1;
+  margin:-15px 0px 5px 3.1em;
+  display:block;
+}
+.saved-cc-number:hover {
+  color:#3989e3;
+  text-decoration:none;
+}
+.exp-date:hover {
+  color:#3989e3;
+  text-decoration:none;
+}
+.saved-cc-number a {
+  text-decoration:none;
+}
+.exp-date a {
+  text-decoration:none;
+}
+.cc-text {
+   display:inline;
+}
+.cc-option {
+  display:inline;
+  border-right:1px solid #e3e3e3;
+  padding:6px 19px 9px 0px;
+}
+#credit_cards a:hover  {
+  text-decoration:none;
+}
+.new-card {
+  font-weight:600;
+  color:#888888;
+  vertical-align:super;
+  padding-left:1.4em;
+  margin-top:10px;
+  vertical-align:middle;
+}

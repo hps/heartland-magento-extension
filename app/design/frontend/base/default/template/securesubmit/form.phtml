@@ -5,7 +5,6 @@ $token_data_url = Mage::getUrl('securesubmit/storedcard/getTokenData', array('_s
 $allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
 $allow_heartland_gift = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_heartland_gift');
 $_loggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
-
 if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
 }
@@ -49,7 +48,7 @@ if ($_loggedIn && $allow_card_saving) {
                 <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_new" value="new" <?php if ($checked): ?>checked="checked"<?php $checked = false; endif ?>/>
             </div>
 
-            <span class="saved-cc-number">
+            <span class="new-card">
                 <?= $this->__('Pay with a new credit card') ?>
             </span>
         </label>
@@ -116,7 +115,6 @@ if ($_loggedIn && $allow_card_saving) {
         });
     });
 <?php endif ?>
-
 <?php if ($allow_heartland_gift): ?>
     Event.observe('apply-gift-card', 'click', function(event) {
         $j.ajax({
@@ -139,7 +137,6 @@ if ($_loggedIn && $allow_card_saving) {
             }
         });
     });
-
     Event.observe('remove-gift-card', 'click', function(event) {
         $j('#apply-gift-card').show();
         $j("#<?= $_code ?>_giftcard_number").val('');
@@ -150,7 +147,6 @@ if ($_loggedIn && $allow_card_saving) {
         $j('#remove-gift-card').hide();
     });
 <?php endif ?>
-
 if (typeof Payment !== 'undefined') {
     window.payment = window.payment || {};
     payment.secureSubmitPublicKey = '<?= $public_key ?>';
