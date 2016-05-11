@@ -120,7 +120,7 @@
   margin-right:21px;
 }
 
-.icon-discover {
+.icon-disc {
   background-image:url(../images/ss-saved-discover@2x.png);
   background-repeat:no-repeat;
   height:30px;
@@ -165,7 +165,7 @@
 #credit_cards:hover .icon-mc {
    background-position:0px 0px;
 }
-#credit_cards:hover .icon-discover {
+#credit_cards:hover .icon-disc {
    background-position:0px 0px;
 }
 #credit_cards:hover .icon-jcb {
@@ -182,11 +182,16 @@
 #hps_securesubmit_exp_date {
   letter-spacing:2.5px;
 }
-.tool-tip-content{
+#payment-tool-tip .tool-tip-content img {
   background-image:url(../images/cvv.png);
   z-index:1000;
   background-size:200px;
   background-repeat:no-repeat;
+  /* hide src image */
+  width:0;
+  height:0;
+  /*       height    width */
+  padding: 200px 0 0 300px;
 }
 .saved-card-table #credit_cards {
   padding-top:5px;
@@ -287,7 +292,7 @@
   float:right;
   margin-top:6px;
 }
-.icon-discover-form {
+.icon-disc-form {
   background-image:url(../images/ss-saved-discover@2x.png);
   background-repeat:no-repeat;
   width:200px;
@@ -315,25 +320,25 @@
 }
 /*hover cards in form.phtml*/
 /**/
-.card-menu-item:hover .icon-visa-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-visa-form {
     background-position:0px 0px;
 }
-.card-menu-item:hover .saved-cc-number {
+#payment_form_hps_securesubmit .card-menu-item:hover .saved-cc-number {
     color:#3989e3;
 }
-.card-menu-item:hover .exp-date {
+#payment_form_hps_securesubmit .card-menu-item:hover .exp-date {
     color:#3989e3;
 }
-.card-menu-item:hover .icon-amex-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-amex-form {
   background-position:0px 0px;
 }
-.card-menu-item:hover .icon-mc-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-mc-form {
    background-position:5px -1px;
 }
-.card-menu-item:hover .icon-discover-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
    background-position:0px 0px;
 }
-.card-menu-item:hover .cc-option {
+#payment_form_hps_securesubmit .card-menu-item:hover .cc-option {
   border-right:1px solid #3989e3;
 }
 
@@ -358,21 +363,24 @@ body.customer-account .data-table span.a-center {
   border:1px solid transparent;
 }
 
-.card-menu-item {
+#payment_form_hps_securesubmit .card-menu-item {
   border:1px solid #e3e3e3;
   margin: 5px 0px 5px 0px;
   padding:4px 10px 0px 15px;
 }
-.card-menu-item:hover {
+#payment_form_hps_securesubmit .card-menu-item:hover {
   border:1px solid #3989e3;
 }
-.card-menu-item:active {
+#payment_form_hps_securesubmit .card-menu-item:active {
   border:1px solid #3989e3;
 }
-.card-menu-item:focus {
+#payment_form_hps_securesubmit .card-menu-item:focus {
   border:1px solid #3989e3;
 }
-.card-menu-item option{
+#payment_form_hps_securesubmit .card-menu-item label {
+  min-height: 30px;
+}
+#payment_form_hps_securesubmit .card-menu-item option{
   display:inline;
   margin-left:10px;
   padding-left:10px;
@@ -401,7 +409,7 @@ body.customer-account .data-table span.a-center {
   font-weight:200;
   font-size:smaller;
   color:#b1b1b1;
-  margin:-15px 0px 5px 3.1em;
+  margin:-10px 0px 5px 3.1em;
   display:block;
 }
 .saved-cc-number:hover {
@@ -436,4 +444,7 @@ body.customer-account .data-table span.a-center {
   padding-left:1.4em;
   margin-top:10px;
   vertical-align:middle;
+}
+#hps_securesubmit_cc_form {
+  margin: 20px;
 }
