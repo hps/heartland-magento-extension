@@ -4,58 +4,26 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
 <span class="icon-ss"></span>
 <h1><?php echo $this->__('Manage Saved Cards') ?></h1>
 <div class="box-account">
-    <div class="box-head">
-        <h2><?php echo $this->__('Saved Credit Cards') ?></h2>
-    </div>
     <?php if (count($_storedCards)): ?>
-        <table class="data-table">
-        <col width="1" />
-        <col width="1" />
-        <col width="1" />
-        <col width="1" />
-        <thead>
-
-       <!--   
-        <tr>
-            <th><?php echo $this->__('Card Type') ?></th>
-            <th><?php echo $this->__('Card Number') ?></th>
-            <th><?php echo $this->__('Expiration Date') ?></th>
-            <th>&nbsp;</th>
-        </tr>
-        -->
+        <div class="box-head">
+            <h2><?php echo $this->__('Saved Credit Cards') ?></h2>
         </div>
-
-        </thead>
-  
-  <li class="saved-card-table">
-        <?php foreach ($_storedCards->getData() as $card): ?>
-            <ul id="credit_cards">
-              <div class="icon-visa"><!--<<span class="nobr">?php echo $card['cc_type'] ?></span>--></div> 
-               <span class="saved-cc-number"><?php echo $card['cc_type'] ." " ."ending in   ************".$card['cc_last4'] ?></span></br><span class="exp-date"><?php echo "expires on" ." "  .$card['cc_exp_month'] ."-".$card['cc_exp_year'] ?></span>
-                <a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>"><!--<?php echo $this->__('Delete') ?></a></td>--><div class="icon-trash"></div>
-            </ul>
- 
-        <?php endforeach; ?>
-        </li>
-        </table> 
-        <li id="<?php echo $_code ?>_stored_cards" style="display: none;">
-        <label for="<?php echo $_code ?>_stored_card_select"><?php echo $this->__('Stored Card') ?></label>
-   
-
-
-
-
-
-            <!-- <select id="<?php echo $_code ?>_stored_card_select"  autocomplete="off">    --> 
-            <?php foreach ($customerStoredCards as $key => $card): ?>
-                <ul class="card-menu-item">
-                <input type="radio" />
-                <option value="<?php echo $card->getId() ?>"> <?php echo $card->getCcType().' ************'.$card->getCcLast4().' ('.$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?> </option> <div class="icon-visa-form"></div></ul>
-
-            <?php endforeach ?>
-            </select>
-        </div>    
-    </li>
+        <ul class="saved-card-table">
+            <?php foreach ($_storedCards->getData() as $card): ?>
+                <li id="credit_cards">
+                    <div class="icon-<?= strtolower($card['cc_type'])?>">&nbsp;</div>
+                    <span class="saved-cc-number">
+                        <?php echo $card['cc_type'] ." " ."ending in   ************".$card['cc_last4'] ?>
+                    </span><br/>
+                    <span class="exp-date">
+                        <?php echo "expires on" ." "  .$card['cc_exp_month'] ."-".$card['cc_exp_year'] ?>
+                    </span>
+                    <a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>">
+                        <div class="icon-trash"></div>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+        </ul>
     <?php else: ?>
         <p>
             <?php echo $this->__('You do not have any saved credit cards.') ?>
