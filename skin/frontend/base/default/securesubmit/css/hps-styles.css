@@ -264,8 +264,7 @@
 .icon-amex-form {
   background-image:url(../images/ss-saved-amex@2x.png);
   background-repeat:no-repeat;
-  width:200px;
-  height:30px;
+  height:40px;
   margin:auto;
   background-size:80px 80px;
   background-position:0px -40px;
@@ -273,19 +272,20 @@
   margin-left:-10px;
   display:inline-block;
   float:right;
+  margin-top:1px;
 }
 .icon-mc-form {
   background-image:url(../images/ss-saved-mastercard@2x.png);
   background-repeat:no-repeat;
-  width:200px;
   height:30px;
   margin:auto;
-  background-size:80px 80px;
-  background-position:0px -40px;
+  background-size:65px 65px;
+  background-position:5px -33px;
   width:5em;
   margin-left:-10px;
   display:inline-block;
   float:right;
+  margin-top:6px;
 }
 .icon-discover-form {
   background-image:url(../images/ss-saved-discover@2x.png);
@@ -328,7 +328,7 @@
   background-position:0px 0px;
 }
 .card-menu-item:hover .icon-mc-form {
-   background-position:0px 0px;
+   background-position:5px -1px;
 }
 .card-menu-item:hover .icon-discover-form {
    background-position:0px 0px;
@@ -393,6 +393,7 @@ body.customer-account .data-table span.a-center {
   font-weight:600;
   color:#888888;
   vertical-align:super;
+  padding-left:1.4em;
 }
 .exp-date {
   padding-left:1.8em;
@@ -427,5 +428,12 @@ body.customer-account .data-table span.a-center {
 }
 #credit_cards a:hover  {
   text-decoration:none;
-
+}
+.new-card {
+  font-weight:600;
+  color:#888888;
+  vertical-align:super;
+  padding-left:1.4em;
+  margin-top:10px;
+  vertical-align:middle;
 }
