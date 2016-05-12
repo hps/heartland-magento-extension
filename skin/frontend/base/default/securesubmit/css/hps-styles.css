@@ -1,3 +1,7 @@
+/* =========================================
+    securesubmit css
+   ========================================= */
+
 @media only screen and (max-width: 599px) {
   .checkout-multishipping-addresses .linearize-table tbody td[data-rwd-label] {
     text-align: left;
@@ -182,17 +186,6 @@
 #hps_securesubmit_exp_date {
   letter-spacing:2.5px;
 }
-#payment-tool-tip .tool-tip-content img {
-  background-image:url(../images/cvv.png);
-  z-index:1000;
-  background-size:200px;
-  background-repeat:no-repeat;
-  /* hide src image */
-  width:0;
-  height:0;
-  /*       height    width */
-  padding: 200px 0 0 300px;
-}
 .saved-card-table #credit_cards {
   padding-top:5px;
 }
@@ -339,6 +332,12 @@
  background-position:20px -20px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
+<<<<<<< 89b36c1519857204bbb4406a19181736475201b6
+=======
+ background-position:20px -20px;
+}
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
+>>>>>>> blend styles
   background-position:4px 4px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover .cc-option {
@@ -381,7 +380,7 @@ body.customer-account .data-table span.a-center {
   border:1px solid #3989e3;
 }
 #payment_form_hps_securesubmit .card-menu-item label {
-  min-height: 30px;
+  min-height:30px;
 }
 #payment_form_hps_securesubmit .card-menu-item option{
   display:inline;
