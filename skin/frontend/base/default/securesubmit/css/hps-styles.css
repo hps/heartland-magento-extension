@@ -298,8 +298,8 @@
   width:200px;
   height:30px;
   margin:auto;
-  background-size:80px 80px;
-  background-position:0px -40px;
+  background-size:70px 70px;
+  background-position:4px -31px;
   width:5em;
   margin-left:-10px;
   display:inline-block;
@@ -335,8 +335,11 @@
 #payment_form_hps_securesubmit .card-menu-item:hover .icon-mc-form {
    background-position:5px -1px;
 }
+.card-menu-item:hover .icon-disc-form {
+ background-position:20px -20px;
+}
 #payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
-   background-position:0px 0px;
+  background-position:4px 4px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover .cc-option {
   border-right:1px solid #3989e3;
@@ -445,6 +448,16 @@ body.customer-account .data-table span.a-center {
   margin-top:10px;
   vertical-align:middle;
 }
+
 #hps_securesubmit_cc_form {
   margin: 20px;
+}
+
+.icon-sc{
+  background-image:url(../images/ss-cvv@2x.png);
+  background-repeat:no-repeat;
+  background-size:65px 76px;
+  background-position:297px 0px; /*FOR AMEX: background-position: 297px -38px;*/
+  display:inline-block;
+  float:right;
 }
