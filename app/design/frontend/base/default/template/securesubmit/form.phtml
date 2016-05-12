@@ -5,6 +5,7 @@ $public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publica
 $token_data_url = Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE));
 $allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
 $allow_heartland_gift = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_heartland_gift');
+$use_iframes = false; // Mage::getModel('hps_securesubmit/payment')->getConfigData('use_iframes');
 
 if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
@@ -62,23 +63,35 @@ if ($_loggedIn && $allow_card_saving) {
         <div id="<?= $_code ?>_cc_form" <?php if (!$checked): ?>style="display: none;"<?php endif ?>>
             <label for="<?= $_code ?>_cc_number"><?= $this->__('Credit Card Number') ?> <span class="required">&nbsp;</span></label>
             <div class="saved-card-list">
-                <input type="tel" id="<?= $_code ?>_cc_number" title="<?= $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" autocomplete="off" placeholder="•••• •••• •••• ••••" />
+                <?php if ($use_iframes): ?>
+                    <div id="<?= $_code ?>_cc_number_iframe"></div>
+                <?php else: ?>
+                    <input type="tel" id="<?= $_code ?>_cc_number" title="<?= $this->__('Credit Card Number') ?>" class="input-text validate-cc-number validate-cc-type" autocomplete="off" placeholder="•••• •••• •••• ••••" />
+                <?php endif ?>
                 <input type="hidden" id="<?= $_code ?>_token" name="payment[securesubmit_token]">
                 <input type="hidden" id="<?= $_code ?>_cc_last_four" name="payment[cc_last_four]">
             </div>
 
             <label for="<?= $_code ?>_expiration"><?= $this->__('Expiration Date') ?> <span class="required">&nbsp;</span></label>
             <div class="input-box" id="horizontal-form">
-                <input type="tel" name="payment[cc_exp]" placeholder="MM / YYYY" id="<?= $_code ?>_exp_date" class="input-text year required-entry">
+                <?php if ($use_iframes): ?>
+                    <div id="<?= $_code ?>_cc_exp_iframe"></div>
+                <?php else: ?>
+                    <input type="tel" name="payment[cc_exp]" placeholder="MM / YYYY" id="<?= $_code ?>_exp_date" class="input-text year required-entry">
+                <?php endif ?>
                 <input type="hidden" id="<?= $_code ?>_cc_exp_month" name="payment[cc_exp_month]">
                 <input type="hidden" id="<?= $_code ?>_cc_exp_year" name="payment[cc_exp_year]">
             </div>
 
             <label for="<?= $_code ?>_cc_cid"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label>
             <div class="input-box"id="horizontal-form">
-                <div class="v-fix">
-                    <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?= $_code ?>_cc_cid" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
-                </div>
+                <?php if ($use_iframes): ?>
+                    <div id="<?= $_code ?>_cc_cvv_iframe"></div>
+                <?php else: ?>
+                    <div class="v-fix">
+                        <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="cvv required-entry input-text validate-cc-cvn" id="<?= $_code ?>_cc_cid" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
+                    </div>
+                <?php endif ?>
                 <a href="#" class="cvv-what-is-this"><?= $this->__('What is this?') ?></a>
             </div>
 
@@ -106,83 +119,22 @@ if ($_loggedIn && $allow_card_saving) {
 
 <script type="text/javascript">
 //<![CDATA[
-<?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
-    $$('[name="<?= $_code ?>_stored_card_select"]').each(function (el) {
-        $(el).observe('click', function() {
-            if ($('<?= $_code ?>_stored_card_select_new').checked) {
-                $('<?= $_code ?>_cc_form').show();
-            } else {
-                $('<?= $_code ?>_cc_form').hide();
-            }
-            $('<?= $_code ?>_cc_number').toggleClassName('validate-cc-number');
-            $$('[name="<?= $_code ?>_stored_card_select"]').each(function (element) {
-              $(element).up(2).removeClassName('active');
-            });
-            $(el).up(2).addClassName('active');
-        });
-    });
-<?php endif ?>
-
-<?php if ($allow_heartland_gift): ?>
-    Event.observe('apply-gift-card', 'click', function(event) {
-        $j.ajax({
-            url: "<?= Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => TRUE)) ?>",
-            type: "GET",
-            data: "giftcard_number=" + $j("#<?php echo $_code; ?>_giftcard_number").val()
-                   + "&giftcard_pin=" + $j("#<?php echo $_code; ?>_giftcard_pin").val(),
-            success: function(data) {
-                if (data.error) {
-                    alert('Error adding gift card: ' + data.message);
-                } else {
-                    //successful gift, show things
-                    $j('#apply-gift-card').hide();
-                    $j("#<?php echo $_code; ?>_giftcard_number").hide();
-                    $j("#<?php echo $_code; ?>_giftcard_pin").hide();
-                    $j('#gift-card-number-label').text($j("#<?php echo $_code; ?>_giftcard_number").val() + " - $" + data.balance);
-                    $j('#gift-card-number-label').show();
-                    $j('#remove-gift-card').show();
-                }
-            }
-        });
-    });
-    Event.observe('remove-gift-card', 'click', function(event) {
-        $j('#apply-gift-card').show();
-        $j("#<?= $_code ?>_giftcard_number").val('');
-        $j("#<?= $_code ?>_giftcard_number").show();
-        $j("#<?= $_code ?>_giftcard_pin").show();
-        $j('#gift-card-number-label').text('');
-        $j('#gift-card-number-label').hide();
-        $j('#remove-gift-card').hide();
-    });
-<?php endif ?>
-
-if (typeof Payment !== 'undefined') {
-    window.payment = window.payment || {};
-    payment.secureSubmitPublicKey = '<?= $public_key ?>';
-    payment.secureSubmitGetTokenDataUrl = '<?= $token_data_url ?>';
-} else if (!document.getElementById('multishipping-billing-form').empty()) {
-    secureSubmit = securesubmitMultishipping(document.getElementById('multishipping-billing-form'));
-    secureSubmit.secureSubmitPublicKey = '<?= $public_key ?>';
-    secureSubmit.secureSubmitGetTokenDataUrl = '<?= $token_data_url ?>';
-    document.observe('dom:loaded', function() {
-        Event.observe('payment-continue', 'click', function(e){ Event.stop(e); secureSubmit.save(); });
-    });
-}
-
-if (typeof OPC !== 'undefined') {
-    OPC.prototype.secureSubmitPublicKey = '<?= $public_key ?>';
-    OPC.prototype.secureSubmitGetTokenDataUrl = '<?= $token_data_url ?>';
-}
-
-// MageStore OSC
-window.payment = window.payment || {};
-window.payment.secureSubmitPublicKeyOSC = '<?php echo $public_key ?>';
-window.payment.secureSubmitGetTokenDataUrlOSC = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
-
-// IWD OPC
-if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
-    IWD.OPC.secureSubmitPublicKey = '<?php echo $public_key ?>';
-    IWD.OPC.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
-}
+SecureSubmitMagento.init({
+    code: '<?= $_code ?>',
+    loggedIn: <?= $_loggedIn ? 'true' : 'false' ?>,
+    publicKey: '<?= $public_key ?>',
+    allowCardSaving: <?= $allow_card_saving ? 'true' : 'false' ?>,
+    tokenDataUrl: '<?= $token_data_url ?>',
+    allowGift: <?= $allow_heartland_gift ? 'true' : 'false' ?>,
+    giftBalanceUrl: '<?= Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => true)) ?>',
+    useIfames: <?= $use_iframes ? 'true' : 'false' ?>,
+    <?php if ($use_iframes): ?>
+        iframeTargets: {
+            cardNumber: '<?= $_code ?>_cc_number_iframe',
+            cardExpiration: '<?= $_code ?>_cc_exp_iframe',
+            cardCvv: '<?= $_code ?>_cc_cvv_iframe'
+        }
+    <?php endif ?>
+});
 //]]>
 </script>

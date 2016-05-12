@@ -90,7 +90,7 @@ function securesubmitMultishipping(multiForm) {
 
 document.observe('dom:loaded', function () {
     // Override default Payment save handler
-    if (typeof Payment != "undefined") {
+    if (typeof Payment != 'undefined') {
         if (typeof Payment.prototype._secureSubmitOldSave === 'undefined') {
             var oldPayment = Object.clone(Payment.prototype);
             Payment.prototype._secureSubmitOldSave = oldPayment.save;
@@ -191,7 +191,7 @@ document.observe('dom:loaded', function () {
         });
     }
 
-    if (typeof OPC != "undefined") {
+    if (typeof OPC != 'undefined') {
         if (typeof OPC.prototype._secureSubmitOldSubmit === 'undefined') {
             var oldOPC = Object.clone(OPC.prototype);
             OPC.prototype._secureSubmitOldSubmit = oldOPC.submit;
@@ -407,3 +407,104 @@ document.observe('dom:loaded', function () {
       });
     }
 });
+
+(function (window, document, undefined) {
+    var THIS = {
+        init: function (options) {
+            THIS.options = options;
+            THIS.observeSavedCards();
+            THIS.observeGift();
+
+            if (typeof Payment !== 'undefined') {
+                window.payment = window.payment || {};
+                payment.secureSubmitPublicKey = THIS.options.publicKey;
+                payment.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+                if (THIS.options.useIframes) {
+                    payment.secureSubmitIframeTargets = THIS.options.iframeTargets;
+                }
+            } else if (!document.getElementById('multishipping-billing-form').empty()){
+                secureSubmit = securesubmitMultishipping(document.getElementById('multishipping-billing-form'));
+                secureSubmit.secureSubmitPublicKey = THIS.options.publicKey;
+                secureSubmit.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+                if (THIS.options.useIframes) {
+                    payment.secureSubmitIframeTargets = THIS.options.iframeTargets;
+                }
+                document.observe('dom:loaded', function() {
+                    Event.observe('payment-continue', 'click', function(e){ Event.stop(e); secureSubmit.save(); });
+                });
+            }
+
+            if (typeof OPC !== 'undefined') {
+                OPC.prototype.secureSubmitPublicKey = THIS.options.publicKey;
+                OPC.prototype.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+                if (THIS.options.useIframes) {
+                    payment.secureSubmitIframeTargets = THIS.options.iframeTargets;
+                }
+            }
+
+            // MageStore OSC
+            window.payment = window.payment || {};
+            window.payment.secureSubmitPublicKeyOSC = THIS.options.publicKey;
+            window.payment.secureSubmitGetTokenDataUrlOSC = THIS.options.tokenDataUrl;
+
+            // IWD OPC
+            if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
+                IWD.OPC.secureSubmitPublicKey = THIS.options.publicKey;
+                IWD.OPC.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+            }
+        },
+        observeSavedCards: function () {
+            if (THIS.options.loggedIn && THIS.options.allowCardSaving) {
+                $$('[name="' + THIS.options.code + '_stored_card_select"]').each(function (el) {
+                    $(el).observe('click', function() {
+                        if ($(THIS.options.code + '_stored_card_select_new').checked) {
+                            $(THIS.options.code + '_cc_form').show();
+                        } else {
+                            $(THIS.options.code + '_cc_form').hide();
+                        }
+                        $(THIS.options.code + '_cc_number').toggleClassName('validate-cc-number');
+                        $$('[name="' + THIS.options.code + '_stored_card_select"]').each(function (element) {
+                            $(element).up(2).removeClassName('active');
+                        });
+                        $(el).up(2).addClassName('active');
+                    });
+                });
+            }
+        },
+        observeGift: function () {
+            if (THIS.options.allowGift) {
+                Event.observe('apply-gift-card', 'click', function(event) {
+                    $j.ajax({
+                        url: THIS.options.giftBalanceUrl,
+                        type: 'GET',
+                        data: "giftcard_number=" + $j('#' + THIS.options.code + '_giftcard_number').val()
+                            + "&giftcard_pin=" + $j('#' + THIS.options.code + '_giftcard_pin').val(),
+                        success: function(data) {
+                            if (data.error) {
+                                alert('Error adding gift card: ' + data.message);
+                            } else {
+                                //successful gift, show things
+                                $j('#apply-gift-card').hide();
+                                $j('#' + THIS.options.code + '_giftcard_number').hide();
+                                $j('#gift-card-number-label').text($j('#' + THIS.options.code + '_giftcard_number').val() + ' - $' + data.balance);
+                                $j('#gift-card-number-label').show();
+                                $j('#remove-gift-card').show();
+                            }
+                        }
+                    });
+                });
+                Event.observe('remove-gift-card', 'click', function(event) {
+                    $j('#apply-gift-card').show();
+                    $j('#' + THIS.options.code + '_giftcard_number').val('');
+                    $j('#' + THIS.options.code + '_giftcard_number').show();
+                    $j('#' + THIS.options.code + '_giftcard_pin').val('');
+                    $j('#' + THIS.options.code + '_giftcard_pin').show();
+                    $j('#gift-card-number-label').text('');
+                    $j('#gift-card-number-label').hide();
+                    $j('#remove-gift-card').hide();
+                });
+            }
+        }
+    };
+    window.SecureSubmitMagento = THIS;
+}(window, window.document));
