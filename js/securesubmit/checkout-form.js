@@ -233,7 +233,17 @@ document.observe('dom:loaded', function () {
 
     // MageStore One Step Checkout
     if (typeof oscPlaceOrder == 'function') {
-        var oscPlaceOrderOriginal = oscPlaceOrder;
+        var cloneFunction = function () {
+            var that = this;
+            var temp = function temporary() { return that.apply(this, arguments); };
+            for (var key in this) {
+                if (this.hasOwnProperty(key)) {
+                    temp[key] = this[key];
+                }
+            }
+            return temp;
+        };
+        var oscPlaceOrderOriginal = cloneFunction(oscPlaceOrder);
         oscPlaceOrder = function (btn) {
             var validator = new Validation('one-step-checkout-form');
             var form = $('one-step-checkout-form');
