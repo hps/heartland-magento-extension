@@ -197,7 +197,7 @@
    border-radius:0px;
    letter-spacing:2.5px;
    margin:5px 0px 15px 0px;
-
+   width: 365px !important;
 }
 #checkout-step-payment #dd_method_hps_securesubmit input[type=date]{
    height:40px;
@@ -328,16 +328,10 @@
 #payment_form_hps_securesubmit .card-menu-item:hover .icon-mc-form {
    background-position:5px -1px;
 }
-.card-menu-item:hover .icon-disc-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
  background-position:20px -20px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
-<<<<<<< 89b36c1519857204bbb4406a19181736475201b6
-=======
- background-position:20px -20px;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
->>>>>>> blend styles
   background-position:4px 4px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover .cc-option {
@@ -452,7 +446,7 @@ body.customer-account .data-table span.a-center {
   margin: 20px;
 }
 
-.icon-sc{
+#hps_securesubmit_cc_form .icon-sc{
   background-image:url(../images/ss-cvv@2x.png);
   background-repeat:no-repeat;
   background-size:65px 76px;
