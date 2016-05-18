@@ -12,7 +12,7 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
             <?php foreach ($_storedCards->getData() as $card): ?>
                 <li id="credit_cards">
                     <div class="icon-<?= strtolower($card['cc_type'])?>">&nbsp;</div>
-                    <span class="saved-cc-number">
+                    <span class="saved-cc-number-saved">
                         <?php echo $card['cc_type'] ." " ."ending in   ************".$card['cc_last4'] ?>
                     </span><br/>
                     <span class="exp-date">

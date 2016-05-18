@@ -30,7 +30,7 @@ if ($_loggedIn && $allow_card_saving) {
                     <div class="cc-option">
                         <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" value="<?= $card->getId() ?>" <?php if ($checked): ?>checked="checked"<?php $checked=false; endif ?>/>
                     </div>
-
+                    <div class="cc-info">
                     <span class="saved-cc-number">
                         <?= $card->getCcType().' ************'.$card->getCcLast4()?>
                     </span>
@@ -38,6 +38,7 @@ if ($_loggedIn && $allow_card_saving) {
                     <div class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
 
                     <span class="exp-date"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?> </span>
+                    </div>
                 </label>
             </li>
         <?php endforeach ?>
@@ -92,10 +93,14 @@ if ($_loggedIn && $allow_card_saving) {
                         <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="icon-sc cvv required-entry input-text validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
                     </div>
                 <?php endif ?>
+<<<<<<< Updated upstream
+=======
+          
+>>>>>>> Stashed changes
             </div>
 
             <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
-                <div class="input-box" style="display:inline;">
+                <div class="input-box" style="">
                     <input type="checkbox" id="<?= $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
                     <label style="display: inline-block;" for="<?= $_code ?>_cc_save_future"><?= $this->__('Save this card for future use?') ?></label>
                 </div>
@@ -106,7 +111,7 @@ if ($_loggedIn && $allow_card_saving) {
     <!-- gift -->
     <?php if ($allow_heartland_gift): ?>
       <li id="<?= $_code; ?>_gift_card">
-          <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label><br />
+          <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label><br /><br />
           <input type="tel" id="<?= $_code; ?>_giftcard_number" title="<?= $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" autocomplete="off" name="payment[giftcard_number]" placeholder="<?= $this->__('GIFT CARD NUMBER') ?>" />
           <input width="100px" type="tel" id="<?= $_code; ?>_giftcard_pin" title="<?= $this->__('Gift Card Pin') ?>" class="cvv input-text " placeholder="<?= $this->__('PIN') ?>" autocomplete="off" name="payment[giftcard_pin]" />
           <label id="gift-card-number-label" style="display: none;"></label>

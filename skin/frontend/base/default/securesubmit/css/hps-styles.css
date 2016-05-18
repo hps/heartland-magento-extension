@@ -95,7 +95,7 @@
   width:6em;
   display:inline-block;
   float:left;
-  border-right:1px solid #ececec;
+  /*border-right:1px solid #ececec;*/
   margin-right:21px;
 }
 .icon-jcb {
@@ -107,20 +107,20 @@
   width:6em;
   display:inline-block;
   float:left;
-  border-right:1px solid #ececec;
+  /*border-right:1px solid #ececec;*/
   margin-right:21px;
 }
 
 .icon-amex {
   background-image:url(../images/ss-saved-amex@2x.png);
   background-repeat:no-repeat;
-  height:30px;
+  height:38px;
   background-size:80px 80px;
   background-position:0px -40px;
   width:6em;
   display:inline-block;
   float:left;
-  border-right:1px solid #ececec;
+ /* border-right:1px solid #ececec; */
   margin-right:21px;
 }
 
@@ -133,26 +133,26 @@
   width:6em;
   display:inline-block;
   float:left;
-  border-right:1px solid #ececec;
+  /*border-right:1px solid #ececec;*/
   margin-right:21px;
 }
 
 .icon-mc {
   background-image:url(../images/ss-saved-mastercard@2x.png);
   background-repeat:no-repeat;
-  height:30px;
+  height:38px;
   background-size:80px 80px;
   background-position:0px -40px;
   width:6em;
   display:inline-block;
   float:left;
-  border-right:1px solid #ececec;
+  /*border-right:1px solid #ececec;*/
   margin-right:21px;
 }
 /*hover saved-cards.phtml*/
 #credit_cards:hover .icon-visa {
     background-position:0px 0px;
-    border-right:1px solid #3989e3;
+    /*border-right:1px solid #3989e3;*/
 }
 #credit_cards:hover .saved-cc-number {
     color:#3989e3;
@@ -188,6 +188,8 @@
 }
 .saved-card-table #credit_cards {
   padding-top:5px;
+  min-height:50px;
+  font-size:15px;
 }
 
 
@@ -197,7 +199,8 @@
    border-radius:0px;
    letter-spacing:2.5px;
    margin:5px 0px 15px 0px;
-   width: 365px !important;
+   min-width:23em;
+   padding-left:9px;
 }
 #checkout-step-payment #dd_method_hps_securesubmit input[type=date]{
    height:40px;
@@ -211,7 +214,7 @@
    border:1px solid #3989e3;
 }
 #hps_securesubmit_giftcard_pin  {
-  width:20%;
+  min-width:20%;
 }
 #hps_securesubmit_gift_card {
     border-top: 1px solid #ececec;
@@ -335,7 +338,7 @@
   background-position:4px 4px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover .cc-option {
-  border-right:1px solid #3989e3;
+ /* border-right:1px solid #3989e3;*/
 }
 
 
@@ -362,7 +365,7 @@ body.customer-account .data-table span.a-center {
 #payment_form_hps_securesubmit .card-menu-item {
   border:1px solid #e3e3e3;
   margin: 5px 0px 5px 0px;
-  padding:4px 10px 0px 15px;
+  padding:5px 10px 1px 15px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover {
   border:1px solid #3989e3;
@@ -374,7 +377,8 @@ body.customer-account .data-table span.a-center {
   border:1px solid #3989e3;
 }
 #payment_form_hps_securesubmit .card-menu-item label {
-  min-height:30px;
+  min-height: 40px;
+  font-size:14px;
 }
 #payment_form_hps_securesubmit .card-menu-item option{
   display:inline;
@@ -397,7 +401,7 @@ body.customer-account .data-table span.a-center {
   font-weight:600;
   color:#888888;
   vertical-align:super;
-  padding-left:1.4em;
+  margin-left:1.2em;
 }
 .exp-date {
   padding-left:1.8em;
@@ -405,7 +409,7 @@ body.customer-account .data-table span.a-center {
   font-weight:200;
   font-size:smaller;
   color:#b1b1b1;
-  margin:-10px 0px 5px 3.1em;
+  margin:-3px 2px 9px 2.7em;
   display:block;
 }
 .saved-cc-number:hover {
@@ -427,7 +431,7 @@ body.customer-account .data-table span.a-center {
 }
 .cc-option {
   display:inline;
-  border-right:1px solid #e3e3e3;
+ /* border-right:1px solid #e3e3e3; */
   padding:6px 19px 9px 0px;
 }
 #credit_cards a:hover  {
@@ -453,4 +457,31 @@ body.customer-account .data-table span.a-center {
   background-position:297px 0px; /*FOR AMEX: background-position: 297px -38px;*/
   display:inline-block;
   float:right;
+}
+
+#payment_form_hps_securesubmit .card-menu-item label {
+  float:none;
+  min-height:40px
+  font-size:1em;
+}
+.icon-cvv {
+    background-image:url(../images/cvv.jpg);
+}
+.saved-cc-number-stored {
+    font-weight:600;
+  color:#888888;
+  vertical-align:super;
+}
+.form-list input.input-text{
+  max-width:none;
+}
+.cc-info {
+  display:inline;
+}
+.sp-methods input.cvv {
+  width:none;
+}
+#hps_securesubmit_giftcard_pin {
+  margin-top:10px;
+  margin-bottom:10px;
 }
