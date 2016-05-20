@@ -188,7 +188,7 @@
 }
 .saved-card-table #credit_cards {
   padding-top:5px;
-  min-height:50px;
+  /*min-height:50px;*/
   font-size:15px;
 }
 
@@ -286,7 +286,7 @@
   margin-left:-10px;
   display:inline-block;
   float:right;
-  margin-top:6px;
+
 }
 .icon-disc-form {
   background-image:url(../images/ss-saved-discover@2x.png);
@@ -377,8 +377,8 @@ body.customer-account .data-table span.a-center {
   border:1px solid #3989e3;
 }
 #payment_form_hps_securesubmit .card-menu-item label {
-  min-height: 40px;
   font-size:14px;
+  min-height:40px;
 }
 #payment_form_hps_securesubmit .card-menu-item option{
   display:inline;
@@ -409,7 +409,7 @@ body.customer-account .data-table span.a-center {
   font-weight:200;
   font-size:smaller;
   color:#b1b1b1;
-  margin:-3px 2px 9px 2.7em;
+  margin:-3px 2px 4px 2.7em;
   display:block;
 }
 .saved-cc-number:hover {
