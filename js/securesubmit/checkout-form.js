@@ -131,21 +131,30 @@ document.observe('dom:loaded', function () {
                 }
                 // Use stored card not checked, get new token
                 else {
-                    var validator = new Validation(this.form);
-                    if (this.validate() && validator.validate()) {
+                    if (SecureSubmitMagento.options.useIframes) {
                         checkout.setLoadWaiting('payment');
-                        var date = $('hps_securesubmit_exp_date').value.split('/');
-                        $('hps_securesubmit_cc_exp_month').value = date[0].trim();
-                        $('hps_securesubmit_cc_exp_year').value = date[1].trim();
-                        (new Heartland.HPS({
-                            publicKey: this.secureSubmitPublicKey,
-                            cardNumber: $('hps_securesubmit_cc_number').value,
-                            cardCvv: $('hps_securesubmit_cvv_number').value,
-                            cardExpMonth: $('hps_securesubmit_cc_exp_month').value,
-                            cardExpYear: $('hps_securesubmit_cc_exp_year').value,
-                            success: this.secureSubmitResponseHandler.bind(this),
-                            error: this.secureSubmitResponseHandler.bind(this)
-                        })).tokenize();
+                        SecureSubmitMagento.hps.Messages.post({
+                            accumulateData: true,
+                            action: 'tokenize',
+                            message: SecureSubmitMagento.options.publicKey
+                        }, 'cardNumber');
+                    } else {
+                        var validator = new Validation(this.form);
+                        if (this.validate() && validator.validate()) {
+                            checkout.setLoadWaiting('payment');
+                            var date = $('hps_securesubmit_exp_date').value.split('/');
+                            $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                            $('hps_securesubmit_cc_exp_year').value = date[1].trim();
+                            (new Heartland.HPS({
+                                publicKey: this.secureSubmitPublicKey,
+                                cardNumber: $('hps_securesubmit_cc_number').value,
+                                cardCvv: $('hps_securesubmit_cvv_number').value,
+                                cardExpMonth: $('hps_securesubmit_cc_exp_month').value,
+                                cardExpYear: $('hps_securesubmit_cc_exp_year').value,
+                                success: this.secureSubmitResponseHandler.bind(this),
+                                error: this.secureSubmitResponseHandler.bind(this)
+                            })).tokenize();
+                        }
                     }
                 }
             },
@@ -450,10 +459,15 @@ document.observe('dom:loaded', function () {
                         } else {
                             $(THIS.options.code + '_cc_form').hide();
                         }
-                        $(THIS.options.code + '_cc_number').toggleClassName('validate-cc-number');
+
+                        if (!THIS.options.useIframes) {
+                            $(THIS.options.code + '_cc_number').toggleClassName('validate-cc-number');
+                        }
+
                         $$('[name="' + THIS.options.code + '_stored_card_select"]').each(function (element) {
                             $(element).up(2).removeClassName('active');
                         });
+
                         $(el).up(2).addClassName('active');
                     });
                 });
@@ -496,7 +510,7 @@ document.observe('dom:loaded', function () {
         setupFields: function () {
             if (THIS.options.useIframes) {
                 THIS.hps = new Heartland.HPS({
-                    publicKey: 'pkapi_cert_jKc1FtuyAydZhZfbB3',
+                    publicKey: THIS.options.publicKey,
                     type:      'iframe',
                     fields: {
                         cardNumber: {
@@ -512,15 +526,40 @@ document.observe('dom:loaded', function () {
                             placeholder: 'CVV'
                         }
                     },
-                    style: { },
+                    style: {
+                        '#heartland-field': {
+                             'height': '40px',
+                             'border-radius': '0px',
+                             'letter-spacing': '2.5px',
+                             'margin': '5px 0px 15px 0px',
+                             'width': '365px !important',
+                             'min-width': '23em',
+                             'padding-left': '9px',
+                             'max-width': 'none',
+                             'font-size': '15px'
+                         }
+                    },
                     onTokenSuccess: function (resp) {
-                        alert('Here is a single-use token: ' + resp.token_value);
+                        $(THIS.options.code + '_token').value = resp.token_value;
+                        $(THIS.options.code + '_cc_last_four').value = resp.card.number.substr(-4);
+                        $(THIS.options.code + '_cc_type').value = resp.card_type;
+                        $(THIS.options.code + '_cc_exp_month').value = resp.exp_month;
+                        $(THIS.options.code + '_cc_exp_year').value = resp.exp_year;
+
+                        var params = Form.serialize(payment.form);
+                        var request = new Ajax.Request(payment.saveUrl, {
+                            method: 'post',
+                            parameters: params,
+                            onComplete: payment.onComplete,
+                            onSuccess: payment.onSave,
+                            onFailure: checkout.ajaxFailure.bind(checkout)
+                        });
                     },
                     onTokenError: function (resp) {
-                        alert('There was an error: ' + resp.error.message);
-                    },
-                    onEvent: function (ev) {
-                        console.log(ev);
+                        if (response.message) {
+                            alert(response.message);
+                        }
+                        checkout.setLoadWaiting(false);
                     }
                 });
             } else {

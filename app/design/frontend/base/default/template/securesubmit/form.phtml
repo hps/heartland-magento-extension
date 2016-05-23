@@ -5,7 +5,7 @@ $public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publica
 $token_data_url = Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE));
 $allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
 $allow_heartland_gift = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_heartland_gift');
-$use_iframes = false; // Mage::getModel('hps_securesubmit/payment')->getConfigData('use_iframes');
+$use_iframes = !!Mage::getModel('hps_securesubmit/payment')->getConfigData('use_iframes');
 
 if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
@@ -71,6 +71,7 @@ if ($_loggedIn && $allow_card_saving) {
                 <?php endif ?>
                 <input type="hidden" id="<?= $_code ?>_token" name="payment[securesubmit_token]">
                 <input type="hidden" id="<?= $_code ?>_cc_last_four" name="payment[cc_last_four]">
+                <input type="hidden" id="<?= $_code ?>_cc_type" name="payment[cc_type]">
             </div>
 
             <label for="<?= $_code ?>_expiration"><?= $this->__('Expiration Date') ?> <span class="required">&nbsp;</span></label>
@@ -128,7 +129,7 @@ SecureSubmitMagento.init({
     tokenDataUrl: '<?= $token_data_url ?>',
     allowGift: <?= $allow_heartland_gift ? 'true' : 'false' ?>,
     giftBalanceUrl: '<?= Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => true)) ?>',
-    useIfames: <?= $use_iframes ? 'true' : 'false' ?>,
+    useIframes: <?= $use_iframes ? 'true' : 'false' ?>,
     <?php if ($use_iframes): ?>
         iframeTargets: {
             cardNumber: '<?= $_code ?>_cc_number_iframe',

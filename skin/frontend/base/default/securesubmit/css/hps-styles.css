@@ -485,3 +485,7 @@ body.customer-account .data-table span.a-center {
   margin-top:10px;
   margin-bottom:10px;
 }
+
+#payment_form_hps_securesubmit iframe {
+  width: 100%;
+}
