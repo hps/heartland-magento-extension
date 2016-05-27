@@ -12,14 +12,15 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
             <?php foreach ($_storedCards->getData() as $card): ?>
                 <li id="credit_cards">
                     <div class="icon-<?= strtolower($card['cc_type'])?>">&nbsp;</div>
-                    <span class="saved-cc-number-saved">
+                    <span class="saved-cc-number-stored">
                         <?php echo $card['cc_type'] ." " ."ending in   ************".$card['cc_last4'] ?>
-                    </span><br/>
+                    </span>  
+                        <div class="icon-trash"></div>
+                    <br/>
                     <span class="exp-date">
                         <?php echo "expires on" ." "  .$card['cc_exp_month'] ."-".$card['cc_exp_year'] ?>
                     </span>
-                    <a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>">
-                        <div class="icon-trash"></div>
+                    <a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>" >        
                     </a>
                 </li>
             <?php endforeach; ?>

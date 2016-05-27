@@ -13,6 +13,9 @@
   body[class*="checkout-multishipping-"] .buttons-set .back-link {
     display: block;
   }
+  #dd_method_hps_securesubmit {
+ max-width:350px;
+}
 }
 
 @media only screen and (max-width: 770px) {
@@ -43,6 +46,15 @@
   }
   .buttons-set .required {
     display: none;
+  }
+  #checkout-step-payment #dd_method_hps_securesubmit input[type=tel] {
+   /* max-width:365px !important;*/
+  }
+  #hps_securesubmit_gift_card {
+   /* max-width:365px !important; */
+  }
+  #payment_form_hps_securesubmit .card-menu-item label {
+    font-size:13px;
   }
 }
 /* =========================================
@@ -246,7 +258,7 @@
   height:25px;
   margin:auto;
   float:right;
-  margin-top:-2.5em;
+margin-top:7px;
 }
 /*card icons*/
 .icon-visa-form {
@@ -286,7 +298,7 @@
   margin-left:-10px;
   display:inline-block;
   float:right;
-
+  margin-top:6px;
 }
 .icon-disc-form {
   background-image:url(../images/ss-saved-discover@2x.png);
@@ -433,6 +445,7 @@ body.customer-account .data-table span.a-center {
   display:inline;
  /* border-right:1px solid #e3e3e3; */
   padding:6px 19px 9px 0px;
+  vertical-align:-webkit-baseline-middle;
 }
 #credit_cards a:hover  {
   text-decoration:none;
@@ -453,10 +466,10 @@ body.customer-account .data-table span.a-center {
 #hps_securesubmit_cc_form .icon-sc{
   background-image:url(../images/ss-cvv@2x.png);
   background-repeat:no-repeat;
-  background-size:65px 76px;
-  background-position:297px 0px; /*FOR AMEX: background-position: 297px -38px;*/
+  background-size:55px 82px;
+  background-position:308px 0px; /*FOR AMEX: background-position: 297px -38px;*/
   display:inline-block;
-  float:right;
+  /*float:right;*/
 }
 
 #payment_form_hps_securesubmit .card-menu-item label {
@@ -473,17 +486,22 @@ body.customer-account .data-table span.a-center {
   vertical-align:super;
 }
 .form-list input.input-text{
-  max-width:none;
 }
 .cc-info {
   display:inline;
-}
-.sp-methods input.cvv {
-  width:none;
+
+
 }
 #hps_securesubmit_giftcard_pin {
   margin-top:10px;
   margin-bottom:10px;
+}
+.v-fix {
+
+
+}
+#checkout-step-payment #dd_method_hps_securesubmit input[type=tel]:focus {
+  border:1px solid #3989e3;
 }
 
 #payment_form_hps_securesubmit iframe {

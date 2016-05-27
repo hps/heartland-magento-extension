@@ -30,7 +30,7 @@ if ($_loggedIn && $allow_card_saving) {
                     <div class="cc-option">
                         <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" value="<?= $card->getId() ?>" <?php if ($checked): ?>checked="checked"<?php $checked=false; endif ?>/>
                     </div>
-                    <div class="cc-info">
+                    
                     <span class="saved-cc-number">
                         <?= $card->getCcType().' ************'.$card->getCcLast4()?>
                     </span>
@@ -38,7 +38,7 @@ if ($_loggedIn && $allow_card_saving) {
                     <div class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
 
                     <span class="exp-date"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?> </span>
-                    </div>
+                  
                 </label>
             </li>
         <?php endforeach ?>
@@ -86,19 +86,17 @@ if ($_loggedIn && $allow_card_saving) {
             </div>
 
             <label for="<?= $_code ?>_cvv_number"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label>
-            <div class="input-box" id="horizontal-form">
+          
                 <?php if ($use_iframes): ?>
                     <div id="<?= $_code ?>_cc_cvv_iframe"></div>
                 <?php else: ?>
                     <div class="v-fix">
-                        <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="icon-sc cvv required-entry input-text validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
+                        <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="input-text icon-sc cvv required-entry validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
                     </div>
                 <?php endif ?>
 
-            </div>
-
             <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
-                <div class="input-box" style="">
+                <div class="" id="">
                     <input type="checkbox" id="<?= $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
                     <label style="display: inline-block;" for="<?= $_code ?>_cc_save_future"><?= $this->__('Save this card for future use?') ?></label>
                 </div>
@@ -116,8 +114,9 @@ if ($_loggedIn && $allow_card_saving) {
           <a id="remove-gift-card" class="button" style="display: none;"><?= $this->__('Remove Gift Card') ?></a>
           <a id="apply-gift-card" class="button"><?= $this->__('Apply Gift Card') ?></a>
       </li>
+      </ul>
     <?php endif ?>
-</ul>
+
 
 <script type="text/javascript">
 //<![CDATA[
