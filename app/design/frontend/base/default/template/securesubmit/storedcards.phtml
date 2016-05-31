@@ -8,19 +8,19 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
         <div class="box-head">
             <h2><?php echo $this->__('Saved Credit Cards') ?></h2>
         </div>
-        <ul class="saved-card-table">
+        <ul id="hps-saved-cards" class="saved-card-table">
             <?php foreach ($_storedCards->getData() as $card): ?>
                 <li id="credit_cards">
                     <div class="icon-<?= strtolower($card['cc_type'])?>">&nbsp;</div>
                     <span class="saved-cc-number-stored">
                         <?php echo $card['cc_type'] ." " ."ending in   ************".$card['cc_last4'] ?>
-                    </span>  
+                    </span>
                         <div class="icon-trash"></div>
                     <br/>
                     <span class="exp-date">
                         <?php echo "expires on" ." "  .$card['cc_exp_month'] ."-".$card['cc_exp_year'] ?>
                     </span>
-                    <a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>" >        
+                    <a href="<?php echo Mage::getUrl('securesubmit/storedcard/delete', array('storedcard_id' => $card['storedcard_id'], '_secure' => TRUE)) ?>" >
                     </a>
                 </li>
             <?php endforeach; ?>

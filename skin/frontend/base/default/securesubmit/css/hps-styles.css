@@ -481,10 +481,15 @@ body.customer-account .data-table span.a-center {
     background-image:url(../images/cvv.jpg);
 }
 .saved-cc-number-stored {
-    font-weight:600;
+  font-weight:600;
   color:#888888;
   vertical-align:super;
+  text-transform: uppercase;
 }
+#hps-saved-cards li:hover .saved-cc-number-stored {
+  color: #3989e3;
+}
+
 .form-list input.input-text{
 }
 .cc-info {
@@ -506,4 +511,8 @@ body.customer-account .data-table span.a-center {
 
 #payment_form_hps_securesubmit iframe {
   width: 100%;
+}
+
+#payment_form_hps_securesubmit label {
+  text-transform: uppercase;
 }

@@ -30,7 +30,7 @@ if ($_loggedIn && $allow_card_saving) {
                     <div class="cc-option">
                         <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" value="<?= $card->getId() ?>" <?php if ($checked): ?>checked="checked"<?php $checked=false; endif ?>/>
                     </div>
-                    
+
                     <span class="saved-cc-number">
                         <?= $card->getCcType().' ************'.$card->getCcLast4()?>
                     </span>
@@ -38,7 +38,7 @@ if ($_loggedIn && $allow_card_saving) {
                     <div class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
 
                     <span class="exp-date"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?> </span>
-                  
+
                 </label>
             </li>
         <?php endforeach ?>
@@ -85,14 +85,14 @@ if ($_loggedIn && $allow_card_saving) {
                 <input type="hidden" id="<?= $_code ?>_cc_exp_year" name="payment[cc_exp_year]">
             </div>
 
-            <label for="<?= $_code ?>_cvv_number"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label></br>
-          
+            <label for="<?= $_code ?>_cvv_number"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label>
+
                 <?php if ($use_iframes): ?>
                     <div id="<?= $_code ?>_cc_cvv_iframe"></div>
                 <?php else: ?>
-             <div class="v-fix">
-                        <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="input-text cvv required-entry validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
-                    </div></br>
+                    <div class="v-fix">
+                        <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="input-text icon-sc required-entry validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
+                    </div>
                 <?php endif ?>
 
             <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
