@@ -233,8 +233,7 @@ document.observe('dom:loaded', function () {
 
     // MageStore One Step Checkout
     if (typeof oscPlaceOrder == 'function') {
-        var cloneFunction = function () {
-            var that = this;
+        var cloneFunction = function (that) {
             var temp = function temporary() { return that.apply(this, arguments); };
             for (var key in this) {
                 if (this.hasOwnProperty(key)) {
@@ -258,7 +257,7 @@ document.observe('dom:loaded', function () {
                 $('onestepcheckout-button-place-order').addClassName('onestepcheckout-btn-checkout');
                 if (secureSubmitUseStoredCardOSC()) {
                     var storedcardId = $('hps_securesubmit_stored_card_select').value;
-                    new Ajax.Request(secureSubmitGetTokenDataUrlOSC, {
+                    new Ajax.Request(window.payment.secureSubmitGetTokenDataUrlOSC, {
                       method: 'post',
                       parameters: {storedcard_id: storedcardId},
                       onSuccess: function (response) {
@@ -286,7 +285,7 @@ document.observe('dom:loaded', function () {
                 } else {
                     hps.tokenize({
                         data: {
-                            public_key: secureSubmitPublicKeyOSC,
+                            public_key: window.payment.secureSubmitPublicKeyOSC,
                             number: $('hps_securesubmit_cc_number').value,
                             cvc: $('hps_securesubmit_cc_cid').value,
                             exp_month: $('hps_securesubmit_expiration').value,

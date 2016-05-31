@@ -146,10 +146,9 @@ if (typeof OPC !== 'undefined') {
 }
 
 // MageStore OSC
-if (typeof oscPlaceOrder == 'function') {
-    secureSubmitPublicKeyOSC = '<?php echo $public_key ?>';
-    secureSubmitGetTokenDataUrlOSC = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
-}
+window.payment = window.payment || {};
+window.payment.secureSubmitPublicKeyOSC = '<?php echo $public_key ?>';
+window.payment.secureSubmitGetTokenDataUrlOSC = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 
 // IWD OPC
 if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
