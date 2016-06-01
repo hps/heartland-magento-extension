@@ -133,6 +133,7 @@ if ($_loggedIn && $allow_card_saving) {
 <?php endif; ?>
 
 if (typeof Payment !== 'undefined') {
+    window.payment = window.payment || {};
     payment.secureSubmitPublicKey = '<?php echo $public_key ?>';
     payment.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 } else if( !document.getElementById('multishipping-billing-form').empty() ){
@@ -148,6 +149,17 @@ if (typeof Payment !== 'undefined') {
 if (typeof OPC !== 'undefined') {
     OPC.prototype.secureSubmitPublicKey = '<?php echo $public_key ?>';
     OPC.prototype.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+}
+
+// MageStore OSC
+window.payment = window.payment || {};
+window.payment.secureSubmitPublicKeyOSC = '<?php echo $public_key ?>';
+window.payment.secureSubmitGetTokenDataUrlOSC = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
+
+// IWD OPC
+if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
+    IWD.OPC.secureSubmitPublicKey = '<?php echo $public_key ?>';
+    IWD.OPC.secureSubmitGetTokenDataUrl = '<?php echo Mage::getUrl('securesubmit/storedcard/getTokenData', array('_secure' => TRUE)) ?>';
 }
 //]]>
 </script>
