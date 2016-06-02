@@ -46,7 +46,7 @@ if ($_loggedIn && $allow_card_saving) {
 
     <!--dropdown-->
     <?php $checked = !$_loggedIn || !count($customerStoredCards);?>
-    <li class="card-menu-item">
+    <li class="card-menu-item new-card">
         <?php if (!$checked): ?>
             <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label">
                 <div class="cc-option">
@@ -96,9 +96,9 @@ if ($_loggedIn && $allow_card_saving) {
                 <?php endif ?>
 
             <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
-                <div class="" id="">
+                <div class="save-card-checkbox" id="">
                     <input type="checkbox" id="<?= $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
-                    <label style="display: inline-block;" for="<?= $_code ?>_cc_save_future"><?= $this->__('Save this card for future use?') ?></label>
+                    <label style="" for="<?= $_code ?>_cc_save_future"><?= $this->__('&nbsp; &nbsp;Save this card for future use?') ?></label>
                 </div>
             <?php endif ?>
         </div>

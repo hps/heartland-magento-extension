@@ -201,7 +201,7 @@
 .saved-card-table #credit_cards {
   padding-top:5px;
   /*min-height:50px;*/
-  font-size:15px;
+  font-size:13px;
 }
 
 
@@ -210,9 +210,9 @@
    height:40px;
    border-radius:0px;
    letter-spacing:2.5px;
-   margin:5px 0px 15px 0px;
-   min-width:23em;
+   margin:0px 0px 20px 0px;
    padding-left:9px;
+   width:365px !important;
 }
 #checkout-step-payment #dd_method_hps_securesubmit input[type=date]{
    height:40px;
@@ -389,8 +389,7 @@ body.customer-account .data-table span.a-center {
   border:1px solid #3989e3;
 }
 #payment_form_hps_securesubmit .card-menu-item label {
-  font-size:14px;
-  min-height:40px;
+  font-size:14px !important;
 }
 #payment_form_hps_securesubmit .card-menu-item option{
   display:inline;
@@ -413,7 +412,7 @@ body.customer-account .data-table span.a-center {
   font-weight:600;
   color:#888888;
   vertical-align:super;
-  margin-left:1em;
+  margin-left:1.2em;
 }
 .exp-date {
   padding-left:1.8em;
@@ -452,11 +451,12 @@ body.customer-account .data-table span.a-center {
 }
 .new-card {
   font-weight:600;
-  color:#888888;
+  color:#888888 !important;
   vertical-align:super;
   padding-left:1.4em;
   margin-top:10px;
-  vertical-align:middle;
+  min-height:35px;
+  vertical-align:-webkit-baseline-middle;
 }
 
 #hps_securesubmit_cc_form {
@@ -474,8 +474,9 @@ body.customer-account .data-table span.a-center {
 
 #payment_form_hps_securesubmit .card-menu-item label {
   float:none;
-  min-height:40px
+  display:inline;
   font-size:1em;
+  text-transform:uppercase;
 }
 .icon-cvv {
     background-image:url(../images/cvv.jpg);
@@ -515,4 +516,18 @@ body.customer-account .data-table span.a-center {
 
 #payment_form_hps_securesubmit label {
   text-transform: uppercase;
+}
+
+.sp-methods input.cvv {
+  width: 21em !important;
+}
+.save-card-checkbox {
+  display:inline-block;
+}
+
+
+@media only screen and (min-width: 479px) {
+  .sp-methods input.cvv {
+    min-width:24em !important;
+  }
 }
