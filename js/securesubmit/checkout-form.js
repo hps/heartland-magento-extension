@@ -546,14 +546,19 @@ document.observe('dom:loaded', function () {
                         '#heartland-field': {
                              'height': '40px',
                              'border-radius': '0px',
+                             'border': '1px solid silver',
                              'letter-spacing': '2.5px',
                              'margin': '5px 0px 15px 0px',
-                             'width': '365px !important',
-                             'min-width': '23em',
+                             'max-width': '365px',
+                             'width': '100%',
                              'padding-left': '9px',
-                             'max-width': 'none',
                              'font-size': '15px'
-                         }
+                         },
+                        '@media only screen and (max-width: 479px)': {
+                            '#heartland-field': {
+                                'width': '95%'
+                            }
+                        }
                     },
                     onTokenSuccess: function (resp) {
                         $(THIS.options.code + '_token').value = resp.token_value;

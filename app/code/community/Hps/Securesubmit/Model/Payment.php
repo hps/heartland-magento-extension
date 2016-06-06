@@ -148,6 +148,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $cardData->number = $payment->getCcLast4();
             $cardData->expYear = $payment->getCcExpYear();
             $cardData->expMonth = $payment->getCcExpMonth();
+            $cardType = $payment->getCcType();
         }
 
         $chargeService = $this->_getChargeService();
@@ -197,7 +198,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
             if ($multiToken) {
-                $this->saveMultiUseToken($response, $cardData, $customerId);
+                $this->saveMultiUseToken($response, $cardData, $customerId, $cardType);
             }
         } catch (HpsCreditException $e) {
             Mage::logException($e);
@@ -248,7 +249,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $this;
     }
 
-    protected function saveMultiUseToken($response, $cardData, $customerId)
+    protected function saveMultiUseToken($response, $cardData, $customerId, $cardType)
     {
         $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
 
@@ -260,9 +261,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
             if ($customerId > 0) {
-                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $response->cardType, $customerId);
+                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $cardType, $customerId);
             } else {
-                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $response->cardType);
+                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $cardType);
             }
         } else {
             Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);

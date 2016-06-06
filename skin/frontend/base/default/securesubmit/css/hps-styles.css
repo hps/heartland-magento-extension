@@ -136,7 +136,7 @@
   margin-right:21px;
 }
 
-.icon-disc {
+.icon-disc, .icon-discover {
   background-image:url(../images/ss-saved-discover@2x.png);
   background-repeat:no-repeat;
   height:30px;
@@ -149,7 +149,7 @@
   margin-right:21px;
 }
 
-.icon-mc {
+.icon-mc, .icon-mastercard {
   background-image:url(../images/ss-saved-mastercard@2x.png);
   background-repeat:no-repeat;
   height:38px;
@@ -178,10 +178,12 @@
 #credit_cards:hover .icon-amex {
   background-position:0px 0px;
 }
-#credit_cards:hover .icon-mc {
+#credit_cards:hover .icon-mc,
+#credit_cards:hover .icon-mastercard {
    background-position:0px 0px;
 }
-#credit_cards:hover .icon-disc {
+#credit_cards:hover .icon-disc,
+#credit_cards:hover .icon-discover {
    background-position:0px 0px;
 }
 #credit_cards:hover .icon-jcb {
@@ -287,7 +289,7 @@ margin-top:7px;
   float:right;
   margin-top:1px;
 }
-.icon-mc-form {
+.icon-mc-form, .icon-mastercard-form {
   background-image:url(../images/ss-saved-mastercard@2x.png);
   background-repeat:no-repeat;
   height:30px;
@@ -300,7 +302,7 @@ margin-top:7px;
   float:right;
   margin-top:6px;
 }
-.icon-disc-form {
+.icon-disc-form, .icon-discover-form {
   background-image:url(../images/ss-saved-discover@2x.png);
   background-repeat:no-repeat;
   width:200px;
@@ -340,13 +342,16 @@ margin-top:7px;
 #payment_form_hps_securesubmit .card-menu-item:hover .icon-amex-form {
   background-position:0px 0px;
 }
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-mc-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-mc-form,
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-mastercard-form {
    background-position:5px -1px;
 }
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form,
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-discover-form {
  background-position:20px -20px;
 }
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form {
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form,
+#payment_form_hps_securesubmit .card-menu-item:hover .icon-discover-form {
   background-position:4px 4px;
 }
 #payment_form_hps_securesubmit .card-menu-item:hover .cc-option {
@@ -477,6 +482,7 @@ body.customer-account .data-table span.a-center {
   display:inline;
   font-size:1em;
   text-transform:uppercase;
+  min-height: 35px;
 }
 .icon-cvv {
     background-image:url(../images/cvv.jpg);
@@ -525,6 +531,11 @@ body.customer-account .data-table span.a-center {
   display:inline-block;
 }
 
+#apply-gift-card {
+  background-color:36b46e;
+  color:#fff;
+  text-transform:none;
+}
 
 @media only screen and (min-width: 479px) {
   .sp-methods input.cvv {

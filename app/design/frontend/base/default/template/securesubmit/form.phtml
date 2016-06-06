@@ -85,14 +85,14 @@ if ($_loggedIn && $allow_card_saving) {
                 <input type="hidden" id="<?= $_code ?>_cc_exp_year" name="payment[cc_exp_year]">
             </div>
 
-            <label for="<?= $_code ?>_cvv_number"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label>
+            <label for="<?= $_code ?>_cvv_number"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label></br>
 
                 <?php if ($use_iframes): ?>
                     <div id="<?= $_code ?>_cc_cvv_iframe"></div>
                 <?php else: ?>
                     <div class="v-fix">
                         <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="input-text icon-sc required-entry validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number"/>
-                    </div>
+                    </div></br>
                 <?php endif ?>
 
             <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
