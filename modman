@@ -7,3 +7,4 @@ app/design/adminhtml/default/default/layout/securesubmit.xml app/design/adminhtm
 app/design/adminhtml/default/default/template/securesubmit   app/design/adminhtml/default/default/template/securesubmit
 js/securesubmit                                              js/securesubmit
 lib/SecureSubmit                                             lib/SecureSubmit
+skin/frontend/base/default/securesubmit/                     skin/frontend/base/default/securesubmit/

@@ -10,7 +10,7 @@ function securesubmitMultishipping(multiForm) {
 
             // Use stored card checked, get existing token data
             if (this.secureSubmitUseStoredCard()) {
-                var storedcardId = $('hps_securesubmit_stored_card_select').value;
+                var storedcardId = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0].value;
 
                 new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
                     method: 'post',
@@ -18,8 +18,8 @@ function securesubmitMultishipping(multiForm) {
                     onSuccess: function(response) {
                         var data = response.responseJSON;
                         if (data && data.token) {
-                            $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
-                            $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
+                            $('hps_securesubmit_cc_exp_month').value = parseInt(data.token.cc_exp_month);
+                            $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                         }
                         this.secureSubmitResponseHandler({
                             token_value:  data.token.token_value,
@@ -37,30 +37,41 @@ function securesubmitMultishipping(multiForm) {
             }
             // Use stored card not checked, get new token
             else {
-                var validator = new Validation(multiForm);
-                if (validator.validate()) {
-
-                    hps.tokenize({
-                        data: {
-                            public_key: this.secureSubmitPublicKey,
-                            number: $('hps_securesubmit_cc_number').value,
-                            cvc: $('hps_securesubmit_cc_cid').value,
-                            exp_month: $('hps_securesubmit_expiration').value,
-                            exp_year: $('hps_securesubmit_expiration_yr').value
-                        },
-                        success: this.secureSubmitResponseHandler.bind(this),
-                        error: this.secureSubmitResponseHandler.bind(this),
-                    });
+                if (SecureSubmitMagento.options.useIframes) {
+                    SecureSubmitMagento.hps.Messages.post({
+                        accumulateData: true,
+                        action: 'tokenize',
+                        message: SecureSubmitMagento.options.publicKey
+                    }, 'cardNumber');
+                } else {
+                    var validator = new Validation(multiForm);
+                    if (validator.validate()) {
+                        var date = $('hps_securesubmit_exp_date').value.split('/');
+                        $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                        $('hps_securesubmit_cc_exp_year').value = date[1].trim();
+                        (new Heartland.HPS({
+                            publicKey: this.secureSubmitPublicKey,
+                            cardNumber: $('hps_securesubmit_cc_number').value,
+                            cardCvv: $('hps_securesubmit_cvv_number').value,
+                            cardExpMonth: $('hps_securesubmit_cc_exp_month').value,
+                            cardExpYear: $('hps_securesubmit_cc_exp_year').value,
+                            success: this.secureSubmitResponseHandler.bind(this),
+                            error: this.secureSubmitResponseHandler.bind(this)
+                        })).tokenize();
+                    }
                 }
             }
         },
         secureSubmitUseStoredCard: function () {
-            var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
-            return storedCheckbox && storedCheckbox.checked;
+            var newRadio = $('hps_securesubmit_stored_card_select_new');
+            return !newRadio.checked;
         },
         secureSubmitResponseHandler: function (response) {
             var tokenField = $('hps_securesubmit_token'),
                 lastFourField = $('hps_securesubmit_cc_last_four');
+            var date = $('hps_securesubmit_exp_date').value.split('/');
+            $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+            $('hps_securesubmit_cc_exp_year').value = date[1].trim();
             tokenField.value = lastFourField.value = null;
 
             if (response && response.error) {
@@ -84,7 +95,7 @@ function securesubmitMultishipping(multiForm) {
 
 document.observe('dom:loaded', function () {
     // Override default Payment save handler
-    if (typeof Payment != "undefined") {
+    if (typeof Payment != 'undefined') {
         if (typeof Payment.prototype._secureSubmitOldSave === 'undefined') {
             var oldPayment = Object.clone(Payment.prototype);
             Payment.prototype._secureSubmitOldSave = oldPayment.save;
@@ -100,7 +111,7 @@ document.observe('dom:loaded', function () {
 
                 // Use stored card checked, get existing token data
                 if (this.secureSubmitUseStoredCard()) {
-                    var storedcardId = $('hps_securesubmit_stored_card_select').value;
+                    var storedcardId = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0].value;
                     checkout.setLoadWaiting('payment');
                     new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
                         method: 'post',
@@ -108,8 +119,8 @@ document.observe('dom:loaded', function () {
                         onSuccess: function(response) {
                             var data = response.responseJSON;
                             if (data && data.token) {
-                                $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
-                                $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
+                                $('hps_securesubmit_cc_exp_month').value = parseInt(data.token.cc_exp_month);
+                                $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                             }
                             this.secureSubmitResponseHandler({
                                 token_value:  data.token.token_value,
@@ -128,31 +139,43 @@ document.observe('dom:loaded', function () {
                 }
                 // Use stored card not checked, get new token
                 else {
-                    var validator = new Validation(this.form);
-                    if (this.validate() && validator.validate()) {
+                    if (SecureSubmitMagento.options.useIframes) {
                         checkout.setLoadWaiting('payment');
-
-                        hps.tokenize({
-                            data: {
-                                public_key: this.secureSubmitPublicKey,
-                                number: $('hps_securesubmit_cc_number').value,
-                                cvc: $('hps_securesubmit_cc_cid').value,
-                                exp_month: $('hps_securesubmit_expiration').value,
-                                exp_year: $('hps_securesubmit_expiration_yr').value
-                            },
-                            success: this.secureSubmitResponseHandler.bind(this),
-                            error: this.secureSubmitResponseHandler.bind(this)
-                        });
+                        SecureSubmitMagento.hps.Messages.post({
+                            accumulateData: true,
+                            action: 'tokenize',
+                            message: SecureSubmitMagento.options.publicKey
+                        }, 'cardNumber');
+                    } else {
+                        var validator = new Validation(this.form);
+                        if (this.validate() && validator.validate()) {
+                            checkout.setLoadWaiting('payment');
+                            var date = $('hps_securesubmit_exp_date').value.split('/');
+                            $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                            $('hps_securesubmit_cc_exp_year').value = date[1].trim();
+                            (new Heartland.HPS({
+                                publicKey: this.secureSubmitPublicKey,
+                                cardNumber: $('hps_securesubmit_cc_number').value,
+                                cardCvv: $('hps_securesubmit_cvv_number').value,
+                                cardExpMonth: $('hps_securesubmit_cc_exp_month').value,
+                                cardExpYear: $('hps_securesubmit_cc_exp_year').value,
+                                success: this.secureSubmitResponseHandler.bind(this),
+                                error: this.secureSubmitResponseHandler.bind(this)
+                            })).tokenize();
+                        }
                     }
                 }
             },
             secureSubmitUseStoredCard: function () {
-                var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
-                return storedCheckbox && storedCheckbox.checked;
+                var newRadio = $('hps_securesubmit_stored_card_select_new');
+                return !newRadio.checked;
             },
             secureSubmitResponseHandler: function (response) {
                 var tokenField = $('hps_securesubmit_token'),
                     lastFourField = $('hps_securesubmit_cc_last_four');
+                var date = $('hps_securesubmit_exp_date').value.split('/');
+                $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                $('hps_securesubmit_cc_exp_year').value = date[1].trim();
                 tokenField.value = lastFourField.value = null;
 
                 if (response && response.error) {
@@ -179,7 +202,7 @@ document.observe('dom:loaded', function () {
         });
     }
 
-    if (typeof OPC != "undefined") {
+    if (typeof OPC != 'undefined') {
         if (typeof OPC.prototype._secureSubmitOldSubmit === 'undefined') {
             var oldOPC = Object.clone(OPC.prototype);
             OPC.prototype._secureSubmitOldSubmit = oldOPC.submit;
@@ -190,21 +213,33 @@ document.observe('dom:loaded', function () {
                     this._secureSubmitOldSubmit();
                     return;
                 }
-                hps.tokenize({
-                    data: {
-                        public_key: this.secureSubmitPublicKey,
-                        number: $('hps_securesubmit_cc_number').value,
-                        cvc: $('hps_securesubmit_cc_cid').value,
-                        exp_month: $('hps_securesubmit_expiration').value,
-                        exp_year: $('hps_securesubmit_expiration_yr').value
-                    },
-                    success: this.secureSubmitResponseHandler.bind(this),
-                    error: this.secureSubmitResponseHandler.bind(this)
-                });
+                if (SecureSubmitMagento.options.useIframes) {
+                    SecureSubmitMagento.hps.Messages.post({
+                        accumulateData: true,
+                        action: 'tokenize',
+                        message: SecureSubmitMagento.options.publicKey
+                    }, 'cardNumber');
+                } else {
+                    var date = $('hps_securesubmit_exp_date').value.split('/');
+                    $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                    $('hps_securesubmit_cc_exp_year').value = date[1].trim();
+                    (new Heartland.HPS({
+                        publicKey: this.secureSubmitPublicKey,
+                        cardNumber: $('hps_securesubmit_cc_number').value,
+                        cardCvv: $('hps_securesubmit_cvv_number').value,
+                        cardExpMonth: $('hps_securesubmit_cc_exp_month').value,
+                        cardExpYear: $('hps_securesubmit_cc_exp_year').value,
+                        success: this.secureSubmitResponseHandler.bind(this),
+                        error: this.secureSubmitResponseHandler.bind(this)
+                    })).tokenize();
+                }
             },
             secureSubmitResponseHandler: function (response) {
                 var tokenField = $('hps_securesubmit_token'),
                     lastFourField = $('hps_securesubmit_cc_last_four');
+                var date = $('hps_securesubmit_exp_date').value.split('/');
+                $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                $('hps_securesubmit_cc_exp_year').value = date[1].trim();
                 tokenField.value = lastFourField.value = null;
 
                 if (response && response.error) {
@@ -392,3 +427,190 @@ document.observe('dom:loaded', function () {
       });
     }
 });
+
+(function (window, document, undefined) {
+    var THIS = {
+        init: function (options) {
+            THIS.options = options;
+            THIS.observeSavedCards();
+            THIS.observeGift();
+
+            if (typeof Payment !== 'undefined') {
+                window.payment = window.payment || {};
+                payment.secureSubmitPublicKey = THIS.options.publicKey;
+                payment.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+            } else if (!document.getElementById('multishipping-billing-form').empty()){
+                THIS.secureSubmitMS = securesubmitMultishipping(document.getElementById('multishipping-billing-form'));
+                THIS.secureSubmitMS.secureSubmitPublicKey = THIS.options.publicKey;
+                THIS.secureSubmitMS.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+                document.observe('dom:loaded', function() {
+                    Event.observe('payment-continue', 'click', function(e){ Event.stop(e); THIS.secureSubmitMS.save(); });
+                });
+            }
+
+            if (typeof OPC !== 'undefined') {
+                OPC.prototype.secureSubmitPublicKey = THIS.options.publicKey;
+                OPC.prototype.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+            }
+
+            // MageStore OSC
+            window.payment = window.payment || {};
+            window.payment.secureSubmitPublicKeyOSC = THIS.options.publicKey;
+            window.payment.secureSubmitGetTokenDataUrlOSC = THIS.options.tokenDataUrl;
+
+            // IWD OPC
+            if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
+                IWD.OPC.secureSubmitPublicKey = THIS.options.publicKey;
+                IWD.OPC.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+            }
+
+            THIS.setupFields();
+        },
+        observeSavedCards: function () {
+            if (THIS.options.loggedIn && THIS.options.allowCardSaving) {
+                $$('[name="' + THIS.options.code + '_stored_card_select"]').each(function (el) {
+                    $(el).observe('click', function() {
+                        if ($(THIS.options.code + '_stored_card_select_new').checked) {
+                            $(THIS.options.code + '_cc_form').show();
+                        } else {
+                            $(THIS.options.code + '_cc_form').hide();
+                        }
+
+                        if (!THIS.options.useIframes) {
+                            $(THIS.options.code + '_cc_number').toggleClassName('validate-cc-number');
+                        }
+
+                        $$('[name="' + THIS.options.code + '_stored_card_select"]').each(function (element) {
+                            $(element).up(2).removeClassName('active');
+                        });
+
+                        $(el).up(2).addClassName('active');
+                    });
+                });
+            }
+        },
+        observeGift: function () {
+            if (THIS.options.allowGift) {
+                Event.observe('apply-gift-card', 'click', function(event) {
+                    $j.ajax({
+                        url: THIS.options.giftBalanceUrl,
+                        type: 'GET',
+                        data: "giftcard_number=" + $j('#' + THIS.options.code + '_giftcard_number').val()
+                            + "&giftcard_pin=" + $j('#' + THIS.options.code + '_giftcard_pin').val(),
+                        success: function(data) {
+                            if (data.error) {
+                                alert('Error adding gift card: ' + data.message);
+                            } else {
+                                //successful gift, show things
+                                $j('#apply-gift-card').hide();
+                                $j('#' + THIS.options.code + '_giftcard_number').hide();
+                                $j('#gift-card-number-label').text($j('#' + THIS.options.code + '_giftcard_number').val() + ' - $' + data.balance);
+                                $j('#gift-card-number-label').show();
+                                $j('#remove-gift-card').show();
+                            }
+                        }
+                    });
+                });
+                Event.observe('remove-gift-card', 'click', function(event) {
+                    $j('#apply-gift-card').show();
+                    $j('#' + THIS.options.code + '_giftcard_number').val('');
+                    $j('#' + THIS.options.code + '_giftcard_number').show();
+                    $j('#' + THIS.options.code + '_giftcard_pin').val('');
+                    $j('#' + THIS.options.code + '_giftcard_pin').show();
+                    $j('#gift-card-number-label').text('');
+                    $j('#gift-card-number-label').hide();
+                    $j('#remove-gift-card').hide();
+                });
+            }
+        },
+        setupFields: function () {
+            if (THIS.options.useIframes) {
+                THIS.hps = new Heartland.HPS({
+                    publicKey: THIS.options.publicKey,
+                    type:      'iframe',
+                    fields: {
+                        cardNumber: {
+                            target:      THIS.options.iframeTargets.cardNumber,
+                            placeholder: '•••• •••• •••• ••••'
+                        },
+                        cardExpiration: {
+                            target:      THIS.options.iframeTargets.cardExpiration,
+                            placeholder: 'MM / YYYY'
+                        },
+                        cardCvv: {
+                            target:      THIS.options.iframeTargets.cardCvv,
+                            placeholder: 'CVV'
+                        }
+                    },
+                    style: {
+                        '#heartland-field': {
+                             'height': '40px',
+                             'border-radius': '0px',
+                             'border': '1px solid silver',
+                             'letter-spacing': '2.5px',
+                             'margin': '5px 0px 15px 0px',
+                             'max-width': '365px',
+                             'width': '100%',
+                             'padding-left': '9px',
+                             'font-size': '15px'
+                         },
+                        '@media only screen and (max-width: 479px)': {
+                            '#heartland-field': {
+                                'width': '95%'
+                            }
+                        }
+                    },
+                    onTokenSuccess: function (resp) {
+                        $(THIS.options.code + '_token').value = resp.token_value;
+                        $(THIS.options.code + '_cc_last_four').value = resp.card.number.substr(-4);
+                        $(THIS.options.code + '_cc_type').value = resp.card_type;
+                        $(THIS.options.code + '_cc_exp_month').value = resp.exp_month;
+                        $(THIS.options.code + '_cc_exp_year').value = resp.exp_year;
+
+                        if (typeof Payment !== 'undefined') {
+                            var params = Form.serialize(payment.form);
+                            var request = new Ajax.Request(payment.saveUrl, {
+                                method: 'post',
+                                parameters: params,
+                                onComplete: payment.onComplete,
+                                onSuccess: payment.onSave,
+                                onFailure: checkout.ajaxFailure.bind(checkout)
+                            });
+                        } else if (!document.getElementById('multishipping-billing-form').empty()) {
+                            document.getElementById('payment-continue').enable();
+                            document.getElementById('multishipping-billing-form').submit();
+                        } else if (typeof OPC !== 'undefined') {
+                            checkout.setLoadWaiting(true);
+                            var params = Form.serialize(checkout.form);
+                            var request = new Ajax.Request(checkout.saveUrl, {
+                                method: 'post',
+                                parameters: params,
+                                onSuccess: checkout.setResponse.bind(checkout),
+                                onFailure: checkout.ajaxFailure.bind(checkout)
+                            });
+                        }
+
+                    },
+                    onTokenError: function (resp) {
+                        if (response.message) {
+                            alert(response.message);
+                        } else {
+                            alert('Unexpected error.');
+                        }
+
+                        if (typeof Payment !== 'undefined') {
+                            payment.setLoadWaiting(false);
+                        } else if (typeof OPC !== 'undefined') {
+                            checkout.setLoadWaiting(false);
+                        }
+                    }
+                });
+            } else {
+                Heartland.Card.attachNumberEvents('#' + THIS.options.code + '_cc_number');
+                Heartland.Card.attachExpirationEvents('#' + THIS.options.code + '_exp_date');
+                Heartland.Card.attachCvvEvents('#' + THIS.options.code + '_cvv_number');
+            }
+        }
+    };
+    window.SecureSubmitMagento = THIS;
+}(window, window.document));
