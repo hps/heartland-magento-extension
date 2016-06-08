@@ -225,6 +225,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
                 $payment->setStatus(self::STATUS_APPROVED);
                 $payment->setAmount($amount);
+                $payment->setLastTransId($e->transactionId);
+                $payment->setCcTransId($e->transactionId);
+                $payment->setTransactionId($e->transactionId);
                 $payment->setIsTransactionClosed(0);
             } else {
                 $payment->setStatus(self::STATUS_ERROR);
