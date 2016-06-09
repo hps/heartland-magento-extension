@@ -1,12 +1,13 @@
 <?php
-require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'Hps.php';
 
+require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'Hps.php';
 /**
  * @category   Hps
  * @package    Hps_Securesubmit
  * @copyright  Copyright (c) 2015 Heartland Payment Systems (https://www.magento.com)
  * @license    https://github.com/SecureSubmit/heartland-magento-extension/blob/master/LICENSE  Custom License
  */
+
 class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 {
     protected $_code                        = 'hps_securesubmit';
@@ -17,16 +18,18 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_canRefundInvoicePartial     = true;
     protected $_canVoid                     = true;
     protected $_canAuthorize                = true;
+
     protected $_supportedCurrencyCodes      = array('USD');
     protected $_minOrderTotal               = 0.5;
+
     protected $_formBlockType               = 'hps_securesubmit/form';
     protected $_formBlockTypeAdmin          = 'hps_securesubmit/adminhtml_form';
     protected $_infoBlockType               = 'hps_securesubmit/info';
+
     protected $_allow_fraud                 = null;
     protected $_email_fraud                 = null;
     protected $_fraud_address               = null;
     protected $_fraud_text                  = null;
-    protected $_use_iframes                 = null;
 
     /**
      * Fields that should be replaced in debug with '***'
@@ -40,11 +43,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $info = $this->getInfoInstance();
         $additionalData = new Varien_Object($info->getAdditionalData() ? unserialize($info->getAdditionalData()) : null);
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
+
         // Gracefully handle javascript errors.
         if (!$secureToken) {
             Mage::log('Payment information submitted without token.', Zend_Log::ERR);
             $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), null, true);
         }
+
         return $this;
     }
 
@@ -89,6 +94,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
         $saveCreditCard = !! (bool)$additionalData->getCcSaveFuture();
         $customerId = $additionalData->getCustomerId();
+
         $giftService = $this->_getGiftService();
         $giftCardNumber = $additionalData->getGiftcardNumber();
         $giftCardPin = filter_var($additionalData->getGiftcardPin(),FILTER_VALIDATE_INT, ARRAY('default' => FILTER_NULL_ON_FAILURE));
@@ -118,9 +124,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                             'gift_card_amount_charged' => $amount));
                     $payment->setStatus(self::STATUS_APPROVED);
                     $payment->setAmount($amount);
-                    $payment->setLastTransId($response->transactionId);
-                    $payment->setTransactionId($response->transactionId);
+                    $payment->setLastTransId($giftresp->transactionId);
+                    $payment->setTransactionId($giftresp->transactionId);
                     $payment->setIsTransactionClosed(0);
+
                     return $this;
                 } catch (Exception $e) {
                     Mage::logException($e);
@@ -136,8 +143,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                         'gift_card_number' => $giftCardNumber,
                         'gift_card_transaction' => $giftresp->transactionId,
                         'gift_card_amount_charged' => $giftResponse->balanceAmount));
+
                 $payment->setAmount($giftResponse->balanceAmount)->save();
                 $amount = $amount - $giftResponse->balanceAmount; // remainder
+
                 // 3. TODO: if the card payment fails later, refund the gift transaction
             }
         }
@@ -148,12 +157,12 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $cardData->number = $payment->getCcLast4();
             $cardData->expYear = $payment->getCcExpYear();
             $cardData->expMonth = $payment->getCcExpMonth();
-            $cardType = $payment->getCcType();
         }
 
         $chargeService = $this->_getChargeService();
         $cardHolder = $this->_getCardHolderData($order);
         $details = $this->_getTxnDetailsData($order);
+
         $cardOrToken = new HpsTokenData();
         $cardOrToken->tokenValue = $secureToken;
 
@@ -186,19 +195,15 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
             $this->_debugChargeService($chargeService);
-            $payment->setStatus(self::STATUS_APPROVED);
-            $payment->setAmount($amount);
-            $payment->setLastTransId($response->transactionId);
-            $payment->setCcTransId($response->transactionId);
-            $payment->setTransactionId($response->transactionId);
-            $payment->setIsTransactionClosed(0);
+            // \Hps_Securesubmit_Model_Payment::closeTransaction
+            $this->closeTransaction($payment,$amount,$response);
 
             if ($giftCardNumber) {
                 $order->addStatusHistoryComment('Remaining amount to be charged to credit card  ' .$this->_formatAmount((string)$amount) . '. [partial payment]')->save();
             }
 
             if ($multiToken) {
-                $this->saveMultiUseToken($response, $cardData, $customerId, $cardType);
+                $this->saveMultiUseToken($response, $cardData, $customerId);
             }
         } catch (HpsCreditException $e) {
             Mage::logException($e);
@@ -213,6 +218,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
             if ($this->_allow_fraud && $e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
                 // we can skip the card saving if it fails for possible fraud there will be no token.
+
                 if ($this->_email_fraud && $this->_fraud_address != '') {
                     // EMAIL THE PEOPLE
                     $this->sendEmail(
@@ -223,15 +229,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     );
                 }
 
-                $payment->setStatus(self::STATUS_APPROVED);
-                $payment->setAmount($amount);
-                $payment->setLastTransId($e->transactionId);
-                $payment->setCcTransId($e->transactionId);
-                $payment->setTransactionId($e->transactionId);
-                $payment->setIsTransactionClosed(0);
+                $this->closeTransaction($payment,$amount,$e);
             } else {
                 $payment->setStatus(self::STATUS_ERROR);
-
                 if ($e->getCode() == HpsExceptionCodes::POSSIBLE_FRAUD_DETECTED) {
                     $this->throwUserError($this->_fraud_text, null, true);
                 } else {
@@ -252,21 +252,42 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $this;
     }
 
-    protected function saveMultiUseToken($response, $cardData, $customerId, $cardType)
+    /**
+     * @param Varien_Object|Mage_Sales_Model_Order_Payment  $payment
+     * @param float                                         $amount
+     * @param HpsReportTransactionDetails|HpsAuthorization  $response
+     * @param Mage_Payment_Model_Method_Abstract::STATUS_UNKNOWN|STATUS_APPROVED|STATUS_ERROR|STATUS_DECLINED|STATUS_VOID|STATUS_SUCCESS                                   $status
+     */
+    protected function closeTransaction($payment, $amount, $response, $status = self::STATUS_APPROVED){
+        $payment->setStatus($status);
+        $payment->setAmount($amount);
+        if (property_exists($response,'cardType')){
+            $payment->setCcType($response->cardType);
+        }
+        if (property_exists($response,'authorizationCode')){
+            $payment->setCcApproval($response->authorizationCode);
+        }
+        if (property_exists($response,'avsResultCode')){
+            $payment->setCcAvsStatus($response->avsResultCode);
+        }
+        $payment->setLastTransId($response->transactionId);
+        $payment->setCcTransId($response->transactionId);
+        $payment->setTransactionId($response->transactionId);
+        $payment->setIsTransactionClosed(0);
+    }
+    protected function saveMultiUseToken($response, $cardData, $customerId)
     {
         $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
-
         if ($tokenData->responseCode == '0') {
             try {
                 $this->_getChargeService()->updateTokenExpiration($tokenData->tokenValue, $cardData->expMonth, $cardData->expYear);
             } catch (Exception $e) {
                 Mage::logException($e);
             }
-
             if ($customerId > 0) {
-                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $cardType, $customerId);
+                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $response->cardType, $customerId);
             } else {
-                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $cardType);
+                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $response->cardType);
             }
         } else {
             Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
@@ -297,7 +318,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         } else {
             $this->_refund($payment, $amount);
         }
-
         return $this;
     }
 
@@ -318,16 +338,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     public function transactionActiveOnGateway(Varien_Object $payment)
     {
         $transactionId = null;
-
         if (false !== ($parentId = $this->getParentTransactionId($payment))) {
             $transactionId = $parentId;
         } else {
             $transactionId = $payment->getCcTransId();
         }
-
         $service = $this->_getChargeService();
         $transaction = $service->get($transactionId);
-
         return $transaction->transactionStatus == 'A';
     }
 
@@ -341,7 +358,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     public function void(Varien_Object $payment)
     {
         $transactionId = null;
-
         if (false !== ($parentId = $this->getParentTransactionId($payment))) {
             $transactionId = $parentId;
         } else {
@@ -349,7 +365,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         $chargeService = $this->_getChargeService();
-
         try {
             $voidResponse = $chargeService->void($transactionId);
             $payment
@@ -378,6 +393,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $transactionId = $payment->getCcTransId();
         $order = $payment->getOrder(); /* @var $order Mage_Sales_Model_Order */
+
         $chargeService = $this->_getChargeService();
         $cardHolder = $this->_getCardHolderData($order);
         $details = $this->_getTxnDetailsData($order);
@@ -390,6 +406,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $cardHolder,
                 $details
             );
+
             $payment
                 ->setTransactionId($refundResponse->transactionId)
                 ->setParentTransactionId($transactionId)
@@ -426,6 +443,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         if (!in_array($currencyCode, $this->_supportedCurrencyCodes)) {
             return false;
         }
+
         return true;
     }
 
@@ -436,7 +454,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         if (!($data instanceof Varien_Object)) {
             $data = new Varien_Object($data);
         }
-
         $info = $this->getInfoInstance();
 
         if (!$info->getCcLast4() && $data->getCcLastFour()) {
@@ -444,27 +461,21 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         $details = array();
-
         if ($data->getData('cc_save_future')) {
             $details['cc_save_future'] = 1;
         }
-
         if ($data->getData('securesubmit_token')) {
             $details['securesubmit_token'] = $data->getData('securesubmit_token');
         }
-
         if ($data->getData('giftcard_number')) {
             $details['giftcard_number'] = $data->getData('giftcard_number');
         }
-
         if ($data->getData('use_credit_card')) {
             $details['use_credit_card'] = 1;
         }
-
         if ($data->getData('customer_id')) {
             $details['customer_id'] = $data->getData('customer_id');
         }
-
         if (!empty($details)) {
             $this->getInfoInstance()->setAdditionalData(serialize($details));
         }
@@ -495,7 +506,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         if ($goToPaymentSection && Mage::app()->getRequest()->getOriginalPathInfo() == '/checkout/onepage/saveOrder') {
             Mage::getSingleton('checkout/session')->setGotoSection('payment');
         }
-
         Mage::log('throwing user error with Mage_Core_Exception');
         throw new Mage_Core_Exception($error);
     }
@@ -576,24 +586,20 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $memo = array();
         $ip = '';
-
         if (isset($_SERVER['REMOTE_ADDR'])) {
             $ip = $_SERVER['REMOTE_ADDR'];
         }
-
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
         }
-
         if ($ip) {
             $memo[] = 'Customer IP Address: '.$ip;
         }
-
         if (isset($_SERVER['HTTP_USER_AGENT'])) {
             $memo[] = 'User Agent: '.$_SERVER['HTTP_USER_AGENT'];
         }
-
         $memo = implode(', ', $memo);
+
         $details = new HpsTransactionDetails();
         $details->memo = substr($memo, 0, 200);                           // Actual limit unknown..
         $details->invoiceNumber = $order->getIncrementId();
@@ -624,13 +630,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $headers[] = sprintf('From: %s', $from);
         $headers[] = sprintf('Reply-To: %s', $from);
         $message = $body;
-
         if ($isHtml) {
             $message = sprintf('<html><body>%s</body></html>', $body);
             $headers[] = 'MIME-Version: 1.0';
             $headers[] = 'Content-Type: text/html; charset=ISO-8859-1';
         }
-
         $message = wordwrap($message, 70, "\r\n");
         mail($to, $subject, $message, implode("\r\n", $headers));
     }
