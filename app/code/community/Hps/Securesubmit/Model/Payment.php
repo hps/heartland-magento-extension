@@ -110,6 +110,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             if ($giftResponse->balanceAmount > $amount) {
                 //  2.yes. process full to gift
                 try {
+
                     if (strpos($this->getConfigData('secretapikey'), '_cert_') !== false) {
                         $giftresp = $giftService->sale($giftcard, 10.00);
                     } else {
@@ -122,11 +123,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                             'gift_card_number' => $giftCardNumber,
                             'gift_card_transaction' => $giftresp->transactionId,
                             'gift_card_amount_charged' => $amount));
-                    $payment->setStatus(self::STATUS_APPROVED);
-                    $payment->setAmount($amount);
-                    $payment->setLastTransId($giftresp->transactionId);
-                    $payment->setTransactionId($giftresp->transactionId);
-                    $payment->setIsTransactionClosed(0);
+                    // just adds a trackable type for the DB
+                    $giftresp->cardType = 'Gift';
+                    // \Hps_Securesubmit_Model_Payment::closeTransaction
+                    $this->closeTransaction($payment,$amount,$giftresp);
 
                     return $this;
                 } catch (Exception $e) {
