@@ -433,7 +433,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         return $this->getConfigData('secretapikey', ($quote ? $quote->getStoreId() : null))
-        && parent::isAvailable($quote);
+            && parent::isAvailable($quote);
     }
 
     public function canUseForCurrency($currencyCode)
