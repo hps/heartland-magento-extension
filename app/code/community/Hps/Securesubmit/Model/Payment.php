@@ -186,7 +186,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
             $this->_debugChargeService($chargeService);
-            $this->_debugChargeService($chargeService);
             // \Hps_Securesubmit_Model_Payment::closeTransaction
             $this->closeTransaction($payment,$amount,$response);
 
