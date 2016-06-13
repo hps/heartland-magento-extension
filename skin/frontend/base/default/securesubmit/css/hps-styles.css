@@ -482,7 +482,6 @@ body.customer-account .data-table span.a-center {
   display:inline;
   font-size:1em;
   text-transform:uppercase;
-  min-height: 35px;
 }
 .icon-cvv {
     background-image:url(../images/cvv.jpg);
@@ -541,4 +540,8 @@ body.customer-account .data-table span.a-center {
   .sp-methods input.cvv {
     min-width:24em !important;
   }
+}
+
+#payment_form_hps_securesubmit label {
+  text-transform: uppercase;
 }
