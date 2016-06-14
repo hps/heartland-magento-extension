@@ -116,11 +116,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                             'gift_card_number' => $giftCardNumber,
                             'gift_card_transaction' => $giftresp->transactionId,
                             'gift_card_amount_charged' => $amount));
-                    $payment->setStatus(self::STATUS_APPROVED);
-                    $payment->setAmount($amount);
-                    $payment->setLastTransId($response->transactionId);
-                    $payment->setTransactionId($response->transactionId);
-                    $payment->setIsTransactionClosed(0);
+
+                    // just adds a trackable type for the DB
+                    $giftresp->cardType = 'Gift';
+                    // \Hps_Securesubmit_Model_Payment::closeTransaction
+                    $this->closeTransaction($payment,$amount,$giftresp);
                     return $this;
                 } catch (Exception $e) {
                     Mage::logException($e);
@@ -186,12 +186,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
             $this->_debugChargeService($chargeService);
-            $payment->setStatus(self::STATUS_APPROVED);
-            $payment->setAmount($amount);
-            $payment->setLastTransId($response->transactionId);
-            $payment->setCcTransId($response->transactionId);
-            $payment->setTransactionId($response->transactionId);
-            $payment->setIsTransactionClosed(0);
+            // \Hps_Securesubmit_Model_Payment::closeTransaction
+            $this->closeTransaction($payment,$amount,$response);
 
             if ($giftCardNumber) {
                 $order->addStatusHistoryComment('Remaining amount to be charged to credit card  ' .$this->_formatAmount((string)$amount) . '. [partial payment]')->save();
@@ -223,12 +219,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     );
                 }
 
-                $payment->setStatus(self::STATUS_APPROVED);
-                $payment->setAmount($amount);
-                $payment->setLastTransId($e->transactionId);
-                $payment->setCcTransId($e->transactionId);
-                $payment->setTransactionId($e->transactionId);
-                $payment->setIsTransactionClosed(0);
+                $this->closeTransaction($payment,$amount,$e);
             } else {
                 $payment->setStatus(self::STATUS_ERROR);
 
@@ -252,6 +243,26 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $this;
     }
 
+    /**
+     * @param Varien_Object|Mage_Sales_Model_Order_Payment  $payment
+     * @param float                                         $amount
+     * @param HpsReportTransactionDetails|HpsAuthorization  $response
+     * @param Mage_Payment_Model_Method_Abstract::STATUS_UNKNOWN|STATUS_APPROVED|STATUS_ERROR|STATUS_DECLINED|STATUS_VOID|STATUS_SUCCESS                                   $status
+     */
+    protected function closeTransaction($payment, $amount, $response, $status = self::STATUS_APPROVED){
+        $payment->setStatus($status);
+        $payment->setAmount($amount);
+        if (property_exists($response,'authorizationCode')){
+            $payment->setCcApproval($response->authorizationCode);
+        }
+        if (property_exists($response,'avsResultCode')){
+            $payment->setCcAvsStatus($response->avsResultCode);
+        }
+        $payment->setLastTransId($response->transactionId);
+        $payment->setCcTransId($response->transactionId);
+        $payment->setTransactionId($response->transactionId);
+        $payment->setIsTransactionClosed(0);
+    }
     protected function saveMultiUseToken($response, $cardData, $customerId, $cardType)
     {
         $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
