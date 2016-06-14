@@ -252,9 +252,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected function closeTransaction($payment, $amount, $response, $status = self::STATUS_APPROVED){
         $payment->setStatus($status);
         $payment->setAmount($amount);
-        if (property_exists($response,'cardType')){
-            $payment->setCcType($payment->getCcType());
-        }
         if (property_exists($response,'authorizationCode')){
             $payment->setCcApproval($response->authorizationCode);
         }
