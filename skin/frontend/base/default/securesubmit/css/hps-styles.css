@@ -65,24 +65,24 @@
 .icon-ss {
   background-image:url(../images/icon_sprite@2x.png);
 }
-.ss-logo {
-  background-image:url(../images/ss-logo.png);
-  background-size:104px 19px;
+#payment_form_hps_securesubmit .ss-logo {
+  background-image:url(../images/ss-logo.png) !important;
+  background-size:104px 19px !important;
   height:60px;
   width:120px;
-  background-color:transparent;
+  background-color:transparent !important;
   border:none;
-  background-repeat:no-repeat;
+  background-repeat:no-repeat !important;
   vertical-align:top;
   margin-left:20px;
   margin-top:15px;
 }
-.ss-icon {
-  background-image:url(../images/ss-shield@2x.png);
-  background-size:50px 50px;
+#payment_form_hps_securesubmit .ss-icon {
+  background-image:url(../images/ss-shield@2x.png) !important;
+  background-size:50px 50px !important;
   height:50px;
   width:50px;
-  background-color:transparent;
+  background-color:transparent !important;
   border:none;
   vertical-align:top;
 }

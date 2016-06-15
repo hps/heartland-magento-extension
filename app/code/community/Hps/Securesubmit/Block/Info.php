@@ -13,14 +13,20 @@ class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
         $transport = parent::_prepareSpecificInformation($transport);
         $data = array();
         $info = $this->getInfo();
-        $additionalData = $info->getAdditionalData();
+        $additionalData = unserialize($info->getAdditionalData());
+        $skipCC = isset($additionalData['giftcard_skip_cc']) && $additionalData['giftcard_skip_cc'];
         $gift = '';
 
-        if (strpos($additionalData, 'giftcard_number') !== false) {
-        	$gift = "Gift Card & ";
+        if (isset($additionalData['giftcard_number'])) {
+            $gift = "Gift Card" . (!$skipCC ? ' & ' : '');;
     	}
 
-        $data[Mage::helper("payment")->__("Payment Type")] = $gift . "Credit Card ending in " . $info->getCcLast4() . " (" . $info->getCcExpMonth() . "/" . $info->getCcExpYear() . ")";
+        $type = $gift;
+        if (!$skipCC) {
+            $type .= $info->getCcLast4() . " (" . $info->getCcExpMonth() . "/" . $info->getCcExpYear() . ")";
+        }
+
+        $data[Mage::helper("payment")->__("Payment Type")] = $type;
 
         return $transport->setData(array_merge($data, $transport->getData()));
     }

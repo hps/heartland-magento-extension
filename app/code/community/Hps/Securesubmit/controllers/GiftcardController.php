@@ -1,11 +1,12 @@
 <?php
 require_once Mage::getBaseDir('lib') . DS . 'SecureSubmit' . DS . 'Hps.php';
 
-class Hps_Securesubmit_GiftcardController extends Mage_core_Controller_Front_Action {
-
+class Hps_Securesubmit_GiftcardController extends Mage_Core_Controller_Front_Action
+{
     public function getBalanceAction() {
         try {
             $giftCardNumber = $this->getRequest()->getParam('giftcard_number');
+            $giftCardPin = $this->getRequest()->getParam('giftcard_pin');
 
             if (!$giftCardNumber) {
                 throw new Mage_Core_Exception($this->__('No number received.'));
@@ -21,13 +22,18 @@ class Hps_Securesubmit_GiftcardController extends Mage_core_Controller_Front_Act
 
             try {
                 $card = new HpsGiftCard();
-                $card->number = $_GET["giftcard_number"];
+                $card->number = $giftCardNumber;
+                $card->pin = $giftCardPin;
 
                 $response = $giftService->balance($card);
 
+                $cart = Mage::getModel('checkout/session')->getQuote();
+                $total = $cart->getGrandTotal();
+
                 $result = array(
                     'error' => FALSE,
-                    'balance' => $response->balanceAmount
+                    'balance' => $response->balanceAmount,
+                    'less_than_total' => $response->balanceAmount < $total,
                 );
             } catch (HpsException $e) {
                 $result = array('error' => TRUE, 'message' => $e->getMessage());
@@ -42,7 +48,4 @@ class Hps_Securesubmit_GiftcardController extends Mage_core_Controller_Front_Act
         $this->getResponse()->setHeader('Content-Type', 'application/json', TRUE);
         $this->getResponse()->setBody(json_encode($result));
     }
-
 }
-
-?>
