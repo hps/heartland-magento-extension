@@ -468,6 +468,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $details['giftcard_number'] = $data->getData('giftcard_number');
         }
 
+        if ($data->getData('giftcard_pin')) {
+            $details['giftcard_pin'] = $data->getData('giftcard_pin');
+        }
+
+        if ($data->getData('giftcard_skip_cc')) {
+            $details['giftcard_skip_cc'] = $data->getData('giftcard_skip_cc') === 'true';
+        }
+
         if ($data->getData('use_credit_card')) {
             $details['use_credit_card'] = 1;
         }
@@ -507,7 +515,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             Mage::getSingleton('checkout/session')->setGotoSection('payment');
         }
 
-        Mage::log('throwing user error with Mage_Core_Exception');
+        Mage::log('throwing user error with Mage_Core_Exception: ' . $error);
         throw new Mage_Core_Exception($error);
     }
 

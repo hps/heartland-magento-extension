@@ -110,6 +110,7 @@ if ($_loggedIn && $allow_card_saving) {
           <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label><br /><br />
           <input type="tel" id="<?= $_code; ?>_giftcard_number" title="<?= $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" autocomplete="off" name="payment[giftcard_number]" placeholder="<?= $this->__('GIFT CARD NUMBER') ?>" />
           <input width="100px" type="tel" id="<?= $_code; ?>_giftcard_pin" title="<?= $this->__('Gift Card Pin') ?>" class="cvv input-text " placeholder="<?= $this->__('PIN') ?>" autocomplete="off" name="payment[giftcard_pin]" />
+          <input type="hidden" id="<?= $_code; ?>_giftcard_skip_cc" name="payment[giftcard_skip_cc]" value="false" />
           <label id="gift-card-number-label" style="display: none;"></label>
           <a id="remove-gift-card" class="button" style="display: none;"><?= $this->__('Remove Gift Card') ?></a>
           <a id="apply-gift-card" class="button"><?= $this->__('Apply Gift Card') ?></a>
