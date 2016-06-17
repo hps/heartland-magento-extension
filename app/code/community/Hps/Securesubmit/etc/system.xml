@@ -134,6 +134,24 @@
                             <show_in_store>1</show_in_store>
                             <comment><![CDATA[This is the text that will display to the customer when fraud is detected and the transaction fails.]]></comment>
                         </fraud_text>
+                        <fraud_velocity_attempts translate="label">
+                            <label>Max Velocity Attempts</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>65</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[The maximum number of attempts allowed before additional attempts are blocked.]]></comment>
+                        </fraud_velocity_attempts>
+                        <fraud_velocity_timeout translate="label">
+                            <label>Velocity Attempts Timeout</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>65</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment><![CDATA[The amount of time (in minutes) before recent failures are ignored.]]></comment>
+                        </fraud_velocity_timeout>
                         <use_iframes translate="label">
                             <label>Host the payment fields on Heartland's servers</label>
                             <frontend_type>select</frontend_type>
