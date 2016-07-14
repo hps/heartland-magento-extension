@@ -89,6 +89,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      */
     private function _authorize(Varien_Object $payment, $amount, $capture)
     {
+        $this->getFraudSettings();
+
         $order = $payment->getOrder(); /* @var $order Mage_Sales_Model_Order */
         $multiToken = false;
         $cardData = null;
@@ -132,7 +134,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $this->closeTransaction($payment,$amount,$giftresp);
                     return $this;
                 } catch (Exception $e) {
-                    $this->updateVelocity();
+                    $this->updateVelocity($e);
 
                     Mage::logException($e);
                     $payment->setStatus(self::STATUS_ERROR);
@@ -141,7 +143,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             } else {
                 //  2.no. process full gift card amt and card process remainder
                 try {
-                    $this->checkVelocity();
+                    $this->checkVelocity($e);
 
                     $giftresp = $giftService->sale($giftcard, $giftResponse->balanceAmount);
                     $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [partial payment]')->save();
@@ -153,7 +155,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $payment->setAmount($giftResponse->balanceAmount)->save();
                     $amount = $amount - $giftResponse->balanceAmount; // remainder
                 } catch (Exception $e) {
-                    $this->updateVelocity();
+                    $this->updateVelocity($e);
 
                     Mage::logException($e);
                     $payment->setStatus(self::STATUS_ERROR);
@@ -220,10 +222,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $this->saveMultiUseToken($response, $cardData, $customerId, $cardType);
             }
         } catch (HpsCreditException $e) {
-            $this->updateVelocity();
+            $this->updateVelocity($e);
 
             Mage::logException($e);
-            $this->getFraudSettings();
             $this->_debugChargeService($chargeService, $e);
 
             // refund gift (if used)
@@ -255,14 +256,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 }
             }
         } catch (HpsException $e) {
-            $this->updateVelocity();
-
             $this->_debugChargeService($chargeService, $e);
             $payment->setStatus(self::STATUS_ERROR);
             $this->throwUserError($e->getMessage(), null, true);
         } catch (Exception $e) {
-            $this->updateVelocity();
-
             $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
             $payment->setStatus(self::STATUS_ERROR);
@@ -370,15 +367,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $timeoutSeconds = $this->_fraud_velocity_timeout * 60;
         $timeoutExpiration = (int)$this->getVelocityVar('TimeoutExpiration');
 
-        if (time() + $timeoutSeconds < $timeoutExpiration) {
+        if (time() < $timeoutExpiration) {
             return;
         }
 
         $this->unsVelocityVar('Count');
         $this->unsVelocityVar('IssuerResponse');
         $this->unsVelocityVar('TimeoutExpiration');
-
-        error_log('Reset velocity check');
     }
 
     protected function checkVelocity()
@@ -391,13 +386,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
         $count = (int)$this->getVelocityVar('Count');
         $issuerResponse = (string)$this->getVelocityVar('IssuerResponse');
+        $timeoutExpiration = (int)$this->getVelocityVar('TimeoutExpiration');
 
-        error_log('Running velocity check');
-
-        if ($count >= $this->_fraud_velocity_attempts) {
-            // sleep(5);
-
-            error_log('Throwing exception due to velocity check');
+        if ($count >= $this->_fraud_velocity_attempts
+            && time() < $timeoutExpiration) {
+            sleep(5);
             throw new HpsException(sprintf($this->_fraud_text, $issuerResponse));
         }
     }
@@ -408,24 +401,37 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             return;
         }
 
+        $this->maybeResetVelocityTimeout();
+
         $count = (int)$this->getVelocityVar('Count');
         $issuerResponse = (string)$this->getVelocityVar('IssuerResponse');
-        if ($isserResponse === '') {
-            $isserResponse = $e->getMessage();
+        if ($issuerResponse !== $e->getMessage()) {
+            $issuerResponse = $e->getMessage();
         }
-        $timeoutExpiration = time() + $this->_fraud_velocity_timeout;
-
-        $this->maybeResetVelocityTimeout();
+        //                   NOW    + (fraud velocity timeout in seconds)
+        $timeoutExpiration = time() + ($this->_fraud_velocity_timeout * 60);
 
         $this->setVelocityVar('Count', $count + 1);
         $this->setVelocityVar('IssuerResponse', $issuerResponse);
         $this->setVelocityVar('TimeoutExpiration', $timeoutExpiration);
     }
 
-    protected function getVelocityVar($data = '')
+    protected function getVelocityVar($var)
     {
         return Mage::getSingleton('checkout/session')
-            ->getData($this->getVelocityVarPrefix() . $data);
+            ->getData($this->getVelocityVarPrefix() . $var);
+    }
+
+    protected function setVelocityVar($var, $data = null)
+    {
+        return Mage::getSingleton('checkout/session')
+            ->setData($this->getVelocityVarPrefix() . $var, $data);
+    }
+
+    protected function unsVelocityVar($var)
+    {
+        return Mage::getSingleton('checkout/session')
+            ->unsetData($this->getVelocityVarPrefix() . $var);
     }
 
     protected function getVelocityVarPrefix()
