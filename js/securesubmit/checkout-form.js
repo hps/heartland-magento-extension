@@ -670,7 +670,7 @@ document.observe('dom:loaded', function () {
                     onSuccess: checkout.setResponse.bind(checkout),
                     onFailure: checkout.ajaxFailure.bind(checkout)
                 });
-            } else if (typeof IWD.OPC !== 'undefined') {
+            } else if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
                 var form = $j_opc('#co-payment-form').serializeArray();
                 IWD.OPC.Checkout.xhr = $j_opc.post(
                     IWD.OPC.Checkout.config.baseUrl + 'onepage/json/savePayment',
