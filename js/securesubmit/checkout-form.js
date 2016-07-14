@@ -68,11 +68,12 @@ function securesubmitMultishipping(multiForm) {
         },
         secureSubmitResponseHandler: function (response) {
             var tokenField = $('hps_securesubmit_token'),
+                typeField = $('hps_securesubmit_cc_type'),
                 lastFourField = $('hps_securesubmit_cc_last_four');
             var date = $('hps_securesubmit_exp_date').value.split('/');
             $('hps_securesubmit_cc_exp_month').value = date[0].trim();
             $('hps_securesubmit_cc_exp_year').value = date[1].trim();
-            tokenField.value = lastFourField.value = null;
+            tokenField.value = typeField.value = lastFourField.value = null;
 
             if (SecureSubmitMagento.skipCreditCard) {
                 SecureSubmitMagento.completeCheckout();
@@ -86,6 +87,7 @@ function securesubmitMultishipping(multiForm) {
             } else if (response && response.token_value) {
                 tokenField.value = response.token_value;
                 lastFourField.value = response.card.number.substr(-4);
+                typeField.value = response.card_type;
 
                 // Continue Magento checkout steps
                 document.getElementById('payment-continue').enable();
@@ -177,11 +179,12 @@ document.observe('dom:loaded', function () {
             },
             secureSubmitResponseHandler: function (response) {
                 var tokenField = $('hps_securesubmit_token'),
+                    typeField = $('hps_securesubmit_cc_type'),
                     lastFourField = $('hps_securesubmit_cc_last_four');
                 var date = $('hps_securesubmit_exp_date').value.split('/');
                 $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                 $('hps_securesubmit_cc_exp_year').value = date[1].trim();
-                tokenField.value = lastFourField.value = null;
+                tokenField.value = typeField.value = lastFourField.value = null;
 
                 if (SecureSubmitMagento.skipCreditCard) {
                     SecureSubmitMagento.completeCheckout();
@@ -196,6 +199,7 @@ document.observe('dom:loaded', function () {
                 } else if (response && response.token_value) {
                     tokenField.value = response.token_value;
                     lastFourField.value = response.card.number.substr(-4);
+                    typeField.value = response.card_type;
 
                     // Continue Magento checkout steps
                     new Ajax.Request(this.saveUrl, {
@@ -246,11 +250,12 @@ document.observe('dom:loaded', function () {
             },
             secureSubmitResponseHandler: function (response) {
                 var tokenField = $('hps_securesubmit_token'),
+                    typeField = $('hps_securesubmit_cc_type'),
                     lastFourField = $('hps_securesubmit_cc_last_four');
                 var date = $('hps_securesubmit_exp_date').value.split('/');
                 $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                 $('hps_securesubmit_cc_exp_year').value = date[1].trim();
-                tokenField.value = lastFourField.value = null;
+                tokenField.value = typeField.value = lastFourField.value = null;
 
                 if (SecureSubmitMagento.skipCreditCard) {
                     SecureSubmitMagento.completeCheckout();
@@ -265,6 +270,7 @@ document.observe('dom:loaded', function () {
                 } else if (response && response.token_value) {
                     tokenField.value = response.token_value;
                     lastFourField.value = response.card.number.substr(-4);
+                    typeField.value = response.card_type;
 
                     this.setLoadWaiting(true);
                     var params = Form.serialize(this.form);
@@ -368,8 +374,9 @@ document.observe('dom:loaded', function () {
 
         secureSubmitResponseHandlerOSC = function (response, btn) {
             var tokenField = $('hps_securesubmit_token'),
+                typeField = $('hps_securesubmit_cc_type'),
                 lastFourField = $('hps_securesubmit_cc_last_four');
-            tokenField.value = lastFourField.value = null;
+            tokenField.value = typeField.value = lastFourField.value = null;
 
             if (SecureSubmitMagento.skipCreditCard) {
                 SecureSubmitMagento.completeCheckout();
@@ -387,6 +394,7 @@ document.observe('dom:loaded', function () {
             } else if (response && response.token_value) {
                 tokenField.value = response.token_value;
                 lastFourField.value = response.card.number.substr(-4);
+                typeField.value = response.card_type;
 
                 $('onestepcheckout-place-order-loading').show();
                 $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
@@ -441,8 +449,9 @@ document.observe('dom:loaded', function () {
             },
             secureSubmitResponseHandler: function (response) {
                 var tokenField = $('hps_securesubmit_token'),
+                    typeField = $('hps_securesubmit_cc_type'),
                     lastFourField = $('hps_securesubmit_cc_last_four');
-                tokenField.value = lastFourField.value = null;
+                tokenField.value = typeField.value = lastFourField.value = null;
 
                 if (SecureSubmitMagento.skipCreditCard) {
                     SecureSubmitMagento.completeCheckout();
@@ -457,6 +466,7 @@ document.observe('dom:loaded', function () {
                 } else if (response && response.token_value) {
                     tokenField.value = response.token_value;
                     lastFourField.value = response.card.number.substr(-4);
+                    typeField.value = response.card_type;
 
                     var form = $j_opc('#co-payment-form').serializeArray();
                     IWD.OPC.Checkout.xhr = $j_opc.post(

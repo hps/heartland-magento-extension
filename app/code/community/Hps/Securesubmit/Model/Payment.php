@@ -187,7 +187,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
             $this->_debugChargeService($chargeService);
             // \Hps_Securesubmit_Model_Payment::closeTransaction
-            $this->closeTransaction($payment,$amount,$response);
+            $this->closeTransaction($payment, $amount, $response);
 
             if ($giftCardNumber) {
                 $order->addStatusHistoryComment('Remaining amount to be charged to credit card  ' .$this->_formatAmount((string)$amount) . '. [partial payment]')->save();
@@ -250,19 +250,37 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      * @param Mage_Payment_Model_Method_Abstract::STATUS_UNKNOWN|STATUS_APPROVED|STATUS_ERROR|STATUS_DECLINED|STATUS_VOID|STATUS_SUCCESS                                   $status
      */
     protected function closeTransaction($payment, $amount, $response, $status = self::STATUS_APPROVED){
+        $info = $this->getInfoInstance();
+        $details = unserialize($info->getAdditionalData());
+
         $payment->setStatus($status);
         $payment->setAmount($amount);
-        if (property_exists($response,'authorizationCode')){
-            $payment->setCcApproval($response->authorizationCode);
-        }
-        if (property_exists($response,'avsResultCode')){
-            $payment->setCcAvsStatus($response->avsResultCode);
-        }
         $payment->setLastTransId($response->transactionId);
         $payment->setCcTransId($response->transactionId);
         $payment->setTransactionId($response->transactionId);
         $payment->setIsTransactionClosed(0);
+
+        $details['cc_type'] = $payment->getCcType();
+
+        if (property_exists($response, 'authorizationCode')) {
+            $payment->setCcApproval($response->authorizationCode);
+            $details['auth_code'] = $response->authorizationCode;
+        }
+
+        if (property_exists($response, 'avsResultCode')) {
+            $payment->setCcAvsStatus($response->avsResultCode);
+            $details['avs_response_code'] = $response->avsResultCode;
+            $details['avs_response_text'] = $response->avsResultText;
+        }
+
+        if (property_exists($response, 'cvvResultCode')) {
+            $details['cvv_response_code'] = $response->cvvResultCode;
+            $details['cvv_response_text'] = $response->cvvResultText;
+        }
+
+        $info->setAdditionalData(serialize($details));
     }
+
     protected function saveMultiUseToken($response, $cardData, $customerId, $cardType)
     {
         $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
