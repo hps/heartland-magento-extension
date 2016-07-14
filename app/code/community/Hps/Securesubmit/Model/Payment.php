@@ -9,6 +9,10 @@ require_once Mage::getBaseDir('lib').DS.'SecureSubmit'.DS.'Hps.php';
  */
 class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 {
+    const FRAUD_TEXT_DEFAULT              = '%s';
+    const FRAUD_VELOCITY_ATTEMPTS_DEFAULT = 3;
+    const FRAUD_VELOCITY_TIMEOUT_DEFAULT  = 10;
+
     protected $_code                        = 'hps_securesubmit';
     protected $_isGateway                   = true;
     protected $_canCapture                  = true;
@@ -22,11 +26,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected $_formBlockType               = 'hps_securesubmit/form';
     protected $_formBlockTypeAdmin          = 'hps_securesubmit/adminhtml_form';
     protected $_infoBlockType               = 'hps_securesubmit/info';
+    protected $_enable_anti_fraud           = null;
     protected $_allow_fraud                 = null;
     protected $_email_fraud                 = null;
     protected $_fraud_address               = null;
     protected $_fraud_text                  = null;
     protected $_use_iframes                 = null;
+    protected $_fraud_velocity_attempts     = null;
+    protected $_fraud_velocity_timeout      = null;
 
     /**
      * Fields that should be replaced in debug with '***'
@@ -104,6 +111,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             if ($giftResponse->balanceAmount > $amount) {
                 //  2.yes. process full to gift
                 try {
+                    $this->checkVelocity();
+
                     if (strpos($this->getConfigData('secretapikey'), '_cert_') !== false) {
                         $giftresp = $giftService->sale($giftcard, 10.00);
                     } else {
@@ -123,21 +132,33 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $this->closeTransaction($payment,$amount,$giftresp);
                     return $this;
                 } catch (Exception $e) {
+                    $this->updateVelocity();
+
                     Mage::logException($e);
                     $payment->setStatus(self::STATUS_ERROR);
                     $this->throwUserError($e->getMessage(), null, true);
                 }
             } else {
                 //  2.no. process full gift card amt and card process remainder
-                $giftresp = $giftService->sale($giftcard, $giftResponse->balanceAmount);
-                $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [partial payment]')->save();
-                $payment->setTransactionAdditionalInfo(Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,
-                    array(
-                        'gift_card_number' => $giftCardNumber,
-                        'gift_card_transaction' => $giftresp->transactionId,
-                        'gift_card_amount_charged' => $giftResponse->balanceAmount));
-                $payment->setAmount($giftResponse->balanceAmount)->save();
-                $amount = $amount - $giftResponse->balanceAmount; // remainder
+                try {
+                    $this->checkVelocity();
+
+                    $giftresp = $giftService->sale($giftcard, $giftResponse->balanceAmount);
+                    $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [partial payment]')->save();
+                    $payment->setTransactionAdditionalInfo(Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,
+                        array(
+                            'gift_card_number' => $giftCardNumber,
+                            'gift_card_transaction' => $giftresp->transactionId,
+                            'gift_card_amount_charged' => $giftResponse->balanceAmount));
+                    $payment->setAmount($giftResponse->balanceAmount)->save();
+                    $amount = $amount - $giftResponse->balanceAmount; // remainder
+                } catch (Exception $e) {
+                    $this->updateVelocity();
+
+                    Mage::logException($e);
+                    $payment->setStatus(self::STATUS_ERROR);
+                    $this->throwUserError($e->getMessage(), null, true);
+                }
                 // 3. TODO: if the card payment fails later, refund the gift transaction
             }
         }
@@ -158,6 +179,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $cardOrToken->tokenValue = $secureToken;
 
         try {
+            $this->checkVelocity();
+
             if ($capture) {
                 if ($payment->getCcTransId()) {
                     $response = $chargeService->capture(
@@ -197,6 +220,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $this->saveMultiUseToken($response, $cardData, $customerId, $cardType);
             }
         } catch (HpsCreditException $e) {
+            $this->updateVelocity();
+
             Mage::logException($e);
             $this->getFraudSettings();
             $this->_debugChargeService($chargeService, $e);
@@ -230,10 +255,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 }
             }
         } catch (HpsException $e) {
+            $this->updateVelocity();
+
             $this->_debugChargeService($chargeService, $e);
             $payment->setStatus(self::STATUS_ERROR);
             $this->throwUserError($e->getMessage(), null, true);
         } catch (Exception $e) {
+            $this->updateVelocity();
+
             $this->_debugChargeService($chargeService, $e);
             Mage::logException($e);
             $payment->setStatus(self::STATUS_ERROR);
@@ -302,16 +331,130 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
     }
 
-    protected function _formatAmount($amount) {
+    protected function _formatAmount($amount)
+    {
         return Mage::helper('core')->currency($amount, true, false);
     }
 
     protected function getFraudSettings()
     {
-        $this->_allow_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/allow_fraud') == 1;
-        $this->_email_fraud   = Mage::getStoreConfig('payment/hps_securesubmit/email_fraud') == 1;
-        $this->_fraud_address = Mage::getStoreConfig('payment/hps_securesubmit/fraud_address');
-        $this->_fraud_text    = Mage::getStoreConfig('payment/hps_securesubmit/fraud_text');
+        if ($this->_enable_anti_fraud === null) {
+            $this->_enable_anti_fraud       = Mage::getStoreConfig('payment/hps_securesubmit/enable_anti_fraud') == 1;
+            $this->_allow_fraud             = Mage::getStoreConfig('payment/hps_securesubmit/allow_fraud') == 1;
+            $this->_email_fraud             = Mage::getStoreConfig('payment/hps_securesubmit/email_fraud') == 1;
+            $this->_fraud_address           = (string)Mage::getStoreConfig('payment/hps_securesubmit/fraud_address');
+            $this->_fraud_text              = (string)Mage::getStoreConfig('payment/hps_securesubmit/fraud_text');
+            $this->_fraud_velocity_attempts = (int)Mage::getStoreConfig('payment/hps_securesubmit/fraud_velocity_attempts');
+            $this->_fraud_velocity_timeout  = (int)Mage::getStoreConfig('payment/hps_securesubmit/fraud_velocity_timeout');
+
+            if ($this->_fraud_text === null) {
+                $this->_fraud_text = self::FRAUD_TEXT_DEFAULT;
+            }
+
+            if ($this->_fraud_velocity_attempts === null
+                || !is_numeric($this->_fraud_velocity_attempts)
+            ) {
+                $this->_fraud_velocity_attempts = self::FRAUD_VELOCITY_ATTEMPTS_DEFAULT;
+            }
+
+            if ($this->_fraud_velocity_timeout === null
+                || !is_numeric($this->_fraud_velocity_timeout)
+            ) {
+                $this->_fraud_velocity_timeout = self::FRAUD_VELOCITY_TIMEOUT_DEFAULT;
+            }
+        }
+    }
+
+    protected function maybeResetVelocityTimeout()
+    {
+        $timeoutSeconds = $this->_fraud_velocity_timeout * 60;
+        $timeoutExpiration = (int)$this->getVelocityVar('TimeoutExpiration');
+
+        if (time() + $timeoutSeconds < $timeoutExpiration) {
+            return;
+        }
+
+        $this->unsVelocityVar('Count');
+        $this->unsVelocityVar('IssuerResponse');
+        $this->unsVelocityVar('TimeoutExpiration');
+
+        error_log('Reset velocity check');
+    }
+
+    protected function checkVelocity()
+    {
+        if ($this->_enable_anti_fraud !== true) {
+            return;
+        }
+
+        $this->maybeResetVelocityTimeout();
+
+        $count = (int)$this->getVelocityVar('Count');
+        $issuerResponse = (string)$this->getVelocityVar('IssuerResponse');
+
+        error_log('Running velocity check');
+
+        if ($count >= $this->_fraud_velocity_attempts) {
+            // sleep(5);
+
+            error_log('Throwing exception due to velocity check');
+            throw new HpsException(sprintf($this->_fraud_text, $issuerResponse));
+        }
+    }
+
+    protected function updateVelocity($e)
+    {
+        if ($this->_enable_anti_fraud !== true) {
+            return;
+        }
+
+        $count = (int)$this->getVelocityVar('Count');
+        $issuerResponse = (string)$this->getVelocityVar('IssuerResponse');
+        if ($isserResponse === '') {
+            $isserResponse = $e->getMessage();
+        }
+        $timeoutExpiration = time() + $this->_fraud_velocity_timeout;
+
+        $this->maybeResetVelocityTimeout();
+
+        $this->setVelocityVar('Count', $count + 1);
+        $this->setVelocityVar('IssuerResponse', $issuerResponse);
+        $this->setVelocityVar('TimeoutExpiration', $timeoutExpiration);
+    }
+
+    protected function getVelocityVar($data = '')
+    {
+        return Mage::getSingleton('checkout/session')
+            ->getData($this->getVelocityVarPrefix() . $data);
+    }
+
+    protected function getVelocityVarPrefix()
+    {
+        return sprintf('HeartlandHPS_Velocity%s', md5($this->getRemoteIP()));
+    }
+
+    protected function getRemoteIP()
+    {
+        static $remoteIP = '';
+        if ($remoteIP !== '') {
+            return $remoteIP;
+        }
+        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
+            && $_SERVER['HTTP_X_FORWARDED_FOR'] != ''
+        ) {
+            $remoteIPArray = array_values(
+                array_filter(
+                    explode(
+                        ',',
+                        $_SERVER['HTTP_X_FORWARDED_FOR']
+                    )
+                )
+            );
+            $remoteIP = end($remoteIPArray);
+        } else {
+            $remoteIP = $_SERVER['REMOTE_ADDR'];
+        }
+        return $remoteIP;
     }
 
     /**
