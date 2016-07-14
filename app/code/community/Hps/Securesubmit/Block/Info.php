@@ -23,10 +23,12 @@ class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
 
         $type = $gift;
         if (!$skipCC) {
-            $cardType = isset($additionalData['cc_type']) ? strtoupper($additionalData['cc_type']) : '';
+            $cardType = isset($additionalData['cc_type'])
+                ? $additionalData['cc_type']
+                : ($info->getCcType() ? $info->getCcType() : '');
             $type .= sprintf(
                 '%s ending with %s (%s/%s)',
-                $cardType,
+                strtoupper($cardType),
                 $info->getCcLast4(),
                 $info->getCcExpMonth(),
                 $info->getCcExpYear()
