@@ -463,7 +463,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $remoteIP;
     }
 
-
     /**
      * @param Varien_Object|Mage_Sales_Model_Order_Payment $payment
      * @param float $amount
@@ -471,39 +470,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      */
     public function refund(Varien_Object $payment, $amount)
     {
-        $transactionDetails = $this->getTransactionDetails($payment);
-        if ($this->canVoid($payment) && $this->transactionActiveOnGateway($transactionDetails)) {
-            if ($transactionDetails->authorizedAmount > $amount) {
-                $this->_reversal($payment, $transactionDetails, $amount);
-            } else {
-                $this->void($payment);
-            }
+        if ($this->canVoid($payment) && $this->transactionActiveOnGateway($payment)) {
+            $this->void($payment);
         } else {
             $this->_refund($payment, $amount);
         }
 
         return $this;
-    }
-
-
-    public function getTransactionDetails(Varien_Object $payment)
-    {
-        $transactionId = null;
-
-        if (false !== ($parentId = $this->getParentTransactionId($payment))) {
-            $transactionId = $parentId;
-        } else {
-            $transactionId = $payment->getCcTransId();
-        }
-
-        $service = $this->_getChargeService();
-        return $service->get($transactionId);
-    }
-
-
-    public function transactionActiveOnGateway($transactionDetail)
-    {
-        return $transactionDetail->transactionStatus == 'A';
     }
 
     public function getParentTransactionId(Varien_Object $payment)
@@ -520,6 +493,21 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
     }
 
+    public function transactionActiveOnGateway(Varien_Object $payment)
+    {
+        $transactionId = null;
+
+        if (false !== ($parentId = $this->getParentTransactionId($payment))) {
+            $transactionId = $parentId;
+        } else {
+            $transactionId = $payment->getCcTransId();
+        }
+
+        $service = $this->_getChargeService();
+        $transaction = $service->get($transactionId);
+
+        return $transaction->transactionStatus == 'A';
+    }
 
     /**
      * Void payment abstract method
@@ -597,45 +585,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $this;
     }
 
-
-    /**
-     * @param Varien_Object|Mage_Sales_Model_Order_Payment  $payment
-     * @param HpsReportTransactionDetails                   $transactionDetails
-     * @param float                                         $newAuthAmount
-     * @return Hps_Securesubmit_Model_Payment
-     */
-    public function _reversal(Varien_Object $payment, $transactionDetails, $newAuthAmount)
-    {
-        $transactionId = $payment->getCcTransId();
-        $order = $payment->getOrder();
-        /* @var $order Mage_Sales_Model_Order */
-        $chargeService = $this->_getChargeService();
-        $details = $this->_getTxnDetailsData($order);
-        try {
-            $reverseResponse = $chargeService->reverse(
-                $transactionId,
-                $transactionDetails->authorizedAmount,
-                strtolower($order->getBaseCurrencyCode()),
-                $details,
-                $newAuthAmount
-            );
-            $payment
-                ->setTransactionId($reverseResponse->transactionId)
-                ->setParentTransactionId($transactionId)
-                ->setIsTransactionClosed(1)
-                ->setShouldCloseParentTransaction(1);
-        } catch (HpsException $e) {
-
-            $this->_debugChargeService($chargeService, $e);
-            $this->throwUserError($e->getMessage());
-        } catch (Exception $e) {
-            $this->_debugChargeService($chargeService, $e);
-            Mage::logException($e);
-            $this->throwUserError($e->getMessage());
-        }
-
-        return $this;
-    }
     /**
      * @param null|Mage_Sales_Model_Quote $quote
      * @return bool
