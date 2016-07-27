@@ -37,11 +37,11 @@ class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
 
         $data[Mage::helper('payment')->__('Payment Type')] = $type;
 
-        if (isset($additionalData['auth_code'])) {
+        if ($this->isAdmin() && isset($additionalData['auth_code'])) {
             $data[Mage::helper('payment')->__('Authorization Code')] = $additionalData['auth_code'];
         }
 
-        if (isset($additionalData['avs_response_code'])) {
+        if ($this->isAdmin() && isset($additionalData['avs_response_code'])) {
             $data[Mage::helper('payment')->__('AVS Response')] = sprintf(
                 '%s (%s)',
                 $additionalData['avs_response_text'],
@@ -49,7 +49,7 @@ class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
             );
         }
 
-        if (isset($additionalData['cvv_response_code'])) {
+        if ($this->isAdmin() && isset($additionalData['cvv_response_code'])) {
             $data[Mage::helper('payment')->__('CVV Response')] = sprintf(
                 '%s (%s)',
                 $additionalData['cvv_response_text'],
@@ -58,5 +58,18 @@ class Hps_SecureSubmit_Block_Info extends Mage_Payment_Block_Info
         }
 
         return $transport->setData(array_merge($data, $transport->getData()));
+    }
+
+    protected function isAdmin()
+    {
+        if (Mage::app()->getStore()->isAdmin()) {
+            return true;
+        }
+
+        if (Mage::getDesign()->getArea() == 'adminhtml') {
+            return true;
+        }
+
+        return false;
     }
 }

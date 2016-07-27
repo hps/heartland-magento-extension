@@ -10,7 +10,9 @@ function securesubmitMultishipping(multiForm) {
 
             // Use stored card checked, get existing token data
             if (this.secureSubmitUseStoredCard()) {
-                var storedcardId = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0].value;
+                var radio = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0];
+                var storedcardId = radio.value;
+                var storedcardType = $(radio.id + '_card_type').value;
 
                 new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
                     method: 'post',
@@ -22,6 +24,7 @@ function securesubmitMultishipping(multiForm) {
                             $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                         }
                         this.secureSubmitResponseHandler({
+                            card_type:    storedcardType,
                             token_value:  data.token.token_value,
                             token_type:   null, // 'supt'?
                             token_expire: new Date().toISOString(),
@@ -124,7 +127,9 @@ document.observe('dom:loaded', function () {
 
                 // Use stored card checked, get existing token data
                 if (this.secureSubmitUseStoredCard()) {
-                    var storedcardId = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0].value;
+                    var radio = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0];
+                    var storedcardId = radio.value;
+                    var storedcardType = $(radio.id + '_card_type').value;
                     checkout.setLoadWaiting('payment');
                     new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
                         method: 'post',
@@ -136,6 +141,7 @@ document.observe('dom:loaded', function () {
                                 $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                             }
                             this.secureSubmitResponseHandler({
+                                card_type:    storedcardType,
                                 token_value:  data.token.token_value,
                                 token_type:   null, // 'supt'?
                                 token_expire: new Date().toISOString(),
@@ -331,7 +337,9 @@ document.observe('dom:loaded', function () {
                 $('onestepcheckout-button-place-order').removeClassName('place-order-loader');
                 $('onestepcheckout-button-place-order').addClassName('onestepcheckout-btn-checkout');
                 if (secureSubmitUseStoredCardOSC()) {
-                    var storedcardId = $('hps_securesubmit_stored_card_select').value;
+                    var radio = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0];
+                    var storedcardId = radio.value;
+                    var storedcardType = $(radio.id + '_card_type').value;
                     new Ajax.Request(window.payment.secureSubmitGetTokenDataUrlOSC, {
                       method: 'post',
                       parameters: {storedcard_id: storedcardId},
@@ -342,6 +350,7 @@ document.observe('dom:loaded', function () {
                               $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
                           }
                           secureSubmitResponseHandlerOSC({
+                              card_type:    storedcardType,
                               token_value:  data.token.token_value,
                               token_type:   null, // 'supt'?
                               token_expire: new Date().toISOString(),
