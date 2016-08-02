@@ -143,7 +143,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             } else {
                 //  2.no. process full gift card amt and card process remainder
                 try {
-                    $this->checkVelocity($e);
+                    $this->checkVelocity();
 
                     $giftresp = $giftService->sale($giftcard, $giftResponse->balanceAmount);
                     $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [partial payment]')->save();
@@ -473,7 +473,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $transactionDetails = $this->getTransactionDetails($payment);
         if ($this->canVoid($payment) && $this->transactionActiveOnGateway($transactionDetails)) {
-            if ($transactionDetails->authorizedAmount > $amount) {
+            if ($transactionDetails->settlementAmt > $amount) {
                 $this->_reversal($payment, $transactionDetails, $amount);
             } else {
                 $this->void($payment);
@@ -604,9 +604,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      * @param float                                         $newAuthAmount
      * @return Hps_Securesubmit_Model_Payment
      */
-    public function _reversal(Varien_Object $payment, $transactionDetails, $newAuthAmount)
+    public function _reversal(Varien_Object $payment, HpsReportTransactionDetails $transactionDetails, $newAuthAmount)
     {
         $transactionId = $payment->getCcTransId();
+        $newAuthAmount = $transactionDetails->settlementAmt-$newAuthAmount;
         $order = $payment->getOrder();
         /* @var $order Mage_Sales_Model_Order */
         $chargeService = $this->_getChargeService();
@@ -647,7 +648,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         return $this->getConfigData('secretapikey', ($quote ? $quote->getStoreId() : null))
-            && parent::isAvailable($quote);
+        && parent::isAvailable($quote);
     }
 
     public function canUseForCurrency($currencyCode)
