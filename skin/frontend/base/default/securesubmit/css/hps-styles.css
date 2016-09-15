@@ -1,547 +1,236 @@
-/* =========================================
-    securesubmit css
-   ========================================= */
+/*form.phtml*/
 
-@media only screen and (max-width: 599px) {
-  .checkout-multishipping-addresses .linearize-table tbody td[data-rwd-label] {
-    text-align: left;
-    padding-left: 10px;
-    margin-top: 12px;
-  }
-}
-@media only screen and (max-width: 479px) {
-  body[class*="checkout-multishipping-"] .buttons-set .back-link {
-    display: block;
-  }
-  #dd_method_hps_securesubmit {
- max-width:350px;
-}
-}
-
-@media only screen and (max-width: 770px) {
-  .col2-set .buttons-set .button,
-  .col2-set .buttons-set .button2 {
-    float: none;
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  .col2-set .buttons-set .back-link {
-    display: none;
-  }
-  .col2-set .buttons-set .required {
-    display: none;
-  }
-}
-@media only screen and (max-width: 479px) {
-  .buttons-set .button {
-    float: none;
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-    margin-bottom: 7px;
-  }
-  .buttons-set .back-link {
-    display: none;
-  }
-  .buttons-set .required {
-    display: none;
-  }
-  #checkout-step-payment #dd_method_hps_securesubmit input[type=tel] {
-   /* max-width:365px !important;*/
-  }
-  #hps_securesubmit_gift_card {
-   /* max-width:365px !important; */
-  }
-  #payment_form_hps_securesubmit .card-menu-item label {
-    font-size:13px;
-  }
-}
-/* =========================================
-    securesubmit css
-   ========================================= */
-
-/*header*/
-.icon-ss {
-  background-image:url(../images/icon_sprite@2x.png);
-}
-#payment_form_hps_securesubmit .ss-logo {
-  background-image:url(../images/ss-logo.png) !important;
-  background-size:104px 19px !important;
-  height:60px;
-  width:120px;
-  background-color:transparent !important;
-  border:none;
-  background-repeat:no-repeat !important;
-  vertical-align:top;
-  margin-left:20px;
-  margin-top:15px;
-}
-#payment_form_hps_securesubmit .ss-icon {
-  background-image:url(../images/ss-shield@2x.png) !important;
-  background-size:50px 50px !important;
+#ss-banner {
+  background:transparent url(../images/ss-shield@2x.png) no-repeat bottom left;
+  background-size:395px 50px;
   height:50px;
-  width:50px;
-  background-color:transparent !important;
-  border:none;
-  vertical-align:top;
-}
-.btn-group {
-  margin-top:10px;
-}
-.logos {
-  border-bottom:1px solid #ececec;
-  padding:20px 15px 0px 15px;
-  margin-bottom:25px;
-  text-transform:none;
 }
 
-/*manage cards section in storedcards.phtml*/
-/*card icons*/
-.icon-visa {
-  background-image:url(../images/ss-saved-visa@2x.png);
-  background-repeat:no-repeat;
-  height:40px;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:6em;
-  display:inline-block;
-  float:left;
-  /*border-right:1px solid #ececec;*/
-  margin-right:21px;
-}
-.icon-jcb {
-  background-image:url(../images/ss-saved-jcb@2x.png);
-  background-repeat:no-repeat;
-  height:40px;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:6em;
-  display:inline-block;
-  float:left;
-  /*border-right:1px solid #ececec;*/
-  margin-right:21px;
+#payment_form_hps_securesubmit li{
+  border:1px solid #b1b1b1;
+  padding:5px 20px;
 }
 
-.icon-amex {
-  background-image:url(../images/ss-saved-amex@2x.png);
-  background-repeat:no-repeat;
-  height:38px;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:6em;
-  display:inline-block;
-  float:left;
- /* border-right:1px solid #ececec; */
-  margin-right:21px;
+#payment_form_hps_securesubmit li:hover {
+  border:1px solid #3989e3;
 }
 
-.icon-disc, .icon-discover {
-  background-image:url(../images/ss-saved-discover@2x.png);
-  background-repeat:no-repeat;
+#stored-cards li {
+  padding:10px 25px;
+}
+
+#payment_form_hps_securesubmit input {
+  border:1px solid #b1b1b1;
+  border-radius:0px;
   height:30px;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:6em;
+  outline:none;
+}
+
+#payment_form_hps_securesubmit input:hover,
+#payment_form_hps_securesubmit input:focus {
+  border:1px solid #3989e3;
+}
+
+.cc-info {
+  margin-left:20px;
   display:inline-block;
-  float:left;
-  /*border-right:1px solid #ececec;*/
-  margin-right:21px;
 }
 
-.icon-mc, .icon-mastercard {
-  background-image:url(../images/ss-saved-mastercard@2x.png);
-  background-repeat:no-repeat;
-  height:38px;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:6em;
-  display:inline-block;
-  float:left;
-  /*border-right:1px solid #ececec;*/
-  margin-right:21px;
-}
-/*hover saved-cards.phtml*/
-#credit_cards:hover .icon-visa {
-    background-position:0px 0px;
-    /*border-right:1px solid #3989e3;*/
-}
-#credit_cards:hover .saved-cc-number {
-    color:#3989e3;
-}
-#credit_cards:hover .exp-date {
-    color:#3989e3;
-}
-#credit_cards:hover .icon-trash {
-    background-image:url(../images/delete-hover.svg);
-}
-#credit_cards:hover .icon-amex {
-  background-position:0px 0px;
-}
-#credit_cards:hover .icon-mc,
-#credit_cards:hover .icon-mastercard {
-   background-position:0px 0px;
-}
-#credit_cards:hover .icon-disc,
-#credit_cards:hover .icon-discover {
-   background-position:0px 0px;
-}
-#credit_cards:hover .icon-jcb {
-   background-position:0px 0px;
+.hps_securesubmit_stored_card_label input[type="radio"] {
+  vertical-align:inherit;
 }
 
-
-#credit_cards .exp-date {
-  margin-top:-4px;
-  margin-bottom:1px;
+.cc-option input[type="radio"] {
+  vertical-align:bottom;
 }
 
+/*stored-cards-icons*/
 
-#hps_securesubmit_exp_date {
-  letter-spacing:2.5px;
-}
-.saved-card-table #credit_cards {
-  padding-top:5px;
-  /*min-height:50px;*/
-  font-size:13px;
-}
-
-
-/*stored cards section in form.phtml*/
-#checkout-step-payment #dd_method_hps_securesubmit input[type=tel] {
-   height:40px;
-   border-radius:0px;
-   letter-spacing:2.5px;
-   margin:0px 0px 20px 0px;
-   padding-left:9px;
-   width:365px !important;
-}
-#checkout-step-payment #dd_method_hps_securesubmit input[type=date]{
-   height:40px;
-   border-radius:0px;
-}
-#checkout-step-payment #dd_method_hps_securesubmit input[type=tel]:focus {
- border:1px solid #3989e3;
-
-}
-#checkout-step-payment #dd_method_hps_securesubmit input[type=date]:focus{
-   border:1px solid #3989e3;
-}
-#hps_securesubmit_giftcard_pin  {
-  min-width:20%;
-}
-#hps_securesubmit_gift_card {
-    border-top: 1px solid #ececec;
-    margin-top: 20px;
-    padding-top: 20px;
-}
-.stored_cards_label .label {
-  display:inline;
-  text-transform:uppercase;
-}
-.hps_securesubmit_stored_card_checkbox .label {
-   display:inline;
-  text-transform:uppercase;
-}
-.hps_securesubmit_stored_card_checkbox  {
-   display:inline;
-  text-transform:uppercase;
-}
-.hps_securesubmit_stored_card_label {
-    display: inherit !important;
-}
-.inline-li {
-  font-weight:500;
-}
-.icon-trash {
-  background-image:url(../images/delete.svg);
-  background-repeat:no-repeat;
-  width:25px;
-  height:25px;
-  margin:auto;
+#stored-cc-icon {
+  width:77px;
+  height:40px;
+  background-size:cover;
   float:right;
-margin-top:7px;
 }
-/*card icons*/
+.icon-mc-form,
+.icon-mc {
+  background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat bottom right;
+}
+#payment_form_hps_securesubmit li:hover .icon-mc-form,
+#payment_form_hps_securesubmit li:focus .icon-mc-form, {
+  background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat top right;
+  background-size:cover;
+}
 .icon-visa-form {
-  background-image:url(../images/ss-saved-visa@2x.png);
-  background-repeat:no-repeat;
-  width:200px;
-  height:30px;
-  margin:auto;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:5em;
-  margin-left:-10px;
-  display:inline-block;
-  float:right;
+  background:transparent url(../images/ss-saved-visa@2x.png) no-repeat bottom right;
+}
+#payment_form_hps_securesubmit li:hover .icon-visa-form,
+#payment_form_hps_securesubmit li:focus .icon-visa-form {
+  background:transparent url(../images/ss-saved-visa@2x.png) no-repeat top right;
+  background-size:cover;
 }
 .icon-amex-form {
-  background-image:url(../images/ss-saved-amex@2x.png);
-  background-repeat:no-repeat;
-  height:40px;
-  margin:auto;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:5em;
-  margin-left:-10px;
-  display:inline-block;
-  float:right;
-  margin-top:1px;
+  background:transparent url(../images/ss-saved-amex@2x.png) no-repeat bottom right;
 }
-.icon-mc-form, .icon-mastercard-form {
-  background-image:url(../images/ss-saved-mastercard@2x.png);
-  background-repeat:no-repeat;
-  height:30px;
-  margin:auto;
-  background-size:65px 65px;
-  background-position:5px -33px;
-  width:5em;
-  margin-left:-10px;
-  display:inline-block;
-  float:right;
-  margin-top:6px;
+#payment_form_hps_securesubmit li:hover .icon-amex-form,
+#payment_form_hps_securesubmit li:focus .icon-amex-form {
+  background:transparent url(../images/ss-saved-amex@2x.png) no-repeat top right;
+  background-size:cover;
 }
-.icon-disc-form, .icon-discover-form {
-  background-image:url(../images/ss-saved-discover@2x.png);
-  background-repeat:no-repeat;
-  width:200px;
-  height:30px;
-  margin:auto;
-  background-size:70px 70px;
-  background-position:4px -31px;
-  width:5em;
-  margin-left:-10px;
-  display:inline-block;
-  float:right;
+.icon-discover-form {
+  background:transparent url(../images/ss-saved-disover@2x.png) no-repeat bottom right;
+}
+#payment_form_hps_securesubmit li:hover .icon-discover-form,
+#payment_form_hps_securesubmit li:focus .icon-discover-form {
+  background:transparent url(../images/ss-saved-discover@2x.png) no-repeat top right;
+  background-size:cover;
 }
 .icon-jcb-form {
-  background-image:url(../images/ss-saved-jcb@2x.png);
-  background-repeat:no-repeat;
-  width:200px;
-  height:30px;
-  margin:auto;
-  background-size:80px 80px;
-  background-position:0px -40px;
-  width:5em;
-  margin-left:-10px;
-  display:inline-block;
-  float:right;
+  background:transparent url(../images/ss-saved-jcb@2x.png) no-repeat bottom right;
 }
-/*hover cards in form.phtml*/
-/**/
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-visa-form {
-    background-position:0px 0px;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .saved-cc-number {
-    color:#3989e3;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .exp-date {
-    color:#3989e3;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-amex-form {
-  background-position:0px 0px;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-mc-form,
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-mastercard-form {
-   background-position:5px -1px;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form,
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-discover-form {
- background-position:20px -20px;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-disc-form,
-#payment_form_hps_securesubmit .card-menu-item:hover .icon-discover-form {
-  background-position:4px 4px;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover .cc-option {
- /* border-right:1px solid #3989e3;*/
+#payment_form_hps_securesubmit li:hover .icon-jcb-form,
+#payment_form_hps_securesubmit li:focus .icon-jcb-form {
+  background:transparent url(../images/ss-saved-jcb@2x.png) no-repeat top right;
+  background-size:cover;
 }
 
+/*pay with a new card*/
 
-body.customer-account .data-table span.a-center {
-  text-transform:none;
-}
-.card-checkbox {
-  display:inline;
-}
-.checkbox-box {
-  margin-right:-10px;
-}
-.saved-card-list {
-  border-radius:0px;
-}
-.input-text .validate-cc-number .validate-cc-type
-{border-radius:0px;}
-
-
-.saved-card-table {
-  border:1px solid transparent;
-}
-
-#payment_form_hps_securesubmit .card-menu-item {
-  border:1px solid #e3e3e3;
-  margin: 5px 0px 5px 0px;
-  padding:5px 10px 1px 15px;
-}
-#payment_form_hps_securesubmit .card-menu-item:hover {
-  border:1px solid #3989e3;
-}
-#payment_form_hps_securesubmit .card-menu-item:active {
-  border:1px solid #3989e3;
-}
-#payment_form_hps_securesubmit .card-menu-item:focus {
-  border:1px solid #3989e3;
-}
-#payment_form_hps_securesubmit .card-menu-item label {
-  font-size:14px !important;
-}
-#payment_form_hps_securesubmit .card-menu-item option{
-  display:inline;
-  margin-left:10px;
-  padding-left:10px;
-  color:#666666;
-}
-#credit_cards {
-  border:1px solid #e3e3e3;
-  margin:5px 0px 5px 0px;
-  padding:5px 5px 5px 5px;
-}
-#credit_cards:hover {
-  border:1.5px solid #3989e3;
-}
-#credit_cards:active {
-  border:1.5px solid #3989e3;
-}
-.saved-cc-number {
-  font-weight:600;
-  color:#888888;
-  vertical-align:super;
-  margin-left:1.2em;
-}
-.exp-date {
-  padding-left:1.8em;
-  text-transform:uppercase;
-  font-weight:200;
-  font-size:smaller;
-  color:#b1b1b1;
-  margin:-3px 2px 4px 2.7em;
-  display:block;
-}
-.saved-cc-number:hover {
-  color:#3989e3;
-  text-decoration:none;
-}
-.exp-date:hover {
-  color:#3989e3;
-  text-decoration:none;
-}
-.saved-cc-number a {
-  text-decoration:none;
-}
-.exp-date a {
-  text-decoration:none;
-}
-.cc-text {
-   display:inline;
-}
-.cc-option {
-  display:inline;
- /* border-right:1px solid #e3e3e3; */
-  padding:6px 19px 9px 0px;
-  vertical-align:-webkit-baseline-middle;
-}
-#credit_cards a:hover  {
-  text-decoration:none;
-}
 .new-card {
-  font-weight:600;
-  color:#888888 !important;
+  display:inline;
+  margin-left:20px;
   vertical-align:super;
-  padding-left:1.4em;
-  margin-top:10px;
-  min-height:35px;
-  vertical-align:-webkit-baseline-middle;
 }
 
-#hps_securesubmit_cc_form {
-  margin: 20px;
+#hps_securesubmit_cc_form input {
+  width:100%;
+  height:40px;
 }
 
-#hps_securesubmit_cc_form .icon-sc{
-  background-image:url(../images/ss-cvv@2x.png);
-  background-repeat:no-repeat;
-  background-size:55px 82px;
-  background-position:308px 0px; /*FOR AMEX: background-position: 297px -38px;*/
+#cc_number {
+  width:100%;
+}
+
+#hps_securesubmit_cc_number {
+  background:transparent url(../images/ss-inputcard-blank@2x.png) no-repeat right;
+  background-size:50px 30px;
+}
+
+/*form card icons*/
+
+#hps_securesubmit_cc_number .icon-discover {
+  background:transparent url(../images/ss-inputcard-discover@2x.png) no-repeat right;
+  background-size:70px 30px;
+}
+#hps_securesubmit_cc_number .icon-amex {
+  background:transparent url(../images/ss-saved-amex@2x.png) no-repeat right;
+  background-size:40px 30px;
+}
+
+#hps_securesubmit_cc_number .icon-jcb {
+  background:transparent url(../images/ss-inputcard-jcb@2x.png) no-repeat right;
+  background-size:50px 30px;
+}
+
+#hps_securesubmit_cc_number .icon-visa {
+  background:transparent url(../images/ss-inputcard-visa@2x.png) no-repeat right;
+  background-size:60px 30px;
+}
+
+#hps_securesubmit_cc_number .icon-mastercard {
+  background:transparent url(../images/ss-inputcard-mastercard@2x.png) no-repeat right;
+  background-size:50px 30px;
+}
+
+#expiration-date {
+  width: 48%;
   display:inline-block;
-  /*float:right;*/
 }
 
-#payment_form_hps_securesubmit .card-menu-item label {
-  float:none;
-  display:inline;
-  font-size:1em;
-  text-transform:uppercase;
-}
-.icon-cvv {
-    background-image:url(../images/cvv.jpg);
-}
-.saved-cc-number-stored {
-  font-weight:600;
-  color:#888888;
-  vertical-align:super;
-  text-transform: uppercase;
-}
-#hps-saved-cards li:hover .saved-cc-number-stored {
-  color: #3989e3;
+#ccv {
+  float:right;
+  width:48%;
 }
 
-.form-list input.input-text{
+#hps_securesubmit_cvv_number {
+  background:transparent url(../images/cvv1.png) no-repeat right;
+  background-size:50px 30px;
 }
-.cc-info {
-  display:inline;
 
-
+#hps_securesubmit_cc_form #hps_securesubmit_cc_save_future {
+  width:4%;
 }
-#hps_securesubmit_giftcard_pin {
-  margin-top:10px;
+
+#hps_securesubmit_gift_card label {
+  display:block
+}
+
+#hps_securesubmit_gift_card input {
+  height:40px;
   margin-bottom:10px;
 }
-.v-fix {
 
-
-}
-#checkout-step-payment #dd_method_hps_securesubmit input[type=tel]:focus {
-  border:1px solid #3989e3;
-}
-
-#payment_form_hps_securesubmit iframe {
-  width: 100%;
-}
-
-#payment_form_hps_securesubmit label {
-  text-transform: uppercase;
-}
-
-.sp-methods input.cvv {
-  width: 21em !important;
-}
-.save-card-checkbox {
+#hps_securesubmit_giftcard_number {
+  width:50%;
   display:inline-block;
 }
 
-#apply-gift-card {
-  background-color:36b46e;
-  color:#fff;
-  text-transform:none;
+#hps_securesubmit_giftcard_pin {
+  width:48%;
+  float:right;
 }
 
-@media only screen and (min-width: 479px) {
-  .sp-methods input.cvv {
-    min-width:24em !important;
+/*storedcards.phtml*/
+
+#hps-saved-cards li {
+  border:1px solid #b1b1b1;
+  background:transparent url(../images/delete.png) no-repeat right;
+  background-size:30px 30px;
+  margin:5px 0px;
+  padding:2px 5px;
+}
+
+#hps-saved-cards li:hover {
+  border:1px solid #3989e3;
+}
+
+.stored-card-info {
+  display:inline-block;
+}
+
+/*storedcards icons*/
+.icon-mc {
+  background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat top left;
+  display:inline-block;
+  width:60px;
+  height:25px;
+  background-size:60px 55px;
+  background-size:cover;
+}
+
+.icon-disc {
+
+}
+@media only screen and (max-width: 768px) {
+  #ss-banner {
+    background:transparent url(../images/ss-shield@1x.png) no-repeat bottom left;
+    background-size: 265px 33px;
+    height:33px;
   }
-}
 
-#payment_form_hps_securesubmit label {
-  text-transform: uppercase;
+  #stored-cards li {
+    padding:5px 20px;
+  }
+
+  #expiration-date,
+  #hps_securesubmit_exp_date,
+  #ccv {
+    width:100%;
+  }
+
+  #hps_securesubmit_gift_card input {
+    width:100%;
+  }
+
+
 }
