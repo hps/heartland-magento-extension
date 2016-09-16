@@ -11,12 +11,13 @@
   padding:5px 20px;
 }
 
-#payment_form_hps_securesubmit li:hover {
+#payment_form_hps_securesubmit li:hover,
+#payment_form_hps_securesubmit li:focus {
   border:1px solid #3989e3;
 }
 
 #stored-cards li {
-  padding:10px 25px;
+  padding:10px 20px;
 }
 
 #payment_form_hps_securesubmit input {
@@ -34,14 +35,28 @@
 .cc-info {
   margin-left:20px;
   display:inline-block;
+  border-left:1px solid #b1b1b1;
+  padding-left:20px;
+}
+
+.cc-info:hover,
+.cc-info:active {
+  border-left:1px solid #3989e3;
 }
 
 .hps_securesubmit_stored_card_label input[type="radio"] {
-  vertical-align:inherit;
+  vertical-align:baseline;
+  transform:none;
 }
 
-.cc-option input[type="radio"] {
-  vertical-align:bottom;
+.cc {
+  text-transform:none;
+  font-weight: 600;
+}
+
+.exp {
+  color:#b1b1b1;
+  font-weight:400;
 }
 
 /*stored-cards-icons*/
@@ -77,11 +92,11 @@
   background:transparent url(../images/ss-saved-amex@2x.png) no-repeat top right;
   background-size:cover;
 }
-.icon-discover-form {
-  background:transparent url(../images/ss-saved-disover@2x.png) no-repeat bottom right;
+.icon-disc-form {
+  background:transparent url(../images/ss-saved-discover@2x.png) no-repeat bottom right;
 }
-#payment_form_hps_securesubmit li:hover .icon-discover-form,
-#payment_form_hps_securesubmit li:focus .icon-discover-form {
+#payment_form_hps_securesubmit li:hover .icon-dis-form,
+#payment_form_hps_securesubmit li:focus .icon-disc-form {
   background:transparent url(../images/ss-saved-discover@2x.png) no-repeat top right;
   background-size:cover;
 }
@@ -111,6 +126,10 @@
   width:100%;
 }
 
+#cc-number {
+  padding:10px 0px;
+}
+
 #hps_securesubmit_cc_number {
   background:transparent url(../images/ss-inputcard-blank@2x.png) no-repeat right;
   background-size:50px 30px;
@@ -119,37 +138,61 @@
 /*form card icons*/
 
 #hps_securesubmit_cc_number .icon-discover {
-  background:transparent url(../images/ss-inputcard-discover@2x.png) no-repeat right;
-  background-size:70px 30px;
+  background:transparent url(../images/ss-saved-discover@2x.png) no-repeat bottom right;
+  background-size:70px 74px;
 }
 #hps_securesubmit_cc_number .icon-amex {
-  background:transparent url(../images/ss-saved-amex@2x.png) no-repeat right;
-  background-size:40px 30px;
+  background:transparent url(../images/ss-saved-amex@2x.png) no-repeat bottom right;
+  background-size:80px 80px;
 }
 
 #hps_securesubmit_cc_number .icon-jcb {
-  background:transparent url(../images/ss-inputcard-jcb@2x.png) no-repeat right;
-  background-size:50px 30px;
+  background:transparent url(../images/ss-saved-jcb@2x.png) no-repeat bottom right;
+  background-size:75px 70px;
 }
 
 #hps_securesubmit_cc_number .icon-visa {
-  background:transparent url(../images/ss-inputcard-visa@2x.png) no-repeat right;
-  background-size:60px 30px;
+  background:transparent url(../images/ss-saved-visa@2x.png) no-repeat bottom right;
+  background-size:70px 70px;
+}
+
+#hps_securesubmit_cc_number .icon-mastercard:active {
+  background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat bottom right;
+  background-size:70px 73px;
+}
+
+/*confirmed state*/
+
+#hps_securesubmit_cc_number .icon-discover:active {
+  background:transparent url(../images/ss-saved-discover@2x.png) no-repeat top right;
+}
+
+#hps_securesubmit_cc_number .icon-amex:active {
+  background:transparent url(../images/ss-saved-amex@2x.png) no-repeat top right;
+}
+
+#hps_securesubmit_cc_number .icon-jcb:active {
+  background:transparent url(../images/ss-saved-jcb@2x.png) no-repeat top right;
+}
+
+#hps_securesubmit_cc_number .icon-visa:active {
+  background:transparent url(../images/ss-saved-visa@2x.png) no-repeat top right;
 }
 
 #hps_securesubmit_cc_number .icon-mastercard {
-  background:transparent url(../images/ss-inputcard-mastercard@2x.png) no-repeat right;
-  background-size:50px 30px;
+  background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat top right;
 }
 
 #expiration-date {
   width: 48%;
   display:inline-block;
+  padding:10px 0px;
 }
 
 #ccv {
   float:right;
   width:48%;
+  padding:10px 0px;
 }
 
 #hps_securesubmit_cvv_number {
@@ -167,7 +210,7 @@
 
 #hps_securesubmit_gift_card input {
   height:40px;
-  margin-bottom:10px;
+  margin:20px 0px;
 }
 
 #hps_securesubmit_giftcard_number {
@@ -184,10 +227,8 @@
 
 #hps-saved-cards li {
   border:1px solid #b1b1b1;
-  background:transparent url(../images/delete.png) no-repeat right;
-  background-size:30px 30px;
   margin:5px 0px;
-  padding:2px 5px;
+  padding:10px 20px;
 }
 
 #hps-saved-cards li:hover {
@@ -196,41 +237,164 @@
 
 .stored-card-info {
   display:inline-block;
+  text-transform:uppercase;
+  font-size:small;
+  color:#8c8c8c;
+}
+
+.stored-card-info:hover {
+  color:#797979;
 }
 
 /*storedcards icons*/
-.icon-mc {
-  background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat top left;
+
+#stored-icon-styles {
   display:inline-block;
-  width:60px;
-  height:25px;
-  background-size:60px 55px;
+  width:70px;
+  height:36px;
+  background-size:cover;
+  vertical-align:text-bottom;
+}
+
+.icon-visa-stored {
+  background:transparent url(../images/ss-saved-visa@2x.png) no-repeat bottom left;
+}
+
+.icon-mc-stored {
+  background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat bottom left;
+}
+
+.icon-disc-stored {
+  background:transparent url(../images/ss-saved-discover@2x.png) no-repeat bottom left;
+}
+
+.icon-amex-stored {
+  background:transparent url(../images/ss-saved-amex@2x.png) no-repeat bottom left;
+}
+
+.icon-jcb-stored {
+  background:transparent url(../images/ss-saved-jcb@2x.png) no-repeat bottom left;
+}
+
+.icon-visa-stored:hover {
+  background-position-y:inherit;
+}
+
+.icon-mc-stored:hover {
+  background-position-y:inherit;
+}
+
+.icon-disc-stored:hover {
+  background-position-y:inherit;
+}
+
+.icon-amex-stored:hover {
+  background-position-y:inherit;
+}
+
+.icon-jcb-stored:hover {
+  background-position-y:inherit;
+}
+
+#delete-icon {
+  background:transparent url(../images/delete.png) no-repeat left;
+  height:30px;
+  width:22px;
+  float:right;
+  margin-top:4px;
   background-size:cover;
 }
 
-.icon-disc {
+#delete-icon:hover {
+  background:transparent url(../images/delete.png) no-repeat right;
+  background-size:cover;
 
 }
+
 @media only screen and (max-width: 768px) {
   #ss-banner {
     background:transparent url(../images/ss-shield@1x.png) no-repeat bottom left;
-    background-size: 265px 33px;
-    height:33px;
+    background-size: 249px 30px;
+    height:30px;
+  }
+
+  #dd_method_hps_securesubmit label {
+    font-size:small;
+  }
+
+  #dd_method_hps_securesubmit input {
+    font-size:smaller;
   }
 
   #stored-cards li {
-    padding:5px 20px;
+    padding:2px 10px;
+  }
+
+  .cc-info {
+    margin-left:10px;
+    border-left:none;
+    padding-left:0px;
+  }
+
+  #stored-cc-icon {
+    width:67px;
+    height:37px;
+  }
+
+  .new-card {
+    margin-left:10px;
+  }
+
+  .hps_securesubmit_stored_card_label input[type="radio"] {
+    vertical-align:sub;
+    transform:scale(1.4);
+  }
+
+  #payment_form_hps_securesubmit li {
+    padding:7px 15px;
   }
 
   #expiration-date,
   #hps_securesubmit_exp_date,
   #ccv {
     width:100%;
+    }
+
+  #hps_securesubmit_cc_form #hps_securesubmit_cc_save_future {
+    width:5%;
+  }
+
+  #ss-save-text {
+    font-size:x-small;
   }
 
   #hps_securesubmit_gift_card input {
     width:100%;
+    margin:10px 0px;
   }
 
+  #hps-saved-cards li {
+    padding:5px 5px;
+  }
 
+  #stored-icon-styles {
+    width:60px;
+  }
+  .stored-card-info {
+    font-size:smaller;
+  }
+
+  #delete-icon {
+    height:25px;
+    width:19px;
+    margin-top:7px;
+  }
+
+}
+
+@media only screen and (max-width: 479px) {
+
+  #payment_form_hps_securesubmit  {
+    width:100% !important;
+  }
 }
