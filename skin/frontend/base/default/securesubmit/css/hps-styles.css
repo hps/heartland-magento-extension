@@ -1,4 +1,10 @@
+/*invalid card-type-visa*/
+
 /*form.phtml*/
+.sp-methods .form-list li{
+  text-transform:uppercase !important;
+}
+
 
 #ss-banner {
   background:transparent url(../images/ss-shield@2x.png) no-repeat bottom left;
@@ -202,6 +208,7 @@
 
 #hps_securesubmit_cc_form #hps_securesubmit_cc_save_future {
   width:4%;
+  vertical-align: middle !important;
 }
 
 #hps_securesubmit_gift_card label {
@@ -237,7 +244,7 @@
 
 .stored-card-info {
   display:inline-block;
-  text-transform:uppercase;
+  text-transform:uppercase !important;
   font-size:small;
   color:#8c8c8c;
 }
@@ -349,6 +356,10 @@
     vertical-align:sub;
     transform:scale(1.4);
   }
+
+#stored-cards label {
+  width:100%;
+}
 
   #payment_form_hps_securesubmit li {
     padding:7px 15px;
