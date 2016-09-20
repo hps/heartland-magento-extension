@@ -16,35 +16,38 @@ if ($_loggedIn && $allow_card_saving) {
 
     <li id="ss-banner" style="border:none;"></li>
 
-
+<!-- START SAVED CREDIT CARD LIST -->
       <div id="stored-cards">
         <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
             <?php $checked = true; ?>
             <?php foreach ($customerStoredCards as $key => $card): ?>
                 <li>
-                  <label for="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" class="<?= $_code ?>_stored_card_label">
-                    <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" value="<?= $card->getId() ?>" <?php if ($checked): ?>checked="checked"<?php $checked=false; endif ?>/>
+                  <label for="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" class="<?= $_code ?>_stored_card_label" style="width:100%;">
+                    <div class="saved-card-selector">
+                      <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" value="<?= $card->getId() ?>" <?php if ($checked): ?>checked="checked"<?php $checked=false; endif ?>/>
+                    </div>
                       <div class="cc-info">
                             <input type="hidden" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>_card_type" value="<?= $card->getCcType() ?>" />
                               <span class="cc"><?= $card->getCcType().' ************'.$card->getCcLast4()?></span><br>
                               <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></span>
                       </div>
-                  </label>
                     <div id="stored-cc-icon" class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
+                  </label>
                 </li>
             <?php endforeach ?>
         <?php endif ?>
     </div>
 
+<!-- START NEW CARD -->
         <?php $checked = !$_loggedIn || !count($customerStoredCards);?>
           <li>
             <?php if (!$checked): ?>
-                <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label">
+                <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label" style="width:100%;">
                     <div class="cc-option">
+                      <div class="saved-card-selector">
                         <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_new" value="new" />
-                        <label class="new-card">
-                            <?= $this->__('Pay with a new credit card') ?>
-                        </label>
+                      </div>
+                            <p><?= $this->__('Pay with a new credit card') ?></p>
                     </div>
                 </label>
             <?php else: ?>
@@ -92,6 +95,7 @@ if ($_loggedIn && $allow_card_saving) {
               <?php endif ?>
     </li>
 
+<!-- START GIFT CARD -->
     <?php if ($allow_heartland_gift): ?>
         <li id="<?= $_code; ?>_gift_card">
           <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label>
@@ -102,6 +106,7 @@ if ($_loggedIn && $allow_card_saving) {
                               <a id="remove-gift-card" class="button" style="display: none;"><?= $this->__('Remove Gift Card') ?></a>
                                 <a id="apply-gift-card" class="button"><?= $this->__('Apply Gift Card') ?></a>
         </li>
+<!-- END GIFT CARD -->
       </ul>
     <?php endif ?>
       </div>
@@ -126,4 +131,10 @@ SecureSubmitMagento.init({
     <?php endif ?>
 });
 //]]>
+</script>
+
+<script type="text/javascript">
+(".saved-card-selector input").on('selected', function () {
+    (this).parent().toggleClass('selected');
+ });
 </script>
