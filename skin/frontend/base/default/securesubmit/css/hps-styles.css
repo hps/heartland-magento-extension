@@ -208,25 +208,43 @@
 #hps_securesubmit_cc_form #hps_securesubmit_cc_save_future {
   width:4%;
   vertical-align: middle !important;
+  display:inline;
+  float:left;
+}
+
+#ss-save-text {
+  margin-top:12px;
 }
 
 #hps_securesubmit_gift_card label {
   display:block
+  margin:5px 0px;
 }
 
 #hps_securesubmit_gift_card input {
   height:40px;
-  margin:20px 0px;
+  margin-bottom:20px;
 }
 
 #hps_securesubmit_giftcard_number {
-  width:50%;
+  width:45%;
   display:inline-block;
 }
 
 #hps_securesubmit_giftcard_pin {
-  width:48%;
+  width:45%;
   float:right;
+}
+
+#apply-gift-card.button {
+  background-color:#3989e3 !important;
+  color:#fff !important;
+  text-decoration:none !important;
+  display:table;
+  padding:10px;
+  text-align:center;
+  width:20%;
+  margin-bottom:10px;
 }
 
 /*storedcards.phtml*/

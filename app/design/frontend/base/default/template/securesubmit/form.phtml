@@ -90,15 +90,17 @@ if ($_loggedIn && $allow_card_saving) {
                     <?php endif ?>
     </div>
               <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
+                <div class="save-card-checkbox">
                       <input type="checkbox" id="<?= $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
                       <label id="ss-save-text" for="<?= $_code ?>_cc_save_future"><?= $this->__('&nbsp; &nbsp;Save this card for future use?') ?></label>
+                </div>
               <?php endif ?>
     </li>
 
 <!-- START GIFT CARD -->
     <?php if ($allow_heartland_gift): ?>
         <li id="<?= $_code; ?>_gift_card">
-          <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label>
+          <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label><br>
                 <input type="tel" id="<?= $_code; ?>_giftcard_number" title="<?= $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" autocomplete="off" name="payment[giftcard_number]" placeholder="<?= $this->__('GIFT CARD NUMBER') ?>" />
                     <input type="tel" id="<?= $_code; ?>_giftcard_pin" title="<?= $this->__('Gift Card Pin') ?>" class="input-text " placeholder="<?= $this->__('PIN') ?>" autocomplete="off" name="payment[giftcard_pin]" />
                         <input type="hidden" id="<?= $_code; ?>_giftcard_skip_cc" name="payment[giftcard_skip_cc]" value="false" />
