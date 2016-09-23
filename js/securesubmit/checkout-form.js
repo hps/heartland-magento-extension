@@ -23,7 +23,7 @@ function securesubmitMultishipping(multiForm) {
                             $('hps_securesubmit_cc_exp_month').value = parseInt(data.token.cc_exp_month);
                             $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                         }
-                        this.secureSubmitResponseHandler({
+                        this.secureSubmitResponseHandler.call(this, {
                             card_type:    storedcardType,
                             token_value:  data.token.token_value,
                             token_type:   null, // 'supt'?
@@ -78,7 +78,7 @@ function securesubmitMultishipping(multiForm) {
                 lastFourField = $('hps_securesubmit_cc_last_four');
             tokenField.value = typeField.value = lastFourField.value = null;
 
-            if ($('hps_securesubmit_exp_date').value) {
+            if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                 var date = $('hps_securesubmit_exp_date').value.split('/');
                 $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                 $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -140,7 +140,7 @@ document.observe('dom:loaded', function () {
                                 $('hps_securesubmit_cc_exp_month').value = parseInt(data.token.cc_exp_month);
                                 $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
                             }
-                            this.secureSubmitResponseHandler({
+                            this.secureSubmitResponseHandler.call(this, {
                                 card_type:    storedcardType,
                                 token_value:  data.token.token_value,
                                 token_type:   null, // 'supt'?
@@ -170,7 +170,7 @@ document.observe('dom:loaded', function () {
                         if (this.validate() && validator.validate()) {
                             checkout.setLoadWaiting('payment');
 
-                            if ($('hps_securesubmit_exp_date').value) {
+                            if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                                 var date = $('hps_securesubmit_exp_date').value.split('/');
                                 $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                                 $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -199,7 +199,7 @@ document.observe('dom:loaded', function () {
                     lastFourField = $('hps_securesubmit_cc_last_four');
                 tokenField.value = typeField.value = lastFourField.value = null;
 
-                if ($('hps_securesubmit_exp_date').value) {
+                if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                     var date = $('hps_securesubmit_exp_date').value.split('/');
                     $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                     $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -253,7 +253,7 @@ document.observe('dom:loaded', function () {
                         message: SecureSubmitMagento.options.publicKey
                     }, 'cardNumber');
                 } else {
-                    if ($('hps_securesubmit_exp_date').value) {
+                    if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                         var date = $('hps_securesubmit_exp_date').value.split('/');
                         $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                         $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -276,7 +276,7 @@ document.observe('dom:loaded', function () {
                     lastFourField = $('hps_securesubmit_cc_last_four');
                 tokenField.value = typeField.value = lastFourField.value = null;
 
-                if ($('hps_securesubmit_exp_date').value) {
+                if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                     var date = $('hps_securesubmit_exp_date').value.split('/');
                     $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                     $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -374,7 +374,7 @@ document.observe('dom:loaded', function () {
                             message: SecureSubmitMagento.options.publicKey
                         }, 'cardNumber');
                     } else {
-                        if ($('hps_securesubmit_exp_date').value) {
+                        if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                             var date = $('hps_securesubmit_exp_date').value.split('/');
                             $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                             $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -409,7 +409,7 @@ document.observe('dom:loaded', function () {
                 lastFourField = $('hps_securesubmit_cc_last_four');
             tokenField.value = typeField.value = lastFourField.value = null;
 
-            if ($('hps_securesubmit_exp_date').value) {
+            if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                 var date = $('hps_securesubmit_exp_date').value.split('/');
                 $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                 $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -470,7 +470,7 @@ document.observe('dom:loaded', function () {
                         message: SecureSubmitMagento.options.publicKey
                     }, 'cardNumber');
                 } else {
-                    if ($('hps_securesubmit_exp_date').value) {
+                    if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                         var date = $('hps_securesubmit_exp_date').value.split('/');
                         $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                         $('hps_securesubmit_cc_exp_year').value = date[1].trim();
@@ -493,7 +493,7 @@ document.observe('dom:loaded', function () {
                     lastFourField = $('hps_securesubmit_cc_last_four');
                 tokenField.value = typeField.value = lastFourField.value = null;
 
-                if ($('hps_securesubmit_exp_date').value) {
+                if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
                     var date = $('hps_securesubmit_exp_date').value.split('/');
                     $('hps_securesubmit_cc_exp_month').value = date[0].trim();
                     $('hps_securesubmit_cc_exp_year').value = date[1].trim();
