@@ -294,6 +294,7 @@ document.observe('dom:loaded', function () {
                     checkout.setLoadWaiting(false);
                 } else if (response && response.token_value) {
                     tokenField.value = response.token_value;
+		    typeField.value = response.card_type;
                     lastFourField.value = response.card.number.substr(-4);
                     typeField.value = response.card_type;
 
