@@ -143,7 +143,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             } else {
                 //  2.no. process full gift card amt and card process remainder
                 try {
-                    $this->checkVelocity($e);
+                    $this->checkVelocity();
 
                     $giftresp = $giftService->sale($giftcard, $giftResponse->balanceAmount);
                     $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [partial payment]')->save();
@@ -282,7 +282,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $payment->setStatus($status);
         $payment->setAmount($amount);
         $payment->setLastTransId($response->transactionId);
-        $payment->setCcTransId($response->transactionId);
+        $payment->setCcTransId(($response instanceof HpsReportTransactionDetails) ? $payment->getCcTransId() : $response->transactionId);
         $payment->setTransactionId($response->transactionId);
         $payment->setIsTransactionClosed(0);
 
@@ -473,7 +473,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $transactionDetails = $this->getTransactionDetails($payment);
         if ($this->canVoid($payment) && $this->transactionActiveOnGateway($transactionDetails)) {
-            if ($transactionDetails->authorizedAmount > $amount) {
+            if ($transactionDetails->settlementAmt > $amount) {
                 $this->_reversal($payment, $transactionDetails, $amount);
             } else {
                 $this->void($payment);
@@ -604,9 +604,17 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      * @param float                                         $newAuthAmount
      * @return Hps_Securesubmit_Model_Payment
      */
-    public function _reversal(Varien_Object $payment, $transactionDetails, $newAuthAmount)
+    public function _reversal(Varien_Object $payment, HpsReportTransactionDetails $transactionDetails, $newAuthAmount)
     {
-        $transactionId = $payment->getCcTransId();
+
+        $transactionId = null;
+
+        if (false !== ($parentId = $this->getParentTransactionId($payment))) {
+            $transactionId = $parentId;
+        } else {
+            $transactionId = $payment->getCcTransId();
+        }
+        $newAuthAmount = $transactionDetails->settlementAmt-$newAuthAmount;
         $order = $payment->getOrder();
         /* @var $order Mage_Sales_Model_Order */
         $chargeService = $this->_getChargeService();

@@ -37,6 +37,7 @@ class HpsReportTransactionDetails extends HpsAuthorization
         $details->responseCode = (isset($reportResponse->Data->RspCode) ? (string)$reportResponse->Data->RspCode : null);
         $details->responseText = (isset($reportResponse->Data->RspText) ? (string)$reportResponse->Data->RspText : null);
         $details->transactionStatus = (isset($reportResponse->Data->TxnStatus) ? (string)$reportResponse->Data->TxnStatus : null);
+        $details->settlementAmt = (isset($reportResponse->Data->SettlementAmt) ? (string)$reportResponse->Data->SettlementAmt : null);
 
         if (isset($reportResponse->Data->TokenizationMsg)) {
             $details->tokenData = new HpsTokenData();
