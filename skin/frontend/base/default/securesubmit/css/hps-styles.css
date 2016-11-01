@@ -217,7 +217,7 @@
 }
 
 #hps_securesubmit_gift_card label {
-  display:block
+  display:block;
   margin:5px 0px;
 }
 
@@ -337,6 +337,14 @@
 }
 
 
+.amasty_one_page_checkout {
+  width: 98%  !important;
+  float: none  !important;
+  height:5em  !important;
+  display: block !important;
+  padding:0px  !important;
+  margin-right: 15px !important;
+}
 
 @media only screen and (max-width: 768px) {
   #ss-banner {

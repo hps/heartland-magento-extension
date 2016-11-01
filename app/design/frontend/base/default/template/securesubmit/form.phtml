@@ -135,8 +135,10 @@ SecureSubmitMagento.init({
 //]]>
 </script>
 
+<?php if ($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
 <script type="text/javascript">
 (".saved-card-selector input").on('selected', function () {
     (this).parent().toggleClass('selected');
  });
 </script>
+<?php endif ?>
