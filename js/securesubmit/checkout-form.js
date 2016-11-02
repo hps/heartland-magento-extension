@@ -327,8 +327,22 @@ document.observe('dom:loaded', function () {
         return temp;
     };
     // Amasty completeCheckout();
-    if (typeof completeCheckout == 'function') {
+
+    if (typeof completeCheckout == 'function' && document.querySelector('#amscheckout-onepage')) {
         amastyCompleteCheckoutOriginal = cloneFunction(completeCheckout);
+
+        try {
+            var ele;
+            ele = document.createElement('div');
+            ele.id = 'co-payment-form-update';
+            var pEle = document.querySelector('#amscheckout-main > div.amscheckout > div > div.second-column > div:nth-child(3) > div.payment-method');
+            pEle.insertBefore(ele, pEle.childNodes[2]);
+        } catch (e) {
+        }
+        try {
+            document.querySelector('#payment-buttons-container').remove();
+        } catch (e) {
+        }
 
         completeCheckout = function (btn) {
 
@@ -476,21 +490,21 @@ document.observe('dom:loaded', function () {
                                 $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
                             }
                             secureSubmitResponseHandlerOSC({
-                              card_type:    storedcardType,
-                              token_value:  data.token.token_value,
-                              token_type:   null, // 'supt'?
-                              token_expire: new Date().toISOString(),
-                              card: {
-                                  number: data.token.cc_last4
-                              }
-                          }, btn);
-                      },
-                      onFailure: function() {
-                          alert('Unknown error. Please try again.');
-                          $('onestepcheckout-place-order-loading').show();
-                          $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
-                          $('onestepcheckout-button-place-order').addClassName('place-order-loader');
-                      }
+                                card_type:    storedcardType,
+                                token_value:  data.token.token_value,
+                                token_type:   null, // 'supt'?
+                                token_expire: new Date().toISOString(),
+                                card: {
+                                    number: data.token.cc_last4
+                                }
+                            }, btn);
+                        },
+                        onFailure: function() {
+                            alert('Unknown error. Please try again.');
+                            $('onestepcheckout-place-order-loading').show();
+                            $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
+                            $('onestepcheckout-button-place-order').addClassName('place-order-loader');
+                        }
                     });
                 } else {
                     if (SecureSubmitMagento.options.useIframes) {
@@ -657,18 +671,6 @@ document.observe('dom:loaded', function () {
         });
     }
 
-    try {
-        var ele;
-        ele = document.createElement('div');
-        ele.id = 'co-payment-form-update';
-        var pEle = document.querySelector('#amscheckout-main > div.amscheckout > div > div.second-column > div:nth-child(3) > div.payment-method');
-        pEle.insertBefore(ele, pEle.childNodes[2]);
-    } catch (e) {
-    }
-    try {
-        document.querySelector('#payment-buttons-container').remove();
-    } catch (e) {
-    }
 
 
 });
@@ -745,7 +747,7 @@ document.observe('dom:loaded', function () {
                         url: THIS.options.giftBalanceUrl,
                         type: 'GET',
                         data: "giftcard_number=" + $j('#' + THIS.options.code + '_giftcard_number').val()
-                            + "&giftcard_pin=" + $j('#' + THIS.options.code + '_giftcard_pin').val(),
+                        + "&giftcard_pin=" + $j('#' + THIS.options.code + '_giftcard_pin').val(),
                         success: function(data) {
                             if (data.error) {
                                 alert('Error adding gift card: ' + data.message);
@@ -810,16 +812,16 @@ document.observe('dom:loaded', function () {
                     },
                     style: {
                         '#heartland-field': {
-                             'height': '40px',
-                             'border-radius': '0px',
-                             'border': '1px solid silver',
-                             'letter-spacing': '2.5px',
-                             'margin': '5px 0px 15px 0px',
-                             'max-width': '365px',
-                             'width': '100%',
-                             'padding-left': '9px',
-                             'font-size': '15px'
-                         },
+                            'height': '40px',
+                            'border-radius': '0px',
+                            'border': '1px solid silver',
+                            'letter-spacing': '2.5px',
+                            'margin': '5px 0px 15px 0px',
+                            'max-width': '365px',
+                            'width': '100%',
+                            'padding-left': '9px',
+                            'font-size': '15px'
+                        },
                         '@media only screen and (max-width: 479px)': {
                             '#heartland-field': {
                                 'width': '95%'
@@ -855,7 +857,7 @@ document.observe('dom:loaded', function () {
                     }
                 });
 
-                if (window.amastyCompleteCheckoutOriginal) {
+                if (window.amastyCompleteCheckoutOriginal && document.querySelector('#amscheckout-onepage')) {
 
                     document.querySelector('#ss-banner').style.backgroundSize = '325px 40px';
                     document.querySelector('#cc-number').className = 'amasty_one_page_checkout';
