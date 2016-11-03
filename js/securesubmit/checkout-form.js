@@ -108,7 +108,7 @@ function securesubmitMultishipping(multiForm) {
     };
     return secureSubmit;
 }
-var amastyCompleteCheckoutOriginal;
+var secureSubmitAmastyCompleteCheckoutOriginal;
 
 document.observe('dom:loaded', function () {
     // Override default Payment save handler
@@ -329,7 +329,7 @@ document.observe('dom:loaded', function () {
     // Amasty completeCheckout();
 
     if (typeof completeCheckout == 'function' && document.querySelector('#amscheckout-onepage')) {
-        amastyCompleteCheckoutOriginal = cloneFunction(completeCheckout);
+        secureSubmitAmastyCompleteCheckoutOriginal = cloneFunction(completeCheckout);
 
         try {
             var ele;
@@ -339,9 +339,8 @@ document.observe('dom:loaded', function () {
             pEle.insertBefore(ele, pEle.childNodes[2]);
         } catch (e) {
         }
-        try {
+        if(document.querySelector('#payment-buttons-container')) {
             document.querySelector('#payment-buttons-container').remove();
-        } catch (e) {
         }
 
         completeCheckout = function (btn) {
@@ -353,7 +352,7 @@ document.observe('dom:loaded', function () {
             if (validator.validate()) {
                 var currentPayment = payment.currentMethod;
                 if (currentPayment != 'hps_securesubmit') {
-                    amastyCompleteCheckoutOriginal(btn);
+                    secureSubmitAmastyCompleteCheckoutOriginal(btn);
                     return;
                 }
 
@@ -454,7 +453,7 @@ document.observe('dom:loaded', function () {
                 lastFourField.value = response.card.number.substr(-4);
                 typeField.value = response.card_type;
 
-                amastyCompleteCheckoutOriginal(btn);
+                secureSubmitAmastyCompleteCheckoutOriginal(btn);
             } else {
                 alert('Unexpected error.');
             }
@@ -857,13 +856,19 @@ document.observe('dom:loaded', function () {
                     }
                 });
 
-                if (window.amastyCompleteCheckoutOriginal && document.querySelector('#amscheckout-onepage')) {
-
-                    document.querySelector('#ss-banner').style.backgroundSize = '325px 40px';
-                    document.querySelector('#cc-number').className = 'amasty_one_page_checkout';
-                    document.querySelector('#expiration-date').className = 'amasty_one_page_checkout';
-                    document.querySelector('#ccv').className = 'amasty_one_page_checkout';
-
+                if (window.secureSubmitAmastyCompleteCheckoutOriginal && document.querySelector('#amscheckout-onepage')) {
+                    if(document.querySelector('#ss-banner'){
+                        document.querySelector('#ss-banner').style.backgroundSize = '325px 40px';
+                    }
+                    if(document.querySelector('#cc-number')){
+                        document.querySelector('#cc-number').className = 'securesubmit_amasty_one_page_checkout';
+                    }
+                    if(document.querySelector('#expiration-date')){
+                        document.querySelector('#expiration-date').className = 'securesubmit_amasty_one_page_checkout';
+                    }
+                    if(document.querySelector('#ccv')){
+                        document.querySelector('#ccv').className = 'securesubmit_amasty_one_page_checkout';
+                    }
                 }
             } else {
                 Heartland.Card.attachNumberEvents('#' + THIS.options.code + '_cc_number');
@@ -889,8 +894,8 @@ document.observe('dom:loaded', function () {
                     IWD.OPC.preparePaymentResponse,
                     'json'
                 );
-            } else if (window.amastyCompleteCheckoutOriginal) {
-                amastyCompleteCheckoutOriginal();
+            } else if (window.secureSubmitAmastyCompleteCheckoutOriginal) {
+                secureSubmitAmastyCompleteCheckoutOriginal();
             } else if (window.oscPlaceOrderOriginal) {
                 $('onestepcheckout-place-order-loading').show();
                 $('onestepcheckout-button-place-order').removeClassName('onestepcheckout-btn-checkout');
