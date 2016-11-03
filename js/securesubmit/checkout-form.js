@@ -112,7 +112,7 @@ var secureSubmitAmastyCompleteCheckoutOriginal;
 
 document.observe('dom:loaded', function () {
     // Override default Payment save handler
-    if (typeof Payment != 'undefined') {
+    if (typeof Payment !== 'undefined') {
         if (typeof Payment.prototype._secureSubmitOldSave === 'undefined') {
             var oldPayment = Object.clone(Payment.prototype);
             Payment.prototype._secureSubmitOldSave = oldPayment.save;
@@ -236,7 +236,7 @@ document.observe('dom:loaded', function () {
         });
     }
 
-    if (typeof OPC != 'undefined') {
+    if (typeof OPC !== 'undefined') {
         if (typeof OPC.prototype._secureSubmitOldSubmit === 'undefined') {
             var oldOPC = Object.clone(OPC.prototype);
             OPC.prototype._secureSubmitOldSubmit = oldOPC.submit;
@@ -328,7 +328,7 @@ document.observe('dom:loaded', function () {
     };
     // Amasty completeCheckout();
 
-    if (typeof completeCheckout == 'function' && document.getElementById('amscheckout-onepage')) {
+    if (typeof completeCheckout === 'function' && document.getElementById('amscheckout-onepage')) {
         secureSubmitAmastyCompleteCheckoutOriginal = cloneFunction(completeCheckout);
 
         try {
@@ -461,7 +461,7 @@ document.observe('dom:loaded', function () {
     }
 
     // MageStore One Step Checkout
-    if (typeof oscPlaceOrder == 'function') {
+    if (typeof oscPlaceOrder === 'function') {
         var oscPlaceOrderOriginal = cloneFunction(oscPlaceOrder);
         oscPlaceOrder = function (btn) {
             var validator = new Validation('one-step-checkout-form');
