@@ -328,7 +328,7 @@ document.observe('dom:loaded', function () {
     };
     // Amasty completeCheckout();
 
-    if (typeof completeCheckout == 'function' && document.querySelector('#amscheckout-onepage')) {
+    if (typeof completeCheckout == 'function' && document.getElementById('amscheckout-onepage')) {
         secureSubmitAmastyCompleteCheckoutOriginal = cloneFunction(completeCheckout);
 
         try {
@@ -339,8 +339,8 @@ document.observe('dom:loaded', function () {
             pEle.insertBefore(ele, pEle.childNodes[2]);
         } catch (e) {
         }
-        if(document.querySelector('#payment-buttons-container')) {
-            document.querySelector('#payment-buttons-container').remove();
+        if(document.getElementById('payment-buttons-container')) {
+            document.getElementById('payment-buttons-container').remove();
         }
 
         completeCheckout = function (btn) {
@@ -856,18 +856,18 @@ document.observe('dom:loaded', function () {
                     }
                 });
 
-                if (window.secureSubmitAmastyCompleteCheckoutOriginal && document.querySelector('#amscheckout-onepage')) {
-                    if(document.querySelector('#ss-banner'){
-                        document.querySelector('#ss-banner').style.backgroundSize = '325px 40px';
+                if (window.secureSubmitAmastyCompleteCheckoutOriginal && document.getElementById('amscheckout-onepage')) {
+                    if(document.getElementById('ss-banner'){
+                        document.getElementById('ss-banner').style.backgroundSize = '325px 40px';
                     }
-                    if(document.querySelector('#cc-number')){
-                        document.querySelector('#cc-number').className = 'securesubmit_amasty_one_page_checkout';
+                    if(document.getElementById('cc-number')){
+                        document.getElementById('cc-number').className = 'securesubmit_amasty_one_page_checkout';
                     }
-                    if(document.querySelector('#expiration-date')){
-                        document.querySelector('#expiration-date').className = 'securesubmit_amasty_one_page_checkout';
+                    if(document.getElementById('expiration-date')){
+                        document.getElementById('expiration-date').className = 'securesubmit_amasty_one_page_checkout';
                     }
-                    if(document.querySelector('#ccv')){
-                        document.querySelector('#ccv').className = 'securesubmit_amasty_one_page_checkout';
+                    if(document.getElementById('ccv')){
+                        document.getElementById('ccv').className = 'securesubmit_amasty_one_page_checkout';
                     }
                 }
             } else {
