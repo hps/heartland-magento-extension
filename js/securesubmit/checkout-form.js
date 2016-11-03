@@ -339,8 +339,10 @@ document.observe('dom:loaded', function () {
             pEle.insertBefore(ele, pEle.childNodes[2]);
         } catch (e) {
         }
-        if(document.getElementById('payment-buttons-container')) {
-            document.getElementById('payment-buttons-container').remove();
+        var container = document.getElementById('payment-buttons-container');
+        if (container && container.parentNode) {
+            // container.parentNode should always exist, but we're playing it safe above
+            container.parentNode.removeChild(container);
         }
 
         completeCheckout = function (btn) {
@@ -857,17 +859,23 @@ document.observe('dom:loaded', function () {
                 });
 
                 if (window.secureSubmitAmastyCompleteCheckoutOriginal && document.getElementById('amscheckout-onepage')) {
-                    if(document.getElementById('ss-banner'){
-                        document.getElementById('ss-banner').style.backgroundSize = '325px 40px';
+                    
+                    var ssbanner = document.getElementById('ss-banner');
+                    var ccnumber = document.getElementById('cc-number');
+                    var expirationdate = document.getElementById('expiration-dat');
+                    var ccv = document.getElementById('payment-buttons-container');
+                    
+                    if(ssbanner){
+                       ssbanner.style.backgroundSize = '325px 40px';
                     }
-                    if(document.getElementById('cc-number')){
-                        document.getElementById('cc-number').className = 'securesubmit_amasty_one_page_checkout';
+                    if(ccnumber){
+                        ccnumber.className = 'securesubmit_amasty_one_page_checkout';
                     }
-                    if(document.getElementById('expiration-date')){
-                        document.getElementById('expiration-date').className = 'securesubmit_amasty_one_page_checkout';
+                    if(expirationdate){
+                        expirationdate.className = 'securesubmit_amasty_one_page_checkout';
                     }
-                    if(document.getElementById('ccv')){
-                        document.getElementById('ccv').className = 'securesubmit_amasty_one_page_checkout';
+                    if(ccv){
+                        ccv.className = 'securesubmit_amasty_one_page_checkout';
                     }
                 }
             } else {
