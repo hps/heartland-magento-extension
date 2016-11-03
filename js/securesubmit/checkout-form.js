@@ -331,7 +331,7 @@ document.observe('dom:loaded', function () {
     if (typeof completeCheckout == 'function' && document.getElementById('amscheckout-onepage')) {
         secureSubmitAmastyCompleteCheckoutOriginal = cloneFunction(completeCheckout);
 
-        try {
+        try { 
             var ele;
             ele = document.createElement('div');
             ele.id = 'co-payment-form-update';
