@@ -75,15 +75,19 @@
   background-size:cover;
   float:right;
 }
+.icon-mastercard-form,
 .icon-mc-form,
 .icon-mc {
   background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat bottom right;
 }
 #payment_form_hps_securesubmit li:hover .icon-mc-form,
-#stored-cards li.active .icon-mc-form {
+#payment_form_hps_securesubmit li:hover .icon-mastercard-form,
+#stored-cards li.active .icon-mc-form,
+#stored-cards li.active .icon-mastercard-form {
   background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat top right;
   background-size:cover;
 }
+.icon-vi-form,
 .icon-visa-form {
   background:transparent url(../images/ss-saved-visa@2x.png) no-repeat bottom right;
 }
@@ -296,11 +300,11 @@
   vertical-align:text-bottom;
 }
 
-.icon-visa-stored {
+.icon-visa-stored,.icon-vi-stored {
   background:transparent url(../images/ss-saved-visa@2x.png) no-repeat bottom left;
 }
 
-.icon-mc-stored {
+.icon-mc-stored,.icon-mastercard-stored {
   background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat bottom left;
 }
 
@@ -320,7 +324,8 @@
   background-position-y:inherit;
 }
 
-#hps-saved-cards li:hover .icon-mc-stored {
+#hps-saved-cards li:hover .icon-mc-stored,
+#hps-saved-cards li:hover .icon-mastercard-stored {
   background-position-y:inherit;
 }
 
