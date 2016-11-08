@@ -374,10 +374,6 @@ document.observe('dom:loaded', function () {
                         parameters: {storedcard_id: storedcardId},
                         onSuccess: function (response) {
                             var data = response.responseJSON;
-                            if (data && data.token) {
-                                $('hps_securesubmit_expiration').value = parseInt(data.token.cc_exp_month);
-                                $('hps_securesubmit_expiration_yr').value = data.token.cc_exp_year;
-                            }
                             secureSubmitResponseHandlerAOSC({
                                 card_type: storedcardType,
                                 token_value: data.token.token_value,
@@ -424,6 +420,8 @@ document.observe('dom:loaded', function () {
         };
 
         secureSubmitUseStoredCardAOSC = function () {
+            var newRadio = $('hps_securesubmit_stored_card_select_new');
+            return !newRadio.checked;
             var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
             return storedCheckbox && storedCheckbox.checked;
         };
@@ -833,8 +831,8 @@ document.observe('dom:loaded', function () {
                         $(THIS.options.code + '_token').value = resp.token_value;
                         $(THIS.options.code + '_cc_last_four').value = resp.card.number.substr(-4);
                         $(THIS.options.code + '_cc_type').value = resp.card_type;
-                        $(THIS.options.code + '_cc_exp_month').value = resp.exp_month;
-                        $(THIS.options.code + '_cc_exp_year').value = resp.exp_year;
+                        $(THIS.options.code + '_cc_exp_month').value = resp.exp_month.trim();
+                        $(THIS.options.code + '_cc_exp_year').value = resp.exp_year.trim();
 
                         THIS.completeCheckout();
                     },
@@ -858,15 +856,15 @@ document.observe('dom:loaded', function () {
                     }
                 });
 
-                if (window.secureSubmitAmastyCompleteCheckoutOriginal && document.getElementById('amscheckout-onepage')) {
-                    
+                if (document.getElementById('amscheckout-onepage')) {
+
                     var ssbanner = document.getElementById('ss-banner');
                     var ccnumber = document.getElementById('cc-number');
                     var expirationdate = document.getElementById('expiration-dat');
                     var ccv = document.getElementById('payment-buttons-container');
-                    
+
                     if(ssbanner){
-                       ssbanner.style.backgroundSize = '325px 40px';
+                        ssbanner.style.backgroundSize = '325px 40px';
                     }
                     if(ccnumber){
                         ccnumber.className = 'securesubmit_amasty_one_page_checkout';
