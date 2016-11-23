@@ -2,6 +2,7 @@
 
 class HpsPayPlanScheduleService extends HpsRestGatewayService
 {
+
     public function add(HpsPayPlanSchedule $schedule)
     {
         $data = $schedule->getEditableFieldsWithValues();
@@ -13,10 +14,9 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
         ));
         return $this->hydrateObject($result, 'HpsPayPlanSchedule');
     }
-
     public function edit(HpsPayPlanSchedule $schedule)
     {
-        $data = $schedule->getEditableFieldsWithValues();
+        $data = $schedule->getEditableFieldsWithValues( $schedule );
         $result = $this->doRequest($data, array(
             'verb'     => 'PUT',
             'endpoint' => 'schedules/'.$schedule->scheduleKey,
@@ -34,10 +34,8 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
                 'verb'     => 'POST',
                 'endpoint' => 'searchSchedules',
             ));
-
         return $this->hydrateSearchResults($results, 'HpsPayPlanSchedule');
     }
-
     public function get($schedule)
     {
         $id = null;
@@ -52,7 +50,6 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
         ));
         return $this->hydrateObject($result, 'HpsPayPlanSchedule');
     }
-
     public function delete($schedule, $forceDelete = false)
     {
         $id = null;
@@ -61,7 +58,6 @@ class HpsPayPlanScheduleService extends HpsRestGatewayService
         } else {
             $id = $schedule;
         }
-
         $data = array(
             'forceDelete' => $forceDelete,
         );

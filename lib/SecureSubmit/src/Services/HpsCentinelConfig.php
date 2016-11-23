@@ -9,13 +9,14 @@ class HpsCentinelConfig implements HpsConfigInterface
     public $useProxy       = false;
     public $proxyOptions   = null;
     public $serviceUri     = 'https://centineltest.cardinalcommerce.com/maps/txns.asp';
+    public $curlOptions    = null;
 
     public function serviceUri()
     {
         return $this->serviceUri;
     }
 
-    public function setServiceUri(string $value)
+    public function setServiceUri($value)
     {
         $this->serviceUri = $value;
     }

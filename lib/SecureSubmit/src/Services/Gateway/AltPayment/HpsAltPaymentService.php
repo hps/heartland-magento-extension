@@ -5,7 +5,7 @@ class HpsAltPaymentService extends HpsSoapGatewayService
     /** @var string|null */
     protected $_transactionType = null;
 
-    public function authorize($sessionId, $amount, $currency, HpsBuyerData $buyer, HpsPaymentData $payment, HpsShippingInfo $shippingAddress = null, $lineItems = null)
+    public function authorize($sessionId, $amount, $currency, HpsBuyerData $buyer = null, HpsPaymentData $payment = null, HpsShippingInfo $shippingAddress = null, $lineItems = null)
     {
         HpsInputValidation::checkAmount($amount);
         HpsInputValidation::checkCurrency($currency);
@@ -53,7 +53,7 @@ class HpsAltPaymentService extends HpsSoapGatewayService
         return $this->_submitTransaction($transaction, 'AltPaymentCapture');
     }
 
-    public function createSession($amount, $currency, HpsBuyerData $buyer, HpsPaymentData $payment, HpsShippingInfo $shippingAddress = null, $lineItems = null)
+    public function createSession($amount, $currency, HpsBuyerData $buyer = null, HpsPaymentData $payment = null, HpsShippingInfo $shippingAddress = null, $lineItems = null)
     {
         HpsInputValidation::checkAmount($amount);
         HpsInputValidation::checkCurrency($currency);
@@ -101,7 +101,7 @@ class HpsAltPaymentService extends HpsSoapGatewayService
         return $this->_submitTransaction($transaction, 'AltPaymentReturn');
     }
 
-    public function sale($sessionId, $amount, $currency, HpsBuyerData $buyer, HpsPaymentData $payment, HpsShippingInfo $shippingAddress = null, $lineItems = null)
+    public function sale($sessionId, $amount, $currency, HpsBuyerData $buyer = null, HpsPaymentData $payment = null, HpsShippingInfo $shippingAddress = null, $lineItems = null)
     {
         HpsInputValidation::checkAmount($amount);
         HpsInputValidation::checkCurrency($currency);
@@ -226,7 +226,7 @@ class HpsAltPaymentService extends HpsSoapGatewayService
     {
         $nvp = $xml->createElement('hps:NameValuePair');
         $nvp->appendChild($xml->createElement('hps:Name', $name));
-        $nvp->appendChild($xml->createElement('hps:Value', $value));
+        $nvp->appendChild($xml->createElement('hps:Value', HpsInputValidation::cleanAscii($value)));
         return $nvp;
     }
 
@@ -254,27 +254,12 @@ class HpsAltPaymentService extends HpsSoapGatewayService
         $shipping = $xml->createElement('hps:Shipping');
         $address = $xml->createElement('hps:Address');
         $address->appendChild($this->hydrateNameValuePair('AllowAddressOverride', 'false', $xml));
-        if (isset($info->name)) {
-            $address->appendChild($this->hydrateNameValuePair('ShipName', $info->name, $xml));
-        }
-        if (isset($info->address->address)) {
-            $address->appendChild($this->hydrateNameValuePair('ShipAddress', $info->address->address, $xml));
-        }
-        if (isset($info->address->address2)) {
-            $address->appendChild($this->hydrateNameValuePair('ShipAddress2', $info->address->address2, $xml));
-        }
-        if (isset($info->address->city)) {
-            $address->appendChild($this->hydrateNameValuePair('ShipCity', $info->address->city, $xml));
-        }
-        if (isset($info->address->state)) {
-            $address->appendChild($this->hydrateNameValuePair('ShipState', $info->address->state, $xml));
-        }
-        if (isset($info->address->zip)) {
-            $address->appendChild($this->hydrateNameValuePair('ShipZip', $info->address->zip, $xml));
-        }
-        if (isset($info->address->country)) {
-            $address->appendChild($this->hydrateNameValuePair('ShipCountryCode', $info->address->country, $xml));
-        }
+        $address->appendChild($this->hydrateNameValuePair('ShipName', $info->name, $xml));
+        $address->appendChild($this->hydrateNameValuePair('ShipAddress', $info->address->address, $xml));
+        $address->appendChild($this->hydrateNameValuePair('ShipCity', $info->address->city, $xml));
+        $address->appendChild($this->hydrateNameValuePair('ShipState', $info->address->state, $xml));
+        $address->appendChild($this->hydrateNameValuePair('ShipZip', $info->address->zip, $xml));
+        $address->appendChild($this->hydrateNameValuePair('ShipCountryCode', $info->address->country, $xml));
         $shipping->appendChild($address);
         return $shipping;
     }
@@ -290,7 +275,7 @@ class HpsAltPaymentService extends HpsSoapGatewayService
 
         if ($gatewayRspCode == '30') {
             try {
-                $this->reverse($transactionId, $this->_amount, $this->_currency);
+                $this->void($transactionId);
             } catch (Exception $e) {
                 throw new HpsGatewayException(
                     HpsExceptionCodes::GATEWAY_TIMEOUT_REVERSAL_ERROR,
