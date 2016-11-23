@@ -18,7 +18,7 @@ class Hps_SecureSubmit_Block_Form extends Mage_Payment_Block_Form_Ccsave
 
     public function getCca()
     {
-        if (false) {
+        if (!$this->getConfig('enable_threedsecure')) {
             return false;
         }
 
