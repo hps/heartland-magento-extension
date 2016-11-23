@@ -44,7 +44,7 @@ function securesubmitMultishipping(multiForm) {
                     SecureSubmitMagento.hps.Messages.post({
                         accumulateData: true,
                         action: 'tokenize',
-                        message: SecureSubmitMagento.options.publicKey
+                        data: SecureSubmitMagento.tokenizeOptions
                     }, 'cardNumber');
                 } else {
                     var validator = new Validation(multiForm);
@@ -164,7 +164,7 @@ document.observe('dom:loaded', function () {
                         SecureSubmitMagento.hps.Messages.post({
                             accumulateData: true,
                             action: 'tokenize',
-                            message: SecureSubmitMagento.options.publicKey
+                            data: SecureSubmitMagento.tokenizeOptions
                         }, 'cardNumber');
                     } else {
                         var validator = new Validation(this.form);
@@ -221,14 +221,16 @@ document.observe('dom:loaded', function () {
                     lastFourField.value = response.card.number.substr(-4);
                     typeField.value = response.card_type;
 
-                    // Continue Magento checkout steps
-                    new Ajax.Request(this.saveUrl, {
-                        method:'post',
-                        onComplete: this.onComplete,
-                        onSuccess: this.onSave,
-                        onFailure: checkout.ajaxFailure.bind(checkout),
-                        parameters: Form.serialize(this.form)
-                    });
+                    SecureSubmitMagento.initializeCCA((function () {
+                        // Continue Magento checkout steps
+                        new Ajax.Request(this.saveUrl, {
+                            method:'post',
+                            onComplete: this.onComplete,
+                            onSuccess: this.onSave,
+                            onFailure: checkout.ajaxFailure.bind(checkout),
+                            parameters: Form.serialize(this.form)
+                        });
+                    }).bind(this));
                 } else {
                     alert('Unexpected error.');
                 }
@@ -251,7 +253,7 @@ document.observe('dom:loaded', function () {
                     SecureSubmitMagento.hps.Messages.post({
                         accumulateData: true,
                         action: 'tokenize',
-                        message: SecureSubmitMagento.options.publicKey
+                        data: SecureSubmitMagento.tokenizeOptions
                     }, 'cardNumber');
                 } else {
                     if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
@@ -393,14 +395,9 @@ document.observe('dom:loaded', function () {
                         SecureSubmitMagento.hps.Messages.post({
                             accumulateData: true,
                             action: 'tokenize',
-                            message: SecureSubmitMagento.options.publicKey
+                            data: SecureSubmitMagento.tokenizeOptions
                         }, 'cardNumber');
                     } else {
-                        if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
-                            var date = $('hps_securesubmit_exp_date').value.split('/');
-                            $('hps_securesubmit_cc_exp_month').value = date[0].trim();
-                            $('hps_securesubmit_cc_exp_year').value = date[1].trim();
-                        }
                         (new Heartland.HPS({
                             publicKey: window.payment.secureSubmitPublicKeyOSC,
                             cardNumber: $('hps_securesubmit_cc_number').value,
@@ -422,8 +419,6 @@ document.observe('dom:loaded', function () {
         secureSubmitUseStoredCardAOSC = function () {
             var newRadio = $('hps_securesubmit_stored_card_select_new');
             return !newRadio.checked;
-            var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
-            return storedCheckbox && storedCheckbox.checked;
         };
 
         secureSubmitResponseHandlerAOSC = function (response, btn) {
@@ -510,7 +505,7 @@ document.observe('dom:loaded', function () {
                         SecureSubmitMagento.hps.Messages.post({
                             accumulateData: true,
                             action: 'tokenize',
-                            message: SecureSubmitMagento.options.publicKey
+                            data: SecureSubmitMagento.tokenizeOptions
                         }, 'cardNumber');
                     } else {
                         if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
@@ -588,8 +583,8 @@ document.observe('dom:loaded', function () {
     // IWD OPC
     if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
         if (typeof IWD.OPC._secureSubmitOldSavePayment === 'undefined') {
-            var oldOPC = Object.clone(IWD.OPC);
-            IWD.OPC._secureSubmitOldSavePayment = oldOPC.savePayment;
+            var oldIWDOPC = Object.clone(IWD.OPC);
+            IWD.OPC._secureSubmitOldSavePayment = oldIWDOPC.savePayment;
         }
         Object.extend(IWD.OPC, {
             savePayment: function() {
@@ -606,7 +601,7 @@ document.observe('dom:loaded', function () {
                     SecureSubmitMagento.hps.Messages.post({
                         accumulateData: true,
                         action: 'tokenize',
-                        message: SecureSubmitMagento.options.publicKey
+                        data: SecureSubmitMagento.tokenizeOptions
                     }, 'cardNumber');
                 } else {
                     if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
@@ -745,8 +740,8 @@ document.observe('dom:loaded', function () {
                     $j.ajax({
                         url: THIS.options.giftBalanceUrl,
                         type: 'GET',
-                        data: "giftcard_number=" + $j('#' + THIS.options.code + '_giftcard_number').val()
-                        + "&giftcard_pin=" + $j('#' + THIS.options.code + '_giftcard_pin').val(),
+                        data: "giftcard_number=" + $j('#' + THIS.options.code + '_giftcard_number').val() +
+                            "&giftcard_pin=" + $j('#' + THIS.options.code + '_giftcard_pin').val(),
                         success: function(data) {
                             if (data.error) {
                                 alert('Error adding gift card: ' + data.message);
@@ -792,7 +787,7 @@ document.observe('dom:loaded', function () {
         },
         setupFields: function () {
             if (THIS.options.useIframes) {
-                THIS.hps = new Heartland.HPS({
+                var options = {
                     publicKey: THIS.options.publicKey,
                     type:      'iframe',
                     fields: {
@@ -828,13 +823,23 @@ document.observe('dom:loaded', function () {
                         }
                     },
                     onTokenSuccess: function (resp) {
-                        $(THIS.options.code + '_token').value = resp.token_value;
-                        $(THIS.options.code + '_cc_last_four').value = resp.card.number.substr(-4);
-                        $(THIS.options.code + '_cc_type').value = resp.card_type;
-                        $(THIS.options.code + '_cc_exp_month').value = resp.exp_month.trim();
-                        $(THIS.options.code + '_cc_exp_year').value = resp.exp_year.trim();
+                        var heartland = resp.heartland || resp;
+                        $(THIS.options.code + '_token').value = heartland.token_value;
+                        $(THIS.options.code + '_cc_last_four').value = heartland.card.number.substr(-4);
+                        $(THIS.options.code + '_cc_type').value = heartland.card_type;
+                        $(THIS.options.code + '_cc_exp_month').value = heartland.exp_month.trim();
+                        $(THIS.options.code + '_cc_exp_year').value = heartland.exp_year.trim();
 
-                        THIS.completeCheckout();
+                        if (resp.cardinal) {
+                            var el = document.createElement('input');
+                            el.value = resp.cardinal.token_value;
+                            el.type = 'hidden';
+                            el.name = 'payment[cardinal_token]';
+                            el.id = THIS.options.code + '_cardinal_token';
+                            $('payment_form_' + THIS.options.code).appendChild(el);
+                        }
+
+                        THIS.initializeCCA(THIS.completeCheckout);
                     },
                     onTokenError: function (response) {
                         if (THIS.skipCreditCard) {
@@ -854,7 +859,14 @@ document.observe('dom:loaded', function () {
                             checkout.setLoadWaiting(false);
                         }
                     }
-                });
+                };
+
+                if (THIS.options.cca) {
+                    options.cca = THIS.options.cca;
+                }
+
+                THIS.tokenizeOptions = options;
+                THIS.hps = new Heartland.HPS(options);
 
                 if (document.getElementById('amscheckout-onepage')) {
 
@@ -885,18 +897,16 @@ document.observe('dom:loaded', function () {
         completeCheckout: function () {
             if (typeof OPC !== 'undefined') {
                 checkout.setLoadWaiting(true);
-                var params = Form.serialize(checkout.form);
-                var request = new Ajax.Request(checkout.saveUrl, {
+                new Ajax.Request(checkout.saveUrl, {
                     method: 'post',
-                    parameters: params,
+                    parameters: Form.serialize(checkout.form),
                     onSuccess: checkout.setResponse.bind(checkout),
                     onFailure: checkout.ajaxFailure.bind(checkout)
                 });
             } else if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
-                var form = $j_opc('#co-payment-form').serializeArray();
                 IWD.OPC.Checkout.xhr = $j_opc.post(
                     IWD.OPC.Checkout.config.baseUrl + 'onepage/json/savePayment',
-                    form,
+                    $j_opc('#co-payment-form').serializeArray(),
                     IWD.OPC.preparePaymentResponse,
                     'json'
                 );
@@ -908,10 +918,9 @@ document.observe('dom:loaded', function () {
                 $('onestepcheckout-button-place-order').addClassName('place-order-loader');
                 oscPlaceOrderOriginal(btn);
             } else if (typeof Payment !== 'undefined') {
-                var params = Form.serialize(payment.form);
-                var request = new Ajax.Request(payment.saveUrl, {
+                new Ajax.Request(payment.saveUrl, {
                     method: 'post',
-                    parameters: params,
+                    parameters: Form.serialize(payment.form),
                     onComplete: payment.onComplete,
                     onSuccess: payment.onSave,
                     onFailure: checkout.ajaxFailure.bind(checkout)
@@ -920,6 +929,58 @@ document.observe('dom:loaded', function () {
                 document.getElementById('payment-continue').enable();
                 document.getElementById('multishipping-billing-form').submit();
             }
+        },
+        initializeCCA: function (callback) {
+            if (!THIS.options.cca) {
+              callback();
+              return;
+            }
+
+            Cardinal.__secureSubmitInitFrame = Cardinal.__secureSubmitInitFrame || false;
+            if (!Cardinal.__secureSubmitInitFrame) {
+                Cardinal.setup('init', {
+                    jwt: THIS.options.cca.jwt
+                });
+                Cardinal.on('payments.validated', function (data, jwt) {
+                    var el = document.createElement('input');
+                    data.jwt = jwt;
+                    el.value = Object.toJSON(data);
+                    el.type = 'hidden';
+                    el.name = 'payment[cca_data]';
+                    $('payment_form_' + THIS.options.code).appendChild(el);
+                    if (callback) {
+                      callback();
+                    }
+                });
+                Cardinal.__secureSubmitInitFrame = true;
+            }
+
+            Cardinal.trigger('jwt.update', THIS.options.cca.jwt);
+
+            var payload = {
+                OrderDetails: {
+                    OrderNumber: THIS.options.cca.orderNumber + 'cca'
+                }
+            };
+
+            if (THIS.options.useIframes) {
+                payload.Token = {
+                    Token: $(THIS.options.code + '_cardinal_token').value,
+                        ExpirationMonth: $('hps_securesubmit_cc_exp_month').value.replace(/\D/g, ''),
+                        ExpirationYear: $('hps_securesubmit_cc_exp_year').value.replace(/\D/g, '')
+                };
+            } else {
+                payload.Consumer = {
+                    Account: {
+                        AccountNumber: $('hps_securesubmit_cc_number').value.replace(/\D/g, ''),
+                        CardCode: $('hps_securesubmit_cvv_number').value.replace(/\D/g, ''),
+                        ExpirationMonth: $('hps_securesubmit_cc_exp_month').value.replace(/\D/g, ''),
+                        ExpirationYear: $('hps_securesubmit_cc_exp_year').value.replace(/\D/g, '')
+                    }
+                };
+            }
+
+            Cardinal.start('cca', payload);
         }
     };
     window.SecureSubmitMagento = THIS;
