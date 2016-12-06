@@ -36,6 +36,8 @@ class HpsMasterPassService
      *
      * @param string       $orderId   order id from Cardinal
      * @param HpsOrderData $orderData Cardinal/MasterPass specific data
+     *
+     * @return object
      */
     public function addOrderNumber(
         $orderId,
@@ -84,16 +86,16 @@ class HpsMasterPassService
             'TransactionType' => 'WT',
         );
 
-        if ($orderData->checkoutType === HpsCentinelCheckoutType::PAIRING ||
-            $orderData->checkoutType === HpsCentinelCheckoutType::PAIRING_CHECKOUT
+        if ($orderData->checkoutType === HpsCentinelCheckoutType::PAIRING
+            || $orderData->checkoutType === HpsCentinelCheckoutType::PAIRING_CHECKOUT
         ) {
             $data['PairingToken'] = $orderData->pairingToken;
             $data['PairingVerifier'] = $orderData->pairingVerifier;
         }
 
-        if ($orderData->checkoutType === null ||
-            $orderData->checkoutType === HpsCentinelCheckoutType::LIGHTBOX ||
-            $orderData->checkoutType === HpsCentinelCheckoutType::PAIRING_CHECKOUT
+        if ($orderData->checkoutType === null
+            || $orderData->checkoutType === HpsCentinelCheckoutType::LIGHTBOX
+            || $orderData->checkoutType === HpsCentinelCheckoutType::PAIRING_CHECKOUT
         ) {
             $data['CheckoutResourceUrl'] = $resourceUrl;
             $data['OAuthToken'] = $oauthToken;
@@ -147,7 +149,10 @@ class HpsMasterPassService
             $payload = array_merge($payload, $this->hydratePaymentData($payment));
         }
         if ($shippingAddress !== null) {
-            $payload = array_merge($payload, $this->hydrateShippingInfo($shippingAddress));
+            $payload = array_merge(
+                $payload,
+                $this->hydrateShippingInfo($shippingAddress)
+            );
         }
         if ($lineItems !== null) {
             $payload = array_merge($payload, $this->hydrateLineItems($lineItems));
@@ -174,7 +179,9 @@ class HpsMasterPassService
     ) {
         $payload = array(
             'Amount' => $this->formatAmount($amount),
-            'CurrencyCode' => $this->currencyStringToNumeric($orderData->currencyCode),
+            'CurrencyCode' => $this->currencyStringToNumeric(
+                $orderData->currencyCode
+            ),
             'OrderId' => $orderId,
             'OrderNumber' => $orderData->orderNumber,
             'TransactionType' => 'WT',
@@ -208,8 +215,8 @@ class HpsMasterPassService
     public function createSession(
         $amount,
         $currency,
-        HpsBuyerData $buyer,
-        HpsPaymentData $payment,
+        HpsBuyerData $buyer = null,
+        HpsPaymentData $payment = null,
         HpsShippingInfo $shippingAddress = null,
         $lineItems = null,
         HpsOrderData $orderData = null
@@ -239,7 +246,10 @@ class HpsMasterPassService
             $payload = array_merge($payload, $this->hydratePaymentData($payment));
         }
         if ($shippingAddress !== null) {
-            $payload = array_merge($payload, $this->hydrateShippingInfo($shippingAddress));
+            $payload = array_merge(
+                $payload,
+                $this->hydrateShippingInfo($shippingAddress)
+            );
         }
         if ($lineItems !== null) {
             $payload = array_merge($payload, $this->hydrateLineItems($lineItems));
@@ -273,10 +283,10 @@ class HpsMasterPassService
      * settlement amount. Multiple refunds can be processed against the original
      * capture transaction.
      *
-     * @param string       $orderId       order id from Cardinal
-     * @param boolean      $isPartial     flag for partial refund
-     * @param string       $partialAmount partial amount to be refunded
-     * @param HpsOrderData $orderData     Cardinal/MasterPass specific data
+     * @param string       $orderId   order id from Cardinal
+     * @param boolean      $isPartial flag for partial refund
+     * @param string       $amount    amount to be refunded
+     * @param HpsOrderData $orderData Cardinal/MasterPass specific data
      *
      * @return object
      */
@@ -288,7 +298,9 @@ class HpsMasterPassService
     ) {
         $payload = array(
             'Amount' => $this->formatAmount($amount),
-            'CurrencyCode' => $this->currencyStringToNumeric($orderData->currencyCode),
+            'CurrencyCode' => $this->currencyStringToNumeric(
+                $orderData->currencyCode
+            ),
             'OrderId' => $orderId,
             'TransactionType' => 'WT',
         );
@@ -320,8 +332,8 @@ class HpsMasterPassService
         $orderId,
         $amount,
         $currency,
-        HpsBuyerData $buyer,
-        HpsPaymentData $payment,
+        HpsBuyerData $buyer = null,
+        HpsPaymentData $payment = null,
         HpsShippingInfo $shippingAddress = null,
         $lineItems = null,
         HpsOrderData $orderData = null
@@ -384,9 +396,18 @@ class HpsMasterPassService
     ) {
     }
 
+    /**
+     * Gets checkout type from `$orderData` or `lightbox` if not set
+     *
+     * @param HpsOrderData $orderData the order data
+    *
+     * @return string
+     */
     protected function getCheckoutType(HpsOrderData $orderData)
     {
-        return isset($orderData->checkoutType) ? $orderData->checkoutType : 'lightbox';
+        return isset($orderData->checkoutType)
+            ? $orderData->checkoutType
+            : 'lightbox';
     }
 
     /**
@@ -419,7 +440,6 @@ class HpsMasterPassService
     {
         return array(
             'BillingAddress1'    => $buyer->address->address,
-            'BillingAddress2'    => $buyer->address->address2,
             'BillingCity'        => $buyer->address->city,
             'BillingCountryCode' => $buyer->countryCode,
             'BillingFirstName'   => $buyer->firstName,
@@ -487,7 +507,6 @@ class HpsMasterPassService
     {
         return array(
             'ShippingAddress1'    => $shipping->address->address,
-            'ShippingAddress2'    => $shipping->address->address2,
             'ShippingCity'        => $shipping->address->city,
             'ShippingCountryCode' => $shipping->countryCode,
             'ShippingFirstName'   => $shipping->firstName,
@@ -502,7 +521,7 @@ class HpsMasterPassService
     /**
      * Formats the amount in form of cents
      *
-     * @param mixed $amount
+     * @param mixed $amount amount to be formatted
      *
      * @return string
      */

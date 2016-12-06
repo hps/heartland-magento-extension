@@ -101,6 +101,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $giftService = $this->_getGiftService();
         $giftCardNumber = $additionalData->getGiftcardNumber();
         $giftCardPin = filter_var($additionalData->getGiftcardPin(),FILTER_VALIDATE_INT, ARRAY('default' => FILTER_NULL_ON_FAILURE));
+        $ccaData = $additionalData->getCcaData();
 
         if ($giftCardNumber) {
             // 1. check balance
@@ -165,13 +166,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
         }
 
+        $cardType = $payment->getCcType();
         if ($saveCreditCard) {
             $multiToken = true;
             $cardData = new HpsCreditCard();
             $cardData->number = $payment->getCcLast4();
             $cardData->expYear = $payment->getCcExpYear();
             $cardData->expMonth = $payment->getCcExpMonth();
-            $cardType = $payment->getCcType();
         }
 
         $chargeService = $this->_getChargeService();
@@ -179,36 +180,41 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $details = $this->_getTxnDetailsData($order);
         $cardOrToken = new HpsTokenData();
         $cardOrToken->tokenValue = $secureToken;
+        $secureEcommerce = $this->getSecureEcommerce($ccaData, $cardType);
 
         try {
             $this->checkVelocity();
 
+            $builder = null;
             if ($capture) {
                 if ($payment->getCcTransId()) {
-                    $response = $chargeService->capture(
-                        $payment->getCcTransId(),
-                        $amount
-                    );
+                    $builder = $chargeService->capture()
+                        ->withTransactionId($payment->getCcTransId())
+                        ->withAmount();
                 } else {
-                    $response = $chargeService->charge(
-                        $amount,
-                        strtolower($order->getBaseCurrencyCode()),
-                        $cardOrToken,
-                        $cardHolder,
-                        $multiToken,
-                        $details
-                    );
+                    $builder = $chargeService->charge()
+                        ->withAmount($amount)
+                        ->withCurrency(strtolower($order->getBaseCurrencyCode()))
+                        ->withToken($cardOrToken)
+                        ->withCardHolder($cardHolder)
+                        ->withRequestMultiUseToken($multiToken)
+                        ->withDetails($details);
                 }
             } else {
-                $response = $chargeService->authorize(
-                    $amount,
-                    strtolower($order->getBaseCurrencyCode()),
-                    $cardOrToken,
-                    $cardHolder,
-                    $multiToken,
-                    $details
-                );
+                $builder = $chargeService->authorize()
+                    ->withAmount($amount)
+                    ->withCurrency(strtolower($order->getBaseCurrencyCode()))
+                    ->withToken($cardOrToken)
+                    ->withCardHolder($cardHolder)
+                    ->withRequestMultiUseToken($multiToken)
+                    ->withDetails($details);
             }
+
+            if (null !== $secureEcommerce) {
+                $builder = $builder->withSecureEcommerce($secureEcommerce);
+            }
+
+            $response = $builder->execute();
 
             $this->_debugChargeService($chargeService);
             // \Hps_Securesubmit_Model_Payment::closeTransaction
@@ -328,6 +334,48 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
     }
 
+    protected function getSecureEcommerce($ccaData, $cardType)
+    {
+        if ($this->getConfigData('enable_threedsecure')
+            && false !== ($data = json_decode($ccaData))
+            && isset($data) && isset($data->ActionCode)
+            && 'SUCCESS' === $data->ActionCode
+        ) {
+            $dataSource = '';
+            switch ($cardType) {
+            case 'visa':
+                $dataSource = 'Visa 3DSecure';
+                break;
+            case 'mastercard':
+                $dataSource = 'MasterCard 3DSecure';
+                break;
+            case 'discover':
+                $dataSource = 'Discover 3DSecure';
+                break;
+            case 'amex':
+                $dataSource = 'AMEX 3DSecure';
+                break;
+            }
+            $cavv = isset($data->Payment->ExtendedData->CAVV)
+                ? $data->Payment->ExtendedData->CAVV
+                : '';
+            $eciFlag = isset($data->Payment->ExtendedData->ECIFlag)
+                ? substr($data->Payment->ExtendedData->ECIFlag, 1)
+                : '';
+            $xid = isset($data->Payment->ExtendedData->XID)
+                ? $data->Payment->ExtendedData->XID
+                : '';
+            $secureEcommerce = new HpsSecureEcommerce();
+            $secureEcommerce->type       = '3DSecure';
+            $secureEcommerce->dataSource = $dataSource;
+            $secureEcommerce->data       = $cavv;
+            $secureEcommerce->eciFlag    = $eciFlag;
+            $secureEcommerce->xid        = $xid;
+            return $secureEcommerce;
+        }
+
+        return false;
+    }
     protected function _formatAmount($amount)
     {
         return Mage::helper('core')->currency($amount, true, false);
@@ -541,7 +589,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $chargeService = $this->_getChargeService();
 
         try {
-            $voidResponse = $chargeService->void($transactionId);
+            $voidResponse = $chargeService->void()
+                ->withTransactionId($transactionId)
+                ->execute();
             $payment
                 ->setTransactionId($voidResponse->transactionId)
                 ->setParentTransactionId($transactionId)
@@ -573,13 +623,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $details = $this->_getTxnDetailsData($order);
 
         try {
-            $refundResponse = $chargeService->refund(
-                $amount,
-                strtolower($order->getBaseCurrencyCode()),
-                $transactionId,
-                $cardHolder,
-                $details
-            );
+            $refundResponse = $chargeService->refund()
+                ->withAmount($amount)
+                ->withCurrency(strtolower($order->getBaseCurrencyCode()))
+                ->withTransactionId($transactionId)
+                ->withCardHolder($cardHolder)
+                ->withDetails($details)
+                ->execute();
             $payment
                 ->setTransactionId($refundResponse->transactionId)
                 ->setParentTransactionId($transactionId)
@@ -620,13 +670,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $chargeService = $this->_getChargeService();
         $details = $this->_getTxnDetailsData($order);
         try {
-            $reverseResponse = $chargeService->reverse(
-                $transactionId,
-                $transactionDetails->authorizedAmount,
-                strtolower($order->getBaseCurrencyCode()),
-                $details,
-                $newAuthAmount
-            );
+            $reverseResponse = $chargeService->reverse()
+                ->withTransactionId($transactionId)
+                ->withAmount($transactionDetails->authorizedAmount)
+                ->withCurrency(strtolower($order->getBaseCurrencyCode()))
+                ->withDetails($details)
+                ->withAuthAmount($newAuthAmount)
+                ->execute();
             $payment
                 ->setTransactionId($reverseResponse->transactionId)
                 ->setParentTransactionId($transactionId)
@@ -710,6 +760,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $details['customer_id'] = $data->getData('customer_id');
         }
 
+        if ($data->getData('cca_data')) {
+            $details['cca_data'] = $data->getData('cca_data');
+        }
+
         if (!empty($details)) {
             $this->getInfoInstance()->setAdditionalData(serialize($details));
         }
@@ -766,7 +820,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $config->versionNumber = '1573';
         $config->developerId = '002914';
 
-        return new HpsCreditService($config);
+        return new HpsFluentCreditService($config);
     }
 
     protected function _getGiftService()

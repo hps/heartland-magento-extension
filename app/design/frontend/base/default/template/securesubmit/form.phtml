@@ -6,6 +6,7 @@ $token_data_url = Mage::getUrl('securesubmit/storedcard/getTokenData', array('_s
 $allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
 $allow_heartland_gift = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_heartland_gift');
 $use_iframes = !!Mage::getModel('hps_securesubmit/payment')->getConfigData('use_iframes');
+$cca = $this->getCca();
 
 if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
@@ -113,6 +114,22 @@ if ($_loggedIn && $allow_card_saving) {
     <?php endif ?>
       </div>
 
+<?php if ($cca) : ?>
+    <?php
+    $url = -1 !== strpos($publicKey, '_cert_')
+        ? 'https://includestest.ccdc02.com/cardinalcruise/v1/songbird.js'
+        : 'https://includes.ccdc02.com/cardinalcruise/v1/songbird.js';
+    ?>
+<script type="text/javascript">
+(function () {
+    var el = document.createElement('script');
+    el.type = 'text/javascript';
+    el.src = '<?= $url ?>';
+    document.body.appendChild(el);
+}());
+</script>
+<?php endif; ?>
+
 <script type="text/javascript">
 //<![CDATA[
 SecureSubmitMagento.init({
@@ -123,14 +140,20 @@ SecureSubmitMagento.init({
     tokenDataUrl: '<?= $token_data_url ?>',
     allowGift: <?= $allow_heartland_gift ? 'true' : 'false' ?>,
     giftBalanceUrl: '<?= Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => true)) ?>',
-    useIframes: <?= $use_iframes ? 'true' : 'false' ?>,
+    useIframes: <?= $use_iframes ? 'true' : 'false' ?>
     <?php if ($use_iframes): ?>
-        iframeTargets: {
+        ,iframeTargets: {
             cardNumber: '<?= $_code ?>_cc_number_iframe',
             cardExpiration: '<?= $_code ?>_cc_exp_iframe',
             cardCvv: '<?= $_code ?>_cc_cvv_iframe'
         }
     <?php endif ?>
+    <?php if ($cca) : ?>
+        ,cca: {
+            jwt: '<?= $cca['jwt'] ?>',
+            orderNumber: '<?= $cca['orderNumber'] ?>'
+        }
+    <?php endif; ?>
 });
 //]]>
 </script>
