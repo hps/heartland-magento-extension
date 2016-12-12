@@ -339,7 +339,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         if ($this->getConfigData('enable_threedsecure')
             && false !== ($data = json_decode($ccaData))
             && isset($data) && isset($data->ActionCode)
-            && 'SUCCESS' === $data->ActionCode
+            && in_array($data->ActionCode, array('SUCCESS', 'NOACTION'))
         ) {
             $dataSource = '';
             switch ($cardType) {
@@ -545,7 +545,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         }
 
         $service = $this->_getChargeService();
-        return $service->get($transactionId);
+        return $service->get($transactionId)->execute();
     }
 
 
