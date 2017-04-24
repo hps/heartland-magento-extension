@@ -1,5 +1,20 @@
 <?xml version="1.0"?>
 <config>
+    <menu>
+        <sales>
+            <children>
+                <transactions>
+                    <children>
+                        <heartland_transaction_search translate="title" module="hps_securesubmit">
+                            <title>Heartland Transaction Search</title>
+                            <action>adminhtml/securesubmit_transaction/index</action>
+                            <sort_order>10</sort_order>
+                        </heartland_transaction_search>
+                    </children>
+                </transactions>
+            </children>
+        </sales>
+    </menu>
     <acl>
         <resources>
             <admin>
@@ -20,6 +35,14 @@
                             </order>
                         </children>
                     </sales>
+                    <transactions>
+                        <children>
+                            <heartland_transaction_search translate="title" module="hps_securesubmit">
+                                <title>Heartland Transaction Search</title>
+                                <sort_order>10</sort_order>
+                            </heartland_transaction_search>
+                        </children>
+                    </transactions>
                     <report>
                         <children>
                             <salesroot>
