@@ -908,7 +908,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
      * @param HpsCreditService $chargeService
      * @param Exception|null $exception
      */
-    protected function _debugChargeService(HpsCreditService $chargeService, $exception = null)
+    protected function _debugChargeService(HpsFluentCreditService $chargeService, $exception = null)
     {
         if ($this->getDebugFlag()) {
             $debugData = array(
