@@ -61,4 +61,44 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
             }
         }
     }
+
+    /**
+     * Save relation between the stored card and the customer's shipping addresses
+     *
+     * @param int|Hps_Securesubmit_Model_Storedcard $cardId
+     * @param int $customerId
+     * @return void
+     */
+    public function saveCardToAddress($cardId, $customerId)
+    {
+        $resource = Mage::getSingleton('core/resource');
+        $db = $resource->getConnection('core_write');
+        if ($cardId instanceof Hps_Securesubmit_Model_Storedcard) {
+            $cardId = $cardId->getId();
+        }
+
+        $select = $db->select()
+            ->from($resource->getTableName('customer/address_entity'), array(
+                'storedcard_id' => new Zend_Db_Expr(intval($cardId)),
+                'customer_address_id' => 'entity_id'
+            ))
+            ->where('parent_id = ?', intval($customerId));
+        $db->query($select->insertIgnoreFromSelect($resource->getTableName('hps_securesubmit/storedcard_address')));
+    }
+
+    /**
+     * Remove stored credit cards for the specified address
+     *
+     * @param int $addressId
+     * @return int The number of affected rows.
+     */
+    public function removeStoredCards($addressId)
+    {
+        $resource = Mage::getSingleton('core/resource');
+        $db = $resource->getConnection('core_write');
+        return (int)$db->delete(
+            $resource->getTableName('hps_securesubmit/storedcard_address'),
+            $db->quoteInto('customer_address_id = ?', intval($addressId))
+        );
+    }
 }
