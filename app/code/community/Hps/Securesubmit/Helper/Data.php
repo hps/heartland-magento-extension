@@ -8,6 +8,8 @@
 
 class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
 {
+    const XML_PATH_PAYMENT_HPS_SECURESUBMIT_SECRET_API_KEY  = 'payment/hps_securesubmit/secretapikey';
+    const XML_PATH_PAYMENT_HPS_SECURESUBMIT_PUBLIC_API_KEY  = 'payment/hps_securesubmit/publicapikey';
     const XML_PATH_PAYMENT_HPS_SECURESUBMIT_USE_HTTP_PROXY  = 'payment/hps_securesubmit/use_http_proxy';
     const XML_PATH_PAYMENT_HPS_SECURESUBMIT_HTTP_PROXY_HOST = 'payment/hps_securesubmit/http_proxy_host';
     const XML_PATH_PAYMENT_HPS_SECURESUBMIT_HTTP_PROXY_PORT = 'payment/hps_securesubmit/http_proxy_port';
@@ -60,5 +62,36 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
                 Mage::throwException($e->getMessage());
             }
         }
+    }
+
+    /**
+     * Check whether the selected store has API credentials.
+     * Fallback to the default store is not used.
+     *
+     * @param mixed $storeId
+     * @return bool
+     */
+    public function hasApiCredentials($storeId = NULL)
+    {
+        if ($storeId instanceof Mage_Core_Model_Store) {
+            $storeId = (int) $storeId->getId();
+        } elseif ($storeId === NULL) {
+            $storeId = Mage_Core_Model_App::ADMIN_STORE_ID;
+        } else {
+            $storeId = (int) $storeId;
+        }
+
+        $defaultPublicApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_PUBLIC_API_KEY, Mage_Core_Model_App::ADMIN_STORE_ID);
+        $defaultSecretApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_SECRET_API_KEY, Mage_Core_Model_App::ADMIN_STORE_ID);
+        if ($storeId === Mage_Core_Model_App::ADMIN_STORE_ID) {
+            return ( ! empty($defaultPublicApiKey) && ! empty($defaultSecretApiKey));
+        }
+
+        $storePublicApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_PUBLIC_API_KEY, $storeId);
+        $storeSecretApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_SECRET_API_KEY, $storeId);
+        $hasPublicKey = ( ! empty($storePublicApiKey) && $storePublicApiKey !== $defaultPublicApiKey);
+        $hasSecretKey = ( ! empty($storeSecretApiKey) && $storeSecretApiKey !== $defaultSecretApiKey);
+
+        return ($hasPublicKey && $hasSecretKey);
     }
 }
