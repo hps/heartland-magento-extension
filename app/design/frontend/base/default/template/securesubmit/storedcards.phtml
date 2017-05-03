@@ -1,13 +1,13 @@
 <?php
 $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingleton('customer/session')->getCustomerId());
+$hasExpiredCards = false;
 ?>
 <span class="icon-ss"></span>
 <h1><?php echo $this->__('Manage Saved Cards') ?></h1>
+<?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
 <div class="box-account">
     <?php if (count($_storedCards)): ?>
-
-            <h2><?php echo $this->__('Saved Credit Cards') ?></h2>
-
+        <h2><?php echo $this->__('Saved Credit Cards') ?></h2>
         <ul id="hps-saved-cards" class="saved-card-table">
             <?php foreach ($_storedCards->getData() as $card): ?>
                 <li>
@@ -21,6 +21,16 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
                 </li>
             <?php endforeach; ?>
         </ul>
+        <?php if ($hasExpiredCards) : ?>
+            <br />
+            <ul class="messages">
+                <li class="notice-msg">
+                    <ul>
+                        <li><span><?php echo $this->__('Your previously saved card is expired. Please update your card information') ?></span></li>
+                    </ul>
+                </li>
+            </ul>
+        <?php endif; ?>
     <?php else: ?>
         <p>
             <?php echo $this->__('You do not have any saved credit cards.') ?>
