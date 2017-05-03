@@ -30,7 +30,7 @@ if ($_loggedIn && $allow_card_saving) {
                       <div class="cc-info">
                             <input type="hidden" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>_card_type" value="<?= $card->getCcType() ?>" />
                               <span class="cc"><?= $card->getCcType().' ************'.$card->getCcLast4()?></span><br>
-                              <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></span>
+                              <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?><?php if ($card->isExpired()) { echo ' *expired'; } ?></span>
                       </div>
                     <div id="stored-cc-icon" class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
                   </label>

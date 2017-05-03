@@ -37,4 +37,17 @@ class Hps_Securesubmit_Model_Storedcard  extends Mage_Core_Model_Abstract
         return $this;
     }
 
+    /**
+     * Check whether the card is expired
+     *
+     * @return bool
+     */
+    public function isExpired()
+    {
+        $ccMonth = (int) $this->getCcExpMonth();
+        $ccYear = (int) $this->getCcExpYear();
+        $currentMonth = (int) Mage::app()->getLocale()->date()->toString('M');
+        $currentYear = (int) Mage::app()->getLocale()->date()->toString('Y');
+        return ($currentYear > $ccYear || ($currentYear == $ccYear && $currentMonth > $ccMonth));
+    }
 }
