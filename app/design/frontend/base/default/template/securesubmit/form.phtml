@@ -9,7 +9,7 @@ $use_iframes = !!Mage::getModel('hps_securesubmit/payment')->getConfigData('use_
 $cca = $this->getCca();
 
 if ($_loggedIn && $allow_card_saving) {
-    $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
+    $customerStoredCards = $this->getAllowedStoredCards();
 }
 ?>
 
