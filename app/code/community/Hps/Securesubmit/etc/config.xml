@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Hps_Securesubmit>
-            <version>1.4.5</version>
+            <version>1.4.6</version>
         </Hps_Securesubmit>
     </modules>
     <global>
@@ -35,6 +35,9 @@
                     <storedcard>
                         <table>storedcard</table>
                     </storedcard>
+                    <storedcard_address>
+                        <table>storedcard_address</table>
+                    </storedcard_address>
                     <report>
                         <table>report_settlement</table>
                     </report>
@@ -58,6 +61,26 @@
                 </securesubmit_use_stored_card>
             </sales_convert_quote_payment>
         </fieldsets>
+        <events>
+            <customer_address_save_before>
+                <observers>
+                    <updated_saved_credit_cards>
+                        <type>singleton</type>
+                        <class>hps_securesubmit/observer</class>
+                        <method>customerAddressSaveBefore</method>
+                    </updated_saved_credit_cards>
+                </observers>
+            </customer_address_save_before>
+            <customer_address_save_after>
+                <observers>
+                    <updated_saved_credit_cards>
+                        <type>singleton</type>
+                        <class>hps_securesubmit/observer</class>
+                        <method>customerAddressSaveAfter</method>
+                    </updated_saved_credit_cards>
+                </observers>
+            </customer_address_save_after>
+        </events>
         <payment>
             <groups>
                 <hps_paypal>HPS PayPal</hps_paypal>

@@ -16,6 +16,26 @@ class Hps_SecureSubmit_Block_Form extends Mage_Payment_Block_Form_Ccsave
         $this->setTemplate('securesubmit/form.phtml');
     }
 
+    /**
+     * Check whether the customer has any saved credit card
+     *
+     * @return bool
+     */
+    public function hasAnySavedCard()
+    {
+        return (bool) Mage::helper('hps_securesubmit')->getStoredCards($this->getCustomerId())->getSize();
+    }
+
+    /**
+     * Retrieve the list of the customer's stored cards that can be applied to the current shipping address
+     *
+     * @return Hps_Securesubmit_Model_Resource_Storedcard_Collection|Hps_Securesubmit_Model_Storedcard[]
+     */
+    public function getAllowedStoredCards()
+    {
+        return Mage::helper('hps_securesubmit')->getStoredCards($this->getCustomerId(), $this->getCustomerAddressId());
+    }
+
     public function getCca()
     {
         if (!$this->getConfig('enable_threedsecure')) {
