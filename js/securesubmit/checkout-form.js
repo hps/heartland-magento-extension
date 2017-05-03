@@ -13,7 +13,11 @@ function securesubmitMultishipping(multiForm) {
                 var radio = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0];
                 var storedcardId = radio.value;
                 var storedcardType = $(radio.id + '_card_type').value;
-
+                var expInfo = $$('div.cc-info > span.exp').innerHTML
+                if (expInfo.indexOf('*expired') != -1) {
+                    alert('Your previously saved card is expired. Please update your card information');
+                    return;
+                }
                 new Ajax.Request(this.secureSubmitGetTokenDataUrl, {
                     method: 'post',
                     parameters: {storedcard_id: storedcardId},
