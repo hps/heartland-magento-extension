@@ -82,7 +82,6 @@ class Hps_SecureSubmit_Block_Form extends Mage_Payment_Block_Form_Ccsave
         return Mage::getStoreConfig(sprintf('payment/hps_securesubmit/%s', $key));
     }
 
-
     /**
      * Retrieve credit card info
      *
@@ -96,5 +95,35 @@ class Hps_SecureSubmit_Block_Form extends Mage_Payment_Block_Form_Ccsave
             $info.= ' '.$this->__('*expired');
         }
         return $info;
+    }
+
+    /**
+     * Check whether the customer has added a new shipping address
+     *
+     * @return bool
+     */
+    public function isNewAddress()
+    {
+        return ! $this->getCustomerAddressId();
+    }
+
+    /**
+     * Retrieve the customer address id for the shipping address
+     *
+     * @return int
+     */
+    public function getCustomerAddressId()
+    {
+        return (int) Mage::getSingleton('checkout/type_onepage')->getQuote()->getShippingAddress()->getCustomerAddressId();
+    }
+
+    /**
+     * Retrieve customer id from session
+     *
+     * @return int
+     */
+    public function getCustomerId()
+    {
+        return (int) Mage::getSingleton('customer/session')->getCustomerId();
     }
 }
