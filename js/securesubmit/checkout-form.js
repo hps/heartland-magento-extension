@@ -808,24 +808,7 @@ document.observe('dom:loaded', function () {
                             placeholder: 'CVV'
                         }
                     },
-                    style: {
-                        '#heartland-field': {
-                            'height': '40px',
-                            'border-radius': '0px',
-                            'border': '1px solid silver',
-                            'letter-spacing': '2.5px',
-                            'margin': '5px 0px 15px 0px',
-                            'max-width': '365px',
-                            'width': '100%',
-                            'padding-left': '9px',
-                            'font-size': '15px'
-                        },
-                        '@media only screen and (max-width: 479px)': {
-                            '#heartland-field': {
-                                'width': '95%'
-                            }
-                        }
-                    },
+                    style: THIS.options.styles,
                     onTokenSuccess: function (resp) {
                         var heartland = resp.heartland || resp;
                         $(THIS.options.code + '_token').value = heartland.token_value;
