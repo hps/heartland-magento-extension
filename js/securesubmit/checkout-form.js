@@ -810,23 +810,30 @@ document.observe('dom:loaded', function () {
                     },
                     style: THIS.options.styles,
                     onTokenSuccess: function (resp) {
-                        var heartland = resp.heartland || resp;
-                        $(THIS.options.code + '_token').value = heartland.token_value;
-                        $(THIS.options.code + '_cc_last_four').value = heartland.card.number.substr(-4);
-                        $(THIS.options.code + '_cc_type').value = heartland.card_type;
-                        $(THIS.options.code + '_cc_exp_month').value = heartland.exp_month.trim();
-                        $(THIS.options.code + '_cc_exp_year').value = heartland.exp_year.trim();
+                        if (THIS.options.state.cardNumberValid && THIS.options.state.cardCvvValid && THIS.options.state.cardExpirationValid) {
 
-                        if (resp.cardinal) {
-                            var el = document.createElement('input');
-                            el.value = resp.cardinal.token_value;
-                            el.type = 'hidden';
-                            el.name = 'payment[cardinal_token]';
-                            el.id = THIS.options.code + '_cardinal_token';
-                            $('payment_form_' + THIS.options.code).appendChild(el);
+                            var heartland = resp.heartland || resp;
+                            $(THIS.options.code + '_token').value = heartland.token_value;
+                            $(THIS.options.code + '_cc_last_four').value = heartland.card.number.substr(-4);
+                            $(THIS.options.code + '_cc_type').value = heartland.card_type;
+                            $(THIS.options.code + '_cc_exp_month').value = heartland.exp_month.trim();
+                            $(THIS.options.code + '_cc_exp_year').value = heartland.exp_year.trim();
+
+                            if (resp.cardinal) {
+                                var el = document.createElement('input');
+                                el.value = resp.cardinal.token_value;
+                                el.type = 'hidden';
+                                el.name = 'payment[cardinal_token]';
+                                el.id = THIS.options.code + '_cardinal_token';
+                                $('payment_form_' + THIS.options.code).appendChild(el);
+                            }
+
+                            THIS.initializeCCA(THIS.completeCheckout);
+
+                        } else {
+                            alert('Invalid Expiration Date or CVV.');
+                            checkout.setLoadWaiting(false);
                         }
-
-                        THIS.initializeCCA(THIS.completeCheckout);
                     },
                     onTokenError: function (response) {
                         if (THIS.skipCreditCard) {
@@ -845,6 +852,9 @@ document.observe('dom:loaded', function () {
                         } else if (typeof OPC !== 'undefined' && window.checkout) {
                             checkout.setLoadWaiting(false);
                         }
+                    },
+                    onEvent: function (event) {
+                        THIS.options.state[event.source + 'Valid'] = event.classes.indexOf('valid') !== -1;
                     }
                 };
 
