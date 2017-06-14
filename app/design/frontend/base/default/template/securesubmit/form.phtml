@@ -9,7 +9,7 @@ $use_iframes = !!Mage::getModel('hps_securesubmit/payment')->getConfigData('use_
 $cca = $this->getCca();
 
 if ($_loggedIn && $allow_card_saving) {
-    $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
+    $customerStoredCards = $this->getAllowedStoredCards();
 }
 ?>
 
@@ -30,7 +30,7 @@ if ($_loggedIn && $allow_card_saving) {
                       <div class="cc-info">
                             <input type="hidden" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>_card_type" value="<?= $card->getCcType() ?>" />
                               <span class="cc"><?= $card->getCcType().' ************'.$card->getCcLast4()?></span><br>
-                              <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></span>
+                              <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?><?php if ($card->isExpired()) { echo ' *expired'; } ?></span>
                       </div>
                     <div id="stored-cc-icon" class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
                   </label>
@@ -139,7 +139,25 @@ SecureSubmitMagento.init({
     tokenDataUrl: '<?= $token_data_url ?>',
     allowGift: <?= $allow_heartland_gift ? 'true' : 'false' ?>,
     giftBalanceUrl: '<?= Mage::getUrl('securesubmit/giftcard/getBalance', array('_secure' => true)) ?>',
-    useIframes: <?= $use_iframes ? 'true' : 'false' ?>
+    useIframes: <?= $use_iframes ? 'true' : 'false' ?>,
+    styles: {
+        '#heartland-field': {
+            'height': '40px',
+            'border-radius': '0px',
+            'border': '1px solid silver',
+            'letter-spacing': '2.5px',
+            'margin': '5px 0px 15px 0px',
+            'max-width': '365px',
+            'width': '100%',
+            'padding-left': '9px',
+            'font-size': '15px'
+        },
+        '@media only screen and (max-width: 479px)': {
+            '#heartland-field': {
+                'width': '95%'
+            }
+        }
+    }
     <?php if ($use_iframes): ?>
         ,iframeTargets: {
             cardNumber: '<?= $_code ?>_cc_number_iframe',

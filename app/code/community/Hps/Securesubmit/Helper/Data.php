@@ -8,18 +8,38 @@
 
 class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
 {
+    const XML_PATH_PAYMENT_HPS_SECURESUBMIT_SECRET_API_KEY  = 'payment/hps_securesubmit/secretapikey';
+    const XML_PATH_PAYMENT_HPS_SECURESUBMIT_PUBLIC_API_KEY  = 'payment/hps_securesubmit/publicapikey';
     const XML_PATH_PAYMENT_HPS_SECURESUBMIT_USE_HTTP_PROXY  = 'payment/hps_securesubmit/use_http_proxy';
     const XML_PATH_PAYMENT_HPS_SECURESUBMIT_HTTP_PROXY_HOST = 'payment/hps_securesubmit/http_proxy_host';
     const XML_PATH_PAYMENT_HPS_SECURESUBMIT_HTTP_PROXY_PORT = 'payment/hps_securesubmit/http_proxy_port';
 
     /**
-     * @param $customerId
+     * Retrieve list of the stored credit cards for the customer
+     *
+     * @param int|Mage_Customer_Model_Customer $customerId
+     * @param int|Mage_Customer_Model_Address $addressId
      * @return Hps_Securesubmit_Model_Storedcard[]|Hps_Securesubmit_Model_Resource_Storedcard_Collection
      */
-    public function getStoredCards($customerId)
+    public function getStoredCards($customerId, $addressId = NULL)
     {
+        if ($customerId instanceof Mage_Customer_Model_Customer) {
+            $customerId = $customerId->getId();
+        }
+        if ($addressId instanceof Mage_Customer_Model_Address) {
+            $addressId = $addressId->getId();
+        }
+        /** @var $cardCollection Hps_Securesubmit_Model_Resource_Storedcard_Collection */
         $cardCollection = Mage::getResourceModel('hps_securesubmit/storedcard_collection')
             ->addFieldToFilter('customer_id', $customerId);
+        if (NULL !== $addressId) {
+            $cardCollection->join(
+                array('address' => 'hps_securesubmit/storedcard_address'),
+                'main_table.storedcard_id = address.storedcard_id',
+                array()
+            );
+            $cardCollection->getSelect()->where('address.customer_address_id = ?', $addressId);
+        }
         return $cardCollection;
     }
 
@@ -60,5 +80,76 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
                 Mage::throwException($e->getMessage());
             }
         }
+    }
+
+    /**
+     * Check whether the selected store has API credentials.
+     * Fallback to the default store is not used.
+     *
+     * @param mixed $storeId
+     * @return bool
+     */
+    public function hasApiCredentials($storeId = NULL)
+    {
+        if ($storeId instanceof Mage_Core_Model_Store) {
+            $storeId = (int) $storeId->getId();
+        } elseif ($storeId === NULL) {
+            $storeId = Mage_Core_Model_App::ADMIN_STORE_ID;
+        } else {
+            $storeId = (int) $storeId;
+        }
+
+        $defaultPublicApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_PUBLIC_API_KEY, Mage_Core_Model_App::ADMIN_STORE_ID);
+        $defaultSecretApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_SECRET_API_KEY, Mage_Core_Model_App::ADMIN_STORE_ID);
+        if ($storeId === Mage_Core_Model_App::ADMIN_STORE_ID) {
+            return ( ! empty($defaultPublicApiKey) && ! empty($defaultSecretApiKey));
+        }
+
+        $storePublicApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_PUBLIC_API_KEY, $storeId);
+        $storeSecretApiKey = (string) Mage::getStoreConfig(self::XML_PATH_PAYMENT_HPS_SECURESUBMIT_SECRET_API_KEY, $storeId);
+        $hasPublicKey = ( ! empty($storePublicApiKey) && $storePublicApiKey !== $defaultPublicApiKey);
+        $hasSecretKey = ( ! empty($storeSecretApiKey) && $storeSecretApiKey !== $defaultSecretApiKey);
+
+        return ($hasPublicKey && $hasSecretKey);
+    }
+
+    /*
+     * Save relation between the stored card and the customer's shipping addresses
+     *
+     * @param int|Hps_Securesubmit_Model_Storedcard $cardId
+     * @param int $customerId
+     * @return void
+     */
+    public function saveCardToAddress($cardId, $customerId)
+    {
+        $resource = Mage::getSingleton('core/resource');
+        $db = $resource->getConnection('core_write');
+        if ($cardId instanceof Hps_Securesubmit_Model_Storedcard) {
+            $cardId = $cardId->getId();
+        }
+
+        $select = $db->select()
+            ->from($resource->getTableName('customer/address_entity'), array(
+                'storedcard_id' => new Zend_Db_Expr(intval($cardId)),
+                'customer_address_id' => 'entity_id'
+            ))
+            ->where('parent_id = ?', intval($customerId));
+        $db->query($select->insertIgnoreFromSelect($resource->getTableName('hps_securesubmit/storedcard_address')));
+    }
+
+    /**
+     * Remove stored credit cards for the specified address
+     *
+     * @param int $addressId
+     * @return int The number of affected rows.
+     */
+    public function removeStoredCards($addressId)
+    {
+        $resource = Mage::getSingleton('core/resource');
+        $db = $resource->getConnection('core_write');
+        return (int)$db->delete(
+            $resource->getTableName('hps_securesubmit/storedcard_address'),
+            $db->quoteInto('customer_address_id = ?', intval($addressId))
+        );
     }
 }

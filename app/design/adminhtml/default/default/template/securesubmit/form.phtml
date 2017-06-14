@@ -1,11 +1,13 @@
 <?php /** @var $this Hps_Securesubmit_Block_Adminhtml_Form */
 $_code = $this->getMethodCode();
+$store = Mage::getSingleton('adminhtml/session_quote')->getStore();
+$storeId = ($store) ? $store->getId() : NULL;
 $customerStoredCards = $this->getCustomerStoredCards();
 $useStoredCard = !! $this->getInfoData('securesubmit_use_stored_card');
-$public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey');
+$public_key = Mage::getModel('hps_securesubmit/payment')->getConfigData('publicapikey', $storeId);
 $customerId = Mage::getSingleton('adminhtml/session_quote')->getCustomerId();
 // $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( $customerId );
-$allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving');
+$allow_card_saving = Mage::getModel('hps_securesubmit/payment')->getConfigData('allow_card_saving', $storeId);
 ?>
 
 <input id="<?php echo $_code ?>_payment_method" type="hidden" name="payment[method]" value="<?php echo $_code ?>" />
