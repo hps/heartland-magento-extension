@@ -61,4 +61,20 @@ class Hps_SecureSubmit_Block_Form extends Mage_Payment_Block_Form_Ccsave
     {
         return Mage::getStoreConfig(sprintf('payment/hps_securesubmit/%s', $key));
     }
+
+
+    /**
+     * Retrieve credit card info
+     *
+     * @param Hps_Securesubmit_Model_Storedcard $card
+     * @return string
+     */
+    public function getCCInfo(Hps_Securesubmit_Model_Storedcard $card)
+    {
+        $info = $card->getCcType().' '.str_repeat('*', 12).$card->getCcLast4().' ('.$card->getCcExpMonth().'/'.$card->getCcExpYear().')';
+        if ($card->isExpired()) {
+            $info.= ' '.$this->__('*expired');
+        }
+        return $info;
+    }
 }
