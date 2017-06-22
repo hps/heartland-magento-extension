@@ -227,7 +227,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             }
 
             if ($multiToken) {
-                $this->saveMultiUseToken($response, $cardData, $customerId, $cardType);
+                if ($savedCard = $this->saveMultiUseToken($response, $cardData, $customerId, $cardType)) {
+                    Mage::helper('hps_securesubmit')->saveCardToAddress($savedCard, $payment->getOrder()->getCustomerId());
+                } else {
+                    Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
+                }
             }
         } catch (HpsCreditException $e) {
             $this->updateVelocity($e);
