@@ -45,6 +45,10 @@
         <update handle="hps_securesubmit_add_js" />
         <update handle="hps_securesubmit_add_css" />
     </onepagecheckout_index_index>
+    <aw_onestepcheckout_index_index>
+        <update handle="hps_securesubmit_add_js" />
+        <update handle="hps_securesubmit_add_css" />
+    </aw_onestepcheckout_index_index>
     <checkout_multishipping_billing>
         <update handle="hps_securesubmit_add_js" />
         <update handle="hps_securesubmit_add_css" />

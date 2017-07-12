@@ -1,4 +1,5 @@
 (function (window, document, undefined) {
+    var awTokenSubmits = {};
     var THIS = {
         skipCreditCard: false,
         init: function (options) {
@@ -36,6 +37,12 @@
             if (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined') {
                 IWD.OPC.secureSubmitPublicKey = THIS.options.publicKey;
                 IWD.OPC.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+            }
+
+            // AheadWorks OneStepCheckout
+            if (typeof awOSCForm !== 'undefined') {
+                awOSCForm.secureSubmitPublicKey = THIS.options.publicKey;
+                awOSCForm.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
             }
 
             THIS.setupFields();
@@ -153,6 +160,20 @@
                     },
                     onTokenSuccess: function (resp) {
                         var heartland = resp.heartland || resp;
+
+                        // BEGIN: AheadWorks OneStepCheckout fix
+                        // This is required in order to work around a limitation with AW OSC and our
+                        // iframes' `message` event handler. Because of how AW OSC refreshes the payment
+                        // multiple times, mutiple event handlers for `message` are added, so the
+                        // `onTokenSuccess` event that we receive is firing multiple times which also
+                        // submits the form multiple times, attempting to create multiple orders.
+                        if (window.awOSCForm && typeof awTokenSubmits[heartland.token_value] !== 'undefined') {
+                            return;
+                        }
+
+                        awTokenSubmits[heartland.token_value] = true;
+                        // END: AheadWorks OneStepCheckout fix
+
                         $(THIS.options.code + '_token').value = heartland.token_value;
                         $(THIS.options.code + '_cc_last_four').value = heartland.card.number.substr(-4);
                         $(THIS.options.code + '_cc_type').value = heartland.card_type;
@@ -186,6 +207,12 @@
                             checkout.setLoadWaiting(false);
                         } else if (typeof OPC !== 'undefined' && window.checkout) {
                             checkout.setLoadWaiting(false);
+                        }
+
+                        if (window.awOSCForm) {
+                            form.enablePlaceOrderButton();
+                            form.hidePleaseWaitNotice();
+                            form.hideOverlay();
                         }
                     }
                 };
@@ -257,6 +284,8 @@
             } else if (document.getElementById('multishipping-billing-form')) {
                 document.getElementById('payment-continue').enable();
                 document.getElementById('multishipping-billing-form').submit();
+            } else if (window.awOSCForm) {
+                awOSCForm._secureSubmitOldPlaceOrder();
             }
         },
         initializeCCA: function (callback) {
@@ -430,6 +459,124 @@ function securesubmitMultishipping(multiForm) {
     return secureSubmit;
 }
 var secureSubmitAmastyCompleteCheckoutOriginal;
+
+// AheadWorks OneStepCheckout
+Event.observe(document, 'aw_osc:onestepcheckout_form_init_before', function(e){
+    var form = e.memo.form;
+    var oldAwOsc = Object.clone(form);
+    form._secureSubmitOldPlaceOrder = oldAwOsc.placeOrder;
+
+    form.placeOrder = function() {
+        var checkedPaymentMethod = $$('[name="' + awOSCForm.paymentMethodName + '"]:checked');
+        if (checkedPaymentMethod.length !== 1 || checkedPaymentMethod[0].value !== 'hps_securesubmit') {
+            this._secureSubmitOldPlaceOrder();
+            return;
+        }
+
+        // Use stored card checked, get existing token data
+        if (window.SecureSubmitMagento.useStoredCard()) {
+            var radio = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0];
+            var storedcardId = radio.value;
+            var storedcardType = $(radio.id + '_card_type').value;
+            new Ajax.Request(form.secureSubmitGetTokenDataUrl, {
+                method: 'post',
+                parameters: {storedcard_id: storedcardId},
+                onSuccess: function(response) {
+                    var data = response.responseJSON;
+                    if (data && data.token) {
+                        $('hps_securesubmit_cc_exp_month').value = parseInt(data.token.cc_exp_month);
+                        $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
+                    }
+                    this.secureSubmitResponseHandler.call(this, {
+                        card_type:    storedcardType,
+                        token_value:  data.token.token_value,
+                        token_type:   null, // 'supt'?
+                        token_expire: new Date().toISOString(),
+                        card:         {
+                            number: data.token.cc_last4
+                        }
+                    });
+                }.bind(form),
+                onFailure: function() {
+                    alert('Unknown error. Please try again.');
+                    form.enablePlaceOrderButton();
+                    form.hidePleaseWaitNotice();
+                    form.hideOverlay();
+                }
+            });
+        }
+        // Use stored card not checked, get new token
+        else {
+            if (window.SecureSubmitMagento.options.useIframes) {
+                window.SecureSubmitMagento.hps.Messages.post({
+                    accumulateData: true,
+                    action: 'tokenize',
+                    data: window.SecureSubmitMagento.tokenizeOptions
+                }, 'cardNumber');
+            } else {
+                if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
+                    var date = $('hps_securesubmit_exp_date').value.split('/');
+                    $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+                    $('hps_securesubmit_cc_exp_year').value = date[1].trim();
+                }
+
+                (new Heartland.HPS({
+                    publicKey: form.secureSubmitPublicKey,
+                    cardNumber: $('hps_securesubmit_cc_number').value,
+                    cardCvv: $('hps_securesubmit_cvv_number').value,
+                    cardExpMonth: $('hps_securesubmit_cc_exp_month').value,
+                    cardExpYear: $('hps_securesubmit_cc_exp_year').value,
+                    success: form.secureSubmitResponseHandler.bind(form),
+                    error: form.secureSubmitResponseHandler.bind(form)
+                })).tokenize();
+            }
+        }
+    };
+
+    form.secureSubmitResponseHandler = function (response) {
+        var tokenField = $('hps_securesubmit_token'),
+            typeField = $('hps_securesubmit_cc_type'),
+            lastFourField = $('hps_securesubmit_cc_last_four');
+        tokenField.value = typeField.value = lastFourField.value = null;
+
+        if ($('hps_securesubmit_exp_date') && $('hps_securesubmit_exp_date').value) {
+            var date = $('hps_securesubmit_exp_date').value.split('/');
+            $('hps_securesubmit_cc_exp_month').value = date[0].trim();
+            $('hps_securesubmit_cc_exp_year').value = date[1].trim();
+        }
+
+        if (window.SecureSubmitMagento.skipCreditCard) {
+            window.SecureSubmitMagento.completeCheckout();
+            return;
+        }
+
+        if (response && response.error) {
+            if (response.error.message) {
+                alert(response.error.message);
+            }
+            this.enablePlaceOrderButton();
+            this.hidePleaseWaitNotice();
+            this.hideOverlay();
+        } else if (response && response.token_value) {
+            tokenField.value = response.token_value;
+            lastFourField.value = response.card.number.substr(-4);
+            typeField.value = response.card_type;
+
+            window.SecureSubmitMagento.initializeCCA((function () {
+                // Continue Magento checkout steps
+                new Ajax.Request(this.saveUrl, {
+                    method:'post',
+                    onComplete: this.onComplete,
+                    onSuccess: this.onSave,
+                    onFailure: checkout.ajaxFailure.bind(checkout),
+                    parameters: Form.serialize(this.form)
+                });
+            }).bind(this));
+        } else {
+            alert('Unexpected error.');
+        }
+    };
+});
 
 document.observe('dom:loaded', function () {
     // Override default Payment save handler
