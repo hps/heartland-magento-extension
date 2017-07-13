@@ -40,9 +40,9 @@
             }
 
             // AheadWorks OneStepCheckout
-            if (typeof awOSCForm !== 'undefined') {
-                awOSCForm.secureSubmitPublicKey = THIS.options.publicKey;
-                awOSCForm.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+            if (typeof AWOnestepcheckoutForm !== 'undefined') {
+                AWOnestepcheckoutForm.prototype.secureSubmitPublicKey = THIS.options.publicKey;
+                AWOnestepcheckoutForm.prototype.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
             }
 
             THIS.setupFields();
@@ -564,13 +564,7 @@ Event.observe(document, 'aw_osc:onestepcheckout_form_init_before', function(e){
 
             window.SecureSubmitMagento.initializeCCA((function () {
                 // Continue Magento checkout steps
-                new Ajax.Request(this.saveUrl, {
-                    method:'post',
-                    onComplete: this.onComplete,
-                    onSuccess: this.onSave,
-                    onFailure: checkout.ajaxFailure.bind(checkout),
-                    parameters: Form.serialize(this.form)
-                });
+                form._secureSubmitOldPlaceOrder();
             }).bind(this));
         } else {
             alert('Unexpected error.');
