@@ -306,8 +306,13 @@ class Hps_Securesubmit_Model_Paypal extends Mage_Payment_Model_Method_Cc
         if($quote && $quote->getBaseGrandTotal()<$this->_minOrderTotal) {
             return false;
         }
-
-        return $this->getConfigData('secretapikey', ($quote ? $quote->getStoreId() : null))
+        
+        $storeId = $quote ? $quote->getStoreId() : null;
+        return $this->getConfigData('username', $storeId)
+            && $this->getConfigData('password', $storeId)
+            && $this->getConfigData('device_id', $storeId)
+            && $this->getConfigData('license_id', $storeId)
+            && $this->getConfigData('site_id', $storeId)
             && parent::isAvailable($quote);
     }
 
