@@ -84,15 +84,17 @@
 
                 url = getUrl(e, buttons, config);
                 request = new Ajax.Request(url, {
-                    onSuccess: function (response) {                        
-                        var resp = JSON.parse(response.responseText); 
-                        if (resp.result === 'error' && resp.redirect) {
-                            window.location.href = resp.redirect;
+                    onSuccess: function (response) {
+                        if (typeof response.responseText === 'string' && response.responseText.indexOf('token') !== -1) {
+                            paypal.checkout.startFlow(response.responseText);
+                        } else {
+                            var resp = JSON.parse(response.responseText);
+                            if (typeof resp.result !== 'undefined' && resp.result === 'error' && resp.redirect) {
+                                window.location.href = resp.redirect;
+                                paypal.checkout.closeFlow();
+                                checkout.ajaxFailure.bind(checkout);
+                            }
                         }
-                        if (resp.result === 'error') {
-                            checkout.ajaxFailure.bind(checkout);
-                        }
-                        paypal.checkout.startFlow(response.responseText);
                     },
                     onFailure: function (response) {
                         alert(response.responseText);
