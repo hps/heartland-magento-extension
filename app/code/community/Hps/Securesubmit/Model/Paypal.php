@@ -43,7 +43,7 @@ class Hps_Securesubmit_Model_Paypal extends Mage_Payment_Model_Method_Cc
         }
 
         return $this;
-    }
+    }    
 
     /**
      * Capture payment

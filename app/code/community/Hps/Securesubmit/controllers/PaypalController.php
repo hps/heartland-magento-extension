@@ -11,6 +11,7 @@
  */
 class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Action
 {
+
     protected $_checkoutType = 'hps_securesubmit/paypal_checkout';
     protected $_quote = null;
 
@@ -34,8 +35,8 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
     {
         $this->_forward('start', 'paypal', 'securesubmit', array(
             'incontext' => 1,
-            'credit'    => $this->getRequest()->getParam('credit'),
-            'button'    => $this->getRequest()->getParam('button'),
+            'credit' => $this->getRequest()->getParam('credit'),
+            'button' => $this->getRequest()->getParam('button'),
         ));
     }
 
@@ -64,15 +65,10 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
             $quoteCheckoutMethod = $this->_getQuote()->getCheckoutMethod();
             if ($customer && $customer->getId()) {
                 $this->_getQuote()->assignCustomerWithAddressChange(
-                    $customer,
-                    $this->_getQuote()->getBillingAddress(),
-                    $this->_getQuote()->getShippingAddress()
+                    $customer, $this->_getQuote()->getBillingAddress(), $this->_getQuote()->getShippingAddress()
                 );
-            } elseif ((!$quoteCheckoutMethod
-                || $quoteCheckoutMethod != Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER)
-                && !Mage::helper('checkout')->isAllowedGuestCheckout(
-                    $this->_getQuote(),
-                    $this->_getQuote()->getStoreId()
+            } elseif ((!$quoteCheckoutMethod || $quoteCheckoutMethod != Mage_Checkout_Model_Type_Onepage::METHOD_REGISTER) && !Mage::helper('checkout')->isAllowedGuestCheckout(
+                    $this->_getQuote(), $this->_getQuote()->getStoreId()
                 )
             ) {
                 Mage::getSingleton('core/session')->addNotice(
@@ -84,16 +80,13 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
                 return;
             }
 
-            $button = (bool)$this->getRequest()->getParam('button');
-            $credit = (bool)$this->getRequest()->getParam('credit');
-            $incontext = (bool)$this->getRequest()->getParam('incontext');
+            $button = (bool) $this->getRequest()->getParam('button');
+            $credit = (bool) $this->getRequest()->getParam('credit');
+            $incontext = (bool) $this->getRequest()->getParam('incontext');
             $token = $helper->start(
-                $this->_getQuote(),
-                Mage::getUrl('*/*/return'),
-                Mage::getUrl('*/*/cancel'),
-                array(
-                    'button' => $button,
-                    'credit' => $credit,
+                $this->_getQuote(), Mage::getUrl('*/*/return'), Mage::getUrl('*/*/cancel'), array(
+                'button' => $button,
+                'credit' => $credit,
                 )
             );
 
@@ -109,15 +102,30 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
                 $this->getResponse()->setRedirect($url);
                 return;
             }
+            $result = array();
         } catch (Mage_Core_Exception $e) {
             $this->_getCheckoutSession()->addError($e->getMessage());
             Mage::log(Mage::helper('hps_securesubmit')->__("Error creating PayPal session: %s", $e->getMessage()), Zend_Log::WARN);
+            $result = array(
+                'result' => 'error',
+                'message' => $e->getMessage(),
+                'redirect' => Mage::getUrl('checkout/cart'),
+            );
         } catch (Exception $e) {
             $this->_getCheckoutSession()->addError($this->__('Unable to start PayPal Checkout.'));
+            $this->_getCheckoutSession()->addError($e->getMessage());
             Mage::logException($e);
             Mage::log(Mage::helper('hps_securesubmit')->__("Error creating PayPal session: %s", $e->getMessage()), Zend_Log::WARN);
+            $result = array(
+                'result' => 'error',
+                'message' => $e->getMessage(),
+                'redirect' => Mage::getUrl('checkout/cart'),
+            );
         }
-        $this->_redirect('checkout/cart');
+        $this->getResponse()
+                ->setHeader('Content-Type', 'application/json; charset=utf-8')
+                ->setBody(json_encode($result));
+        return;
     }
 
     /**
@@ -158,8 +166,7 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
      */
     public function returnAction()
     {
-        if ($this->getRequest()->getParam('retry_authorization') == 'true'
-            && is_array($this->_getCheckoutSession()->getPaypalTransactionData())
+        if ($this->getRequest()->getParam('retry_authorization') == 'true' && is_array($this->_getCheckoutSession()->getPaypalTransactionData())
         ) {
             $this->_forward('placeOrder');
             return;
@@ -233,8 +240,8 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
             if ($isAjax) {
                 $this->loadLayout('hps_securesubmit_paypal_review_details');
                 $this->getResponse()->setBody($this->getLayout()->getBlock('root')
-                    ->setQuote($this->_getQuote())
-                    ->toHtml());
+                        ->setQuote($this->_getQuote())
+                        ->toHtml());
                 return;
             }
         } catch (Mage_Core_Exception $e) {
@@ -292,8 +299,7 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
             $this->_redirect('*/*/review');
         } catch (Exception $e) {
             Mage::helper('checkout')->sendPaymentFailedEmail(
-                $this->_getQuote(),
-                $this->__('Unable to place the order.')
+                $this->_getQuote(), $this->__('Unable to place the order.')
             );
             $this->_getSession()->addError($this->__('Unable to place the order.'));
             Mage::logException($e);
@@ -329,7 +335,6 @@ class Hps_Securesubmit_PaypalController extends Mage_Core_Controller_Front_Actio
                 $this->_redirect('checkout/cart');
                 break;
         }
-
     }
 
     /**
