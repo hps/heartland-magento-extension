@@ -14,12 +14,13 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
     public function start($quote, $returnUrl = null, $cancelUrl = null, $credit = false)
     {
         $quote->collectTotals();
+        
 
         if (!$credit && !$quote->getGrandTotal() && !$quote->hasNominalItems()) {
             Mage::throwException(Mage::helper('hps_securesubmit')->__($this->_methodCode . ' does not support processing orders with zero amount. To complete your purchase, proceed to the standard checkout process.'));
         }
 
-        $quote->reserveOrderId()->save();
+        $quote->reserveOrderId()->save(); 
 
         return $this->startCheckout(
             $quote,
@@ -58,13 +59,14 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
         // add line items
         $cart = Mage::getModel('hps_securesubmit/altpayment_cart', array($quote));
         $totals = $cart->getTotals();
-
+        
         $buyer = new HpsBuyerData();
         $buyer->returnUrl = $returnUrl;
         $buyer->cancelUrl = $cancelUrl;
         $buyer->credit = $credit;
-        if ($quote->getBillingAddress()) {
-            $billingAddress = $quote->getBillingAddress();
+        $billingAddress = $quote->getBillingAddress();
+
+        if ($billingAddress !== null && $billingAddress->getFirstname() !== null) {
             $regionModel = Mage::getModel('directory/region')->load($billingAddress->getRegionId());
             $buyer->address = new HpsAddress();
             $buyer->name = $billingAddress->getFirstname() . ' ' . $billingAddress->getMiddlename() . ' ' . $billingAddress->getLastname();
@@ -93,7 +95,7 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
 
         // import/suppress shipping address, if any
         $shippingInfo = null;
-        if ($address !== null && $address->getRegionId() !== null) {
+        if ($address !== null && $address->getRegionId() !== null && $address->getFirstname() !== null) {
             $regionModel = Mage::getModel('directory/region')->load($address->getRegionId());
             $shippingInfo = new HpsShippingInfo();
             $shippingInfo->name = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
