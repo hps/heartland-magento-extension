@@ -53,6 +53,10 @@
         <update handle="hps_securesubmit_add_js" />
         <update handle="hps_securesubmit_add_css" />
     </checkout_multishipping_billing>
+    <iwd_opc_index_index>
+        <update handle="hps_securesubmit_add_js" />
+        <update handle="hps_securesubmit_add_css" />
+    </iwd_opc_index_index>
     <customer_account>
         <reference name="customer_account_navigation">
           <action method="addLink" >
