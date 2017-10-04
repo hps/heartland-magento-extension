@@ -112,17 +112,20 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
             }
         }
 
-        $lineItems = $this->exportLineItems($cart);
+        $lineItems = array();
+        if(empty($payment->taxAmount)){
+            $lineItems = $this->exportLineItems($cart);
 
-        if ($discount != 0) {
-            $discountItem = new HpsLineItem();
-            $discountItem->name = 'Discount';
-            $discountItem->number = 'discount';
-            $discountItem->amount = $discount;
-            $lineItems[] = $discountItem;
-            unset($discountItem);
+            if ($discount != 0) {
+                $discountItem = new HpsLineItem();
+                $discountItem->name = 'Discount';
+                $discountItem->number = 'discount';
+                $discountItem->amount = $discount;
+                $lineItems[] = $discountItem;
+                unset($discountItem);
+            }
         }
-
+        
         $orderData = new HpsOrderData();
         $orderData->orderNumber = str_shuffle('abcdefghijklmnopqrstuvwxyz');
         $orderData->ipAddress = $_SERVER['REMOTE_ADDR'];
@@ -397,7 +400,8 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
         }
 
         // add cart line items
-        $items = $cart->getItems();
+        $items = $cart->getItems();     
+      
         if (empty($items)) {
             return;
         }

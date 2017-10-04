@@ -307,13 +307,20 @@ class Hps_Securesubmit_Model_Paypal extends Mage_Payment_Model_Method_Cc
             return false;
         }
         
-        $storeId = $quote ? $quote->getStoreId() : null;
-        return $this->getConfigData('username', $storeId)
+        $storeId = $quote ? $quote->getStoreId() : null; 
+        
+        //condition for sandbox added
+        if ($this->getConfigData('use_sandbox', $storeId)) {
+            return $this->getConfigData('username', $storeId)
             && $this->getConfigData('password', $storeId)
             && $this->getConfigData('device_id', $storeId)
             && $this->getConfigData('license_id', $storeId)
             && $this->getConfigData('site_id', $storeId)
             && parent::isAvailable($quote);
+        } else {
+            return $this->getConfigData('secretapikey', $storeId)
+                   && parent::isAvailable($quote);
+        }
     }
 
     public function canUseForCurrency($currencyCode)
