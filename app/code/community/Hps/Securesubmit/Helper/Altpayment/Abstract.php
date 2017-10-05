@@ -14,12 +14,13 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
     public function start($quote, $returnUrl = null, $cancelUrl = null, $credit = false)
     {
         $quote->collectTotals();
+        
 
         if (!$credit && !$quote->getGrandTotal() && !$quote->hasNominalItems()) {
             Mage::throwException(Mage::helper('hps_securesubmit')->__($this->_methodCode . ' does not support processing orders with zero amount. To complete your purchase, proceed to the standard checkout process.'));
         }
 
-        $quote->reserveOrderId()->save();
+        $quote->reserveOrderId()->save(); 
 
         return $this->startCheckout(
             $quote,
@@ -58,13 +59,14 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
         // add line items
         $cart = Mage::getModel('hps_securesubmit/altpayment_cart', array($quote));
         $totals = $cart->getTotals();
-
+        
         $buyer = new HpsBuyerData();
         $buyer->returnUrl = $returnUrl;
         $buyer->cancelUrl = $cancelUrl;
         $buyer->credit = $credit;
-        if ($quote->getBillingAddress()) {
-            $billingAddress = $quote->getBillingAddress();
+        $billingAddress = $quote->getBillingAddress();
+
+        if ($billingAddress !== null && $billingAddress->getFirstname() !== null) {
             $regionModel = Mage::getModel('directory/region')->load($billingAddress->getRegionId());
             $buyer->address = new HpsAddress();
             $buyer->name = $billingAddress->getFirstname() . ' ' . $billingAddress->getMiddlename() . ' ' . $billingAddress->getLastname();
@@ -93,7 +95,7 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
 
         // import/suppress shipping address, if any
         $shippingInfo = null;
-        if ($address !== null && $address->getRegionId() !== null) {
+        if ($address !== null && $address->getRegionId() !== null && $address->getFirstname() !== null) {
             $regionModel = Mage::getModel('directory/region')->load($address->getRegionId());
             $shippingInfo = new HpsShippingInfo();
             $shippingInfo->name = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
@@ -110,17 +112,20 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
             }
         }
 
-        $lineItems = $this->exportLineItems($cart);
+        $lineItems = array();
+        if(empty($payment->taxAmount)){
+            $lineItems = $this->exportLineItems($cart);
 
-        if ($discount != 0) {
-            $discountItem = new HpsLineItem();
-            $discountItem->name = 'Discount';
-            $discountItem->number = 'discount';
-            $discountItem->amount = $discount;
-            $lineItems[] = $discountItem;
-            unset($discountItem);
+            if ($discount != 0) {
+                $discountItem = new HpsLineItem();
+                $discountItem->name = 'Discount';
+                $discountItem->number = 'discount';
+                $discountItem->amount = $discount;
+                $lineItems[] = $discountItem;
+                unset($discountItem);
+            }
         }
-
+        
         $orderData = new HpsOrderData();
         $orderData->orderNumber = str_shuffle('abcdefghijklmnopqrstuvwxyz');
         $orderData->ipAddress = $_SERVER['REMOTE_ADDR'];
@@ -395,7 +400,8 @@ class Hps_Securesubmit_Helper_Altpayment_Abstract extends Mage_Core_Helper_Abstr
         }
 
         // add cart line items
-        $items = $cart->getItems();
+        $items = $cart->getItems();     
+      
         if (empty($items)) {
             return;
         }
