@@ -131,11 +131,21 @@
         </reference>
         <reference name="head">
             <action method="addItem"><type>skin_js</type><name>js/checkout/review.js</name></action>
+            <action method="addJs"><file>securesubmit/paypal/incontext.js</file></action>
+        </reference>      
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/paypal_incontext_js" name="hps_securesubmit_paypal_js" />
         </reference>
         <block type="core/text_list" name="additional.product.info" />
     </hps_securesubmit_paypal_review>
 
     <hps_securesubmit_paypal_review_details>
+        <reference name="head">
+            <action method="addJs"><file>securesubmit/paypal/incontext.js</file></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="hps_securesubmit/paypal_incontext_js" name="hps_securesubmit_paypal_js" />
+        </reference>
         <block type="hps_securesubmit/paypal_review_details" name="root" output="toHtml" template="securesubmit/paypal/review/details.phtml">
             <action method="addItemRender"><type>default</type><block>checkout/cart_item_renderer</block><template>checkout/onepage/review/item.phtml</template></action>
             <action method="addItemRender"><type>grouped</type><block>checkout/cart_item_renderer_grouped</block><template>checkout/onepage/review/item.phtml</template></action>
@@ -144,14 +154,6 @@
         </block>
     </hps_securesubmit_paypal_review_details>
 
-    <default>
-        <reference name="head">
-            <action method="addJs"><file>securesubmit/paypal/incontext.js</file></action>
-        </reference>
-        <reference name="before_body_end">
-            <block type="hps_securesubmit/paypal_incontext_js" name="hps_securesubmit_paypal_js" />
-        </reference>
-    </default>
     <checkout_onepage_index>
         <reference name="checkout.onepage.payment">
             <action method="setTemplate"><template>securesubmit/paypal/incontext/payment.phtml</template></action>
