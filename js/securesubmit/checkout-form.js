@@ -213,7 +213,9 @@
                             checkout.setLoadWaiting(false);
                         } else if (typeof OPC !== 'undefined' && window.checkout) {
                             checkout.setLoadWaiting(false);
-                        }
+                        } else if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+							$ji('.iwd_opc_loader_wrapper.active').hide(); 
+						}
 
                         if (window.awOSCForm) {
                             form.enablePlaceOrderButton();
@@ -272,7 +274,10 @@
                     IWD.OPC.preparePaymentResponse,
                     'json'
                 );
-            } else if (window.secureSubmitAmastyCompleteCheckoutOriginal) {
+            }  else if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+				$ji('.iwd_opc_loader_wrapper.active').show(); 					
+				Singleton.get(OnePage).saveOrder();
+			} else if (window.secureSubmitAmastyCompleteCheckoutOriginal) {
                 secureSubmitAmastyCompleteCheckoutOriginal();
             } else if (window.oscPlaceOrderOriginal) {
                 $('onestepcheckout-place-order-loading').show();
@@ -1292,7 +1297,7 @@ document.observe('dom:loaded', function () {
                 typeField.value = response.card_type;
 
                 var data = this.getSaveData();
-                this.showLoader(Singleton.get(OnePage).sectionContainer);
+                $ji('.iwd_opc_loader_wrapper.active').show(); 
                 this.ajaxCall(this.saveUrl, data, this.onSaveOrderSuccess);
 
             } else {
