@@ -357,6 +357,25 @@
         }
     };
     window.SecureSubmitMagento = THIS;
+	
+    $(document).on('change', '#aw-onestepcheckout-payment-method #checkout-payment-method-load input[type=radio]', function () {
+        if (document.getElementById("p_method_hps_securesubmit").checked == true) {
+            ClearValue();
+        }
+        if ((document.getElementById("hps_securesubmit_stored_card_select_1").checked == true) && (document.getElementById("p_method_hps_securesubmit").checked == true)) {
+            ClearValue();
+        }
+        if ((document.getElementById("hps_securesubmit_stored_card_select_new").checked == true) && (document.getElementById("p_method_hps_securesubmit").checked == true)) {
+            ClearValue();
+        }
+    });
+
+    function ClearValue() {
+        document.getElementById("hps_securesubmit_cc_number").value = "";
+        document.getElementById("hps_securesubmit_exp_date").value = "";
+        document.getElementById("hps_securesubmit_cvv_number").value = "";
+    }
+	
 }(window, window.document));
 
 function securesubmitMultishipping(multiForm) {
