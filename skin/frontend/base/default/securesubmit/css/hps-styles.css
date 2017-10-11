@@ -5,8 +5,19 @@
 
 #ss-banner {
   background:transparent url(../images/ss-shield@2x.png) no-repeat bottom left;
-  background-size:395px 50px;
+  background-size:100%;
   height:50px;
+}
+
+.iwd_opc_payment_method_form #cc-number,
+.iwd_opc_payment_method_form #expiration-date,
+.iwd_opc_payment_method_form #ccv {
+  width:100%;
+}
+
+#hps_securesubmit_cc_form label {
+  text-transform:uppercase;
+  float:left;
 }
 
 #payment_form_hps_securesubmit li{
