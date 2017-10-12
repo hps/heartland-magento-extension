@@ -149,14 +149,27 @@
                     style: {
                         '#heartland-field': {
                             'height': '40px',
-                            'border-radius': '0px',
                             'border': '1px solid silver',
                             'letter-spacing': '2.5px',
-                            'margin': '5px 0px 15px 0px',
                             'max-width': '365px',
                             'width': '100%',
-                            'padding-left': '9px',
-                            'font-size': '15px'
+                            'padding-left': '9px'
+                        },
+                        '#heartland-field:hover' : {
+                          'border' : '1px solid #3989e3'
+                        },
+                        '#heartland-field:focus' : {
+                          'border':'1px solid #3989e3',
+                          'box-shadow':'none',
+                          'outline' :'none'
+                        },
+                        '#heartland-field[name="cardCvv"]': {
+                          'background':'transparent url(../skin/frontend/base/default/securesubmit/images/cvv1.png) no-repeat right',
+                          'background-size':'50px 30px'
+                        },
+                        '#heartland-field[name="cardNumber"]': {
+                          'background':'transparent url(../skin/frontend/base/default/securesubmit/images/ss-inputcard-blank@2x.png) no-repeat right',
+                          'background-size':'50px 30px'
                         },
                         '@media only screen and (max-width: 479px)': {
                             '#heartland-field': {

@@ -11,11 +11,15 @@
 
 .iwd_opc_payment_method_form #cc-number,
 .iwd_opc_payment_method_form #expiration-date,
-.iwd_opc_payment_method_form #ccv {
+.iwd_opc_payment_method_form #ccv,
+.iwd_opc_payment_method_form #hps_securesubmit_giftcard_number,
+.iwd_opc_payment_method_form #hps_securesubmit_giftcard_pin {
   width:100%;
+  color:#000000;
 }
 
-#hps_securesubmit_cc_form label {
+#hps_securesubmit_cc_form label,
+#hps_securesubmit_gift_card label {
   text-transform:uppercase;
   float:left;
 }
@@ -71,6 +75,13 @@
 .cc {
   text-transform:none;
   font-weight: 600;
+}
+
+#heartland-frame-cardExpiration,
+#heartland-frame-cardNumber,
+#heartland-frame-cardCvv {
+  height:50px !important;
+  width:100%;
 }
 
 .exp {
@@ -131,7 +142,9 @@
   background:transparent url(../images/ss-saved-jcb@2x.png) no-repeat top right;
   background-size:cover;
 }
-
+.invalid.card-type-visa {
+  background:transparent url(../images/ss-saved-visa@2x.png) no-repeat top right
+}
 /*pay with a new card*/
 
 .cc-option p{
@@ -153,16 +166,16 @@
 
 /*form card icons*/
 
-#hps_securesubmit_cc_number {
+#heartland-frame-cardNumber {
   background:transparent url(../images/ss-inputcard-blank@2x.png) no-repeat right;
   background-size:50px 30px;
 }
 
-#hps_securesubmit_cc_number.invalid.card-type-visa {
+#heartland-field[name="cardNumber"].invalid.card-type-visa {
     background:transparent url(../images/ss-saved-visa@2x.png) no-repeat bottom right;
     background-size:75px 75px;
   }
-#hps_securesubmit_cc_number.valid.card-type-visa {
+.valid.card-type-visa {
   background:transparent url(../images/ss-saved-visa@2x.png) no-repeat top right;
   background-size:75px 76px;
   }
@@ -194,7 +207,7 @@
   background-size:75px 76px;
   }
 
-#hps_securesubmit_cc_number.invalid.card-type-mastercard {
+#heartland-frame-cardNumber.invalid.card-type-mastercard {
   background:transparent url(../images/ss-saved-mastercard@2x.png) no-repeat bottom right;
   background-size:70px 75px;
   }
@@ -203,7 +216,7 @@
   background-size:70px 76px;
   }
 
-#expiration-date {
+/*#expiration-date {
   width: 48%;
   display:inline-block;
   padding:10px 0px;
@@ -214,8 +227,10 @@
   width:48%;
   padding:10px 0px;
 }
-
-#hps_securesubmit_cvv_number {
+*/
+#hps_securesubmit_cvv_number,
+#heartland-field[name="cardCvv"],
+#heartland-frame-cardCvv {
   background:transparent url(../images/cvv1.png) no-repeat right;
   background-size:50px 30px;
 }
@@ -236,11 +251,15 @@
   margin:5px 0px;
 }
 
-#hps_securesubmit_gift_card input {
+#hps_securesubmit_gift_card input,
+.input-text {
   height:40px;
   margin-bottom:20px;
+  line-height:2.5px;
+  font-size:11px;
+  letter-spacing:2.5px;
 }
-
+/*
 #hps_securesubmit_giftcard_number {
   width:45%;
   display:inline-block;
@@ -250,7 +269,7 @@
   width:45%;
   float:right;
 }
-
+*/
 #apply-gift-card.button {
   background-color:#3989e3 !important;
   color:#fff !important;
@@ -409,9 +428,10 @@
     padding:7px 15px;
   }
 
+  #cc-number,
   #expiration-date,
-  #hps_securesubmit_exp_date,
   #ccv {
+    padding:0px !important;
     width:100%;
     }
 
