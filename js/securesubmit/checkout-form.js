@@ -1208,6 +1208,9 @@ document.observe('dom:loaded', function () {
                 var code = $ji(this).val();
                 if (code == 'hps_securesubmit') {
                     $ji(_this.sectionContainer + ' .iwd_opc_payment_method_forms .iwd_opc_payment_method_form ul#payment_form_hps_securesubmit').show();
+			setTimeout(function() {
+				$ji('ul#payment_form_hps_securesubmit .validation-advice').hide();
+			}, 100);
                 }
             });
         };
