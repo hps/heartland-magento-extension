@@ -23,35 +23,30 @@ if ($_loggedIn && $allow_card_saving) {
     <li id="ss-banner" style="border:none;"></li>
 
 <!-- START SAVED CREDIT CARD LIST -->
-<?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
-  <li>
+        <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
               <?php $checked = true; ?>
               <?php foreach ($customerStoredCards as $key => $card): ?>
-                <label for="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" class="<?= $_code ?>_stored_card_label" style="width:100%;">
-
+                <label for="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" class="<?= $_code ?>_stored_card_label">
                   <li<?php if ($checked): ?> class="active"<?php endif ?>>
                       <div class="saved-card-selector <?php if ($checked): ?>selected<?php endif ?>">
                         <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" value="<?= $card->getId() ?>" <?php if ($checked): ?>checked="checked"<?php $checked=false; endif ?>/>
                       </div>
                         <div class="cc-info">
                               <input type="hidden" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>_card_type" value="<?= $card->getCcType() ?>" />
-                                <span class="cc"><?= $card->getCcType().' ************'.$card->getCcLast4()?></span><br>
+                                <span class="cc" style="float:left"><?= $card->getCcType().' ....'.$card->getCcLast4()?></span><br>
                                 <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></span>
                         </div>
                       <div id="stored-cc-icon" class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
                   </li>
                 </label>
-
               <?php endforeach ?>
-      
-    </li>
         <?php endif ?>
 
 <!-- START NEW CARD -->
         <?php $checked = !$_loggedIn || !count($customerStoredCards);?>
           <li>
             <?php if (!$checked): ?>
-                <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label" style="width:100%;">
+                <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label" style="padding:0px 0px;">
                     <div class="cc-option">
                       <div class="saved-card-selector">
                         <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_new" value="new" />

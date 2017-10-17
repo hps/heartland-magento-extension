@@ -196,12 +196,12 @@
                         '#heartland-field[name="cardNumber"].invalid.card-type-jcb': {
                           'background':'transparent url('+THIS.options.baseUrl.replace('/index.php', '')+ 'skin/frontend/base/default/securesubmit/images/ss-saved-jcb@2x.png) no-repeat right',
                           'background-size':'75px 75px',
-                          'background-position-y':'-35px'
+                          'background-position-y':'10px -35px'
                         },
                         '#heartland-field[name="cardNumber"].valid.card-type-jcb': {
                           'background':'transparent url('+THIS.options.baseUrl.replace('/index.php', '')+ 'skin/frontend/base/default/securesubmit/images/ss-saved-jcb@2x.png) no-repeat right',
                           'background-size':'75px 76px',
-                          'background-position-y':'2px'
+                          'background-position-y':'10px 2px'
                         },
                         '#heartland-field[name="cardNumber"].invalid.card-type-mastercard': {
                           'background':'transparent url('+THIS.options.baseUrl.replace('/index.php', '')+ 'skin/frontend/base/default/securesubmit/images/ss-saved-mastercard@2x.png) no-repeat bottom right',
