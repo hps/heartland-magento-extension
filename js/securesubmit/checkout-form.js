@@ -1321,7 +1321,7 @@ document.observe('dom:loaded', function () {
                             error: this.secureSubmitResponseHandler.bind(this)
                         })).tokenize();
                     } else {
-                        $ji('.iwd_opc_loader_wrapper').hide();
+                        $ji('.iwd_opc_loader_wrapper.active').hide();
                     }
                 }
             }
@@ -1352,6 +1352,7 @@ document.observe('dom:loaded', function () {
             if (response && response.error) {
                 if (response.error.message) {
                     alert(response.error.message);
+			$ji('.iwd_opc_loader_wrapper.active').hide();
                 }
             } else if (response && response.token_value) {
                 tokenField.value = response.token_value;
