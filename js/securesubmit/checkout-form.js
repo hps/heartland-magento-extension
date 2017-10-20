@@ -151,9 +151,11 @@
                             'height': '40px',
                             'border': '1px solid silver',
                             'letter-spacing': '2.5px',
-                            'max-width': '365px',
                             'width': '100%',
                             'padding-left': '9px'
+                        },
+                        '.iwd-opc-index-index #heartland-field': {
+                          'max-width': '365px'
                         },
                         '#heartland-field:hover' : {
                           'border' : '1px solid #3989e3'
@@ -218,7 +220,7 @@
                           'background-size':'50px 30px'
                         },
                         '@media only screen and (max-width: 479px)': {
-                            '#heartland-field': {
+                          '#heartland-field': {
                                 'width': '95%'
                             }
                         }

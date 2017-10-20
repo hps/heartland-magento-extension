@@ -44,7 +44,7 @@ if ($_loggedIn && $allow_card_saving) {
 
 <!-- START NEW CARD -->
         <?php $checked = !$_loggedIn || !count($customerStoredCards);?>
-          <li>
+          <li id="new-card-section">
             <?php if (!$checked): ?>
                 <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label" style="padding:0px 0px;">
                     <div class="cc-option">
@@ -158,7 +158,6 @@ SecureSubmitMagento.init({
 });
 //]]>
 </script>
-
 <?php if ($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
 <script type="text/javascript">$$('.saved-card-selector input').each(function(element){
         element.addEventListener('click', function(e) {
@@ -169,4 +168,5 @@ SecureSubmitMagento.init({
         });
     });
 </script>
+
 <?php endif ?>
