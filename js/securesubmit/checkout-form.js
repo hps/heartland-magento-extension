@@ -151,7 +151,7 @@
                             'height': '40px',
                             'border': '1px solid silver',
                             'letter-spacing': '2.5px',
-                            'width': '100%',
+                            'width': '97.5%',
                             'padding-left': '9px'
                         },
                         '.iwd-opc-index-index #heartland-field': {
