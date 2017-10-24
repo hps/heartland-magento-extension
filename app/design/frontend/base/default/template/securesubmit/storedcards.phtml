@@ -9,8 +9,9 @@ $_storedCards = Mage::helper('hps_securesubmit')->getStoredCards(Mage::getSingle
             <h2><?php echo $this->__('Saved Credit Cards') ?></h2>
 
         <ul id="hps-saved-cards" class="saved-card-table">
-            <?php foreach ($_storedCards->getData() as $card): ?>
+            
                 <li>
+                  <?php foreach ($_storedCards->getData() as $card): ?>
                     <div class="icon-<?= strtolower($card['cc_type'])?>-stored" id="stored-icon-styles">&nbsp;</div>
                     <div class="stored-card-info">
                         <span class="cc"><?php echo $card['cc_type'] ." " ."ending in   ************".$card['cc_last4'] ?></span>            <br/>
