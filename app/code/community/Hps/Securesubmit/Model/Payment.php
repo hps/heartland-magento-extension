@@ -48,7 +48,11 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $additionalData = new Varien_Object($info->getAdditionalData() ? unserialize($info->getAdditionalData()) : null);
         $secureToken = $additionalData->getSecuresubmitToken() ? $additionalData->getSecuresubmitToken() : null;
         // Gracefully handle javascript errors.
-        if (!$secureToken) {
+        $currentUrl = Mage::helper('core/url')->getCurrentUrl();
+        $link_path = explode('/', rtrim($currentUrl, '/'));
+        $path = end($link_path);
+
+        if ((!$secureToken) && ($path != 'savePaymentMethod')) {
             Mage::log('Payment information submitted without token.', Zend_Log::ERR);
             $this->throwUserError(Mage::helper('hps_securesubmit')->__('An unexpected error occurred. Please try resubmitting your payment information.'), null, true);
         }
