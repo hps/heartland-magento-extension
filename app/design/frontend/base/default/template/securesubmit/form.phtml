@@ -12,11 +12,6 @@ if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
 }
 ?>
-<script type="text/javascript">
-if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
-    $ji('ul#payment_form_<?= $_code ?>').css('display','block');
-}
-</script>
 
 <ul class="form-list" id="payment_form_<?= $_code ?>" style="display:none;">
 
@@ -157,17 +152,23 @@ SecureSubmitMagento.init({
         }
     <?php endif; ?>
 });
-//]]>
-</script>
 
 <?php if ($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
-<script type="text/javascript">$$('.saved-card-selector input').each(function(element){
-        element.addEventListener('click', function(e) {
-            $$('.saved-card-selector').each(function(element){
-                element.removeClassName('selected');
-            });
-            e.srcElement.parentNode.addClassName('selected');
+$$('.saved-card-selector input').each(function(element){
+    element.addEventListener('click', function(e) {
+        $$('.saved-card-selector').each(function(element){
+            element.removeClassName('selected');
         });
+        e.srcElement.parentNode.addClassName('selected');
     });
-</script>
+});
 <?php endif ?>
+
+if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+    $ji('ul#payment_form_<?= $_code ?>').css('display','block');
+    // Remove the `required-entry` class from the input fields to prevent IWD Checkotu Suite
+    // from validating the fields before the consumer has a chance to even enter data
+    $ji('#payment_form_<?= $_code ?> .required-entry').removeClass('required-entry');
+}
+//]]>
+</script>

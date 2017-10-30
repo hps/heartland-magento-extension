@@ -1294,6 +1294,11 @@ document.observe('dom:loaded', function () {
         };
 
         PaymentMethodIWD.prototype.savePayment = function () {
+            // Add the `required-entry` class back to the fields to ensure they are present
+            if ($ji('#payment_form_' + this.code + ' .required-entry').length === 0) {
+                $ji('#payment_form_' + this.code + ' .input-text').addClass('required-entry');
+            }
+
             // Use stored card checked, get existing token data
             if (this.secureSubmitUseStoredCard()) {
                 var radio = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0];
