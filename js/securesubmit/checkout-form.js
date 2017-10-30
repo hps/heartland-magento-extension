@@ -1,5 +1,5 @@
 (function (window, document, undefined) {
-    var awTokenSubmits = {};
+    var opcTokenSubmits = {};
     var THIS = {
         skipCreditCard: false,
         init: function (options) {
@@ -214,7 +214,7 @@
                           'background':'transparent url('+THIS.options.baseUrl.replace('/index.php', '')+ 'skin/frontend/base/default/securesubmit/images/ss-saved-mastercard@2x.png) no-repeat top right',
                           'background-size':'71px',
                           'background-position-y':'3px'
-                        },                      
+                        },
                         '#heartland-field[name="cardCvv"]': {
                           'background':'transparent url('+THIS.options.baseUrl.replace('/index.php', '')+ 'skin/frontend/base/default/securesubmit/images/cvv1.png) no-repeat right',
                           'background-size':'50px 30px'
@@ -234,11 +234,11 @@
                         // multiple times, mutiple event handlers for `message` are added, so the
                         // `onTokenSuccess` event that we receive is firing multiple times which also
                         // submits the form multiple times, attempting to create multiple orders.
-                        if (window.awOSCForm && typeof awTokenSubmits[heartland.token_value] !== 'undefined') {
+                        if (THIS.isOnePageCheckout() && typeof opcTokenSubmits[heartland.token_value] !== 'undefined') {
                             return;
                         }
 
-                        awTokenSubmits[heartland.token_value] = true;
+                        opcTokenSubmits[heartland.token_value] = true;
                         // END: AheadWorks OneStepCheckout fix
 
                         $(THIS.options.code + '_token').value = heartland.token_value;
@@ -275,8 +275,8 @@
                         } else if (typeof OPC !== 'undefined' && window.checkout) {
                             checkout.setLoadWaiting(false);
                         } else if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
-				$ji('.iwd_opc_loader_wrapper.active').hide(); 
-			}
+                            $ji('.iwd_opc_loader_wrapper.active').hide();
+                        }
 
                         if (window.awOSCForm) {
                             form.enablePlaceOrderButton();
@@ -319,6 +319,14 @@
                 Heartland.Card.attachCvvEvents('#' + THIS.options.code + '_cvv_number');
             }
         },
+        isOnePageCheckout: function () {
+            return typeof OPC !== 'undefined'
+                || (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined')
+                || (typeof jQueryIWD !== 'undefined' && typeof iwdOpcConfig !== 'undefined')
+                || window.secureSubmitAmastyCompleteCheckoutOriginal
+                || window.oscPlaceOrderOriginal
+                || window.awOSCForm;
+        },
         completeCheckout: function () {
             if (typeof OPC !== 'undefined') {
                 checkout.setLoadWaiting(true);
@@ -335,10 +343,10 @@
                     IWD.OPC.preparePaymentResponse,
                     'json'
                 );
-            }  else if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
-		    $ji('.iwd_opc_loader_wrapper.active').show(); 
-		    Singleton.get(OnePage).saveOrder();
-	    } else if (window.secureSubmitAmastyCompleteCheckoutOriginal) {
+            } else if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+                $ji('.iwd_opc_loader_wrapper.active').show();
+                Singleton.get(OnePage).saveOrder();
+            } else if (window.secureSubmitAmastyCompleteCheckoutOriginal) {
                 secureSubmitAmastyCompleteCheckoutOriginal();
             } else if (window.oscPlaceOrderOriginal) {
                 $('onestepcheckout-place-order-loading').show();
@@ -436,7 +444,7 @@
         document.getElementById("hps_securesubmit_exp_date").value = "";
         document.getElementById("hps_securesubmit_cvv_number").value = "";
     }
-	
+
 }(window, window.document));
 
 function securesubmitMultishipping(multiForm) {
@@ -1381,7 +1389,7 @@ document.observe('dom:loaded', function () {
                 typeField.value = response.card_type;
 
                 var data = this.getSaveData();
-                $ji('.iwd_opc_loader_wrapper.active').show(); 
+                $ji('.iwd_opc_loader_wrapper.active').show();
                 this.ajaxCall(this.saveUrl, data, this.onSaveOrderSuccess);
 
             } else {
