@@ -12,107 +12,103 @@ if ($_loggedIn && $allow_card_saving) {
     $customerStoredCards = Mage::helper('hps_securesubmit')->getStoredCards( Mage::getSingleton('customer/session')->getCustomerId());
 }
 ?>
-<script type="text/javascript">
- if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) { 
-	$ji('ul#payment_form_hps_securesubmit').css('display','block');
- }
-</script>
 
 <ul class="form-list" id="payment_form_<?= $_code ?>" style="display:none;">
 
     <li id="ss-banner" style="border:none;"></li>
 
-<!-- START SAVED CREDIT CARD LIST -->
-        <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
-              <?php $checked = true; ?>
-              <?php foreach ($customerStoredCards as $key => $card): ?>
-                <label for="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" class="<?= $_code ?>_stored_card_label">
-                  <li<?php if ($checked): ?> class="active"<?php endif ?>>
-                      <div class="saved-card-selector <?php if ($checked): ?>selected<?php endif ?>">
+    <!-- START SAVED CREDIT CARD LIST -->
+    <?php if($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
+        <?php $checked = true; ?>
+        <?php foreach ($customerStoredCards as $key => $card): ?>
+            <label for="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" class="<?= $_code ?>_stored_card_label">
+                <li<?php if ($checked): ?> class="active"<?php endif ?>>
+                    <div class="saved-card-selector <?php if ($checked): ?>selected<?php endif ?>">
                         <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>" value="<?= $card->getId() ?>" <?php if ($checked): ?>checked="checked"<?php $checked=false; endif ?>/>
-                      </div>
-                        <div class="cc-info">
-                              <input type="hidden" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>_card_type" value="<?= $card->getCcType() ?>" />
-                                <span class="cc" style="float:left"><?= $card->getCcType().' ....'.$card->getCcLast4()?></span><br>
-                                <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></span>
-                        </div>
-                      <div id="stored-cc-icon" class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
-                  </li>
-                </label>
-              <?php endforeach ?>
-        <?php endif ?>
-
-<!-- START NEW CARD -->
-        <?php $checked = !$_loggedIn || !count($customerStoredCards);?>
-          <li id="new-card-section">
-            <?php if (!$checked): ?>
-                <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label" style="padding:0px 0px;">
-                    <div class="cc-option">
-                      <div class="saved-card-selector">
-                        <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_new" value="new" />
-                      </div>
-                            <p><?= $this->__('Pay with a new credit card') ?></p>
                     </div>
-                </label>
-            <?php else: ?>
-                <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_new" value="new" checked="checked" style="display:none;"/>
+                    <div class="cc-info">
+                        <input type="hidden" id="<?= $_code ?>_stored_card_select_<?= $card->getId() ?>_card_type" value="<?= $card->getCcType() ?>" />
+                        <span class="cc" style="float:left"><?= $card->getCcType().' ....'.$card->getCcLast4()?></span><br>
+                        <span class="exp"><?= "expires on" ." "  .' (' .$card->getCcExpMonth().'/'.$card->getCcExpYear().')' ?></span>
+                    </div>
+                    <div id="stored-cc-icon" class="icon-<?= strtolower($card->getCcType()) ?>-form"></div>
+                </li>
+            </label>
+        <?php endforeach ?>
+    <?php endif ?>
+
+    <!-- START NEW CARD -->
+    <?php $checked = !$_loggedIn || !count($customerStoredCards);?>
+    <li id="new-card-section">
+        <?php if (!$checked): ?>
+            <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label" style="padding:0px 0px;">
+                <div class="cc-option">
+                    <div class="saved-card-selector">
+                        <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_new" value="new" />
+                    </div>
+                    <p><?= $this->__('Pay with a new credit card') ?></p>
+                </div>
+            </label>
+        <?php else: ?>
+            <input type="radio" name="<?= $_code ?>_stored_card_select" id="<?= $_code ?>_stored_card_select_new" value="new" checked="checked" style="display:none;"/>
+        <?php endif ?>
+        <div id="<?= $_code ?>_cc_form" <?php if (!$checked): ?>style="display: none;"<?php endif ?>>
+            <div id="cc-number">
+                <label for="<?= $_code ?>_cc_number"><?= $this->__('Credit Card Number') ?> <span class="required">&nbsp;</span></label>
+                <?php if ($use_iframes): ?>
+                    <div id="<?= $_code ?>_cc_number_iframe"></div>
+                <?php else: ?>
+                    <input type="tel" id="<?= $_code ?>_cc_number" title="<?= $this->__('Credit Card Number') ?>" class="input-text validate-cc-number" autocomplete="off" placeholder="•••• •••• •••• ••••" />
+                <?php endif ?>
+                <input type="hidden" id="<?= $_code ?>_token" name="payment[securesubmit_token]">
+                <input type="hidden" id="<?= $_code ?>_cc_last_four" name="payment[cc_last_four]">
+                <input type="hidden" id="<?= $_code ?>_cc_type" name="payment[cc_type]">
+            </div>
+
+
+            <div id="expiration-date">
+                <label for="<?= $_code ?>_expiration"><?= $this->__('Expiration Date') ?> <span class="required">&nbsp;</span></label>
+                <?php if ($use_iframes): ?>
+                    <div id="<?= $_code ?>_cc_exp_iframe"></div>
+                <?php else: ?>
+                    <input type="tel" name="payment[cc_exp]" placeholder="MM / YYYY" id="<?= $_code ?>_exp_date" class="input-text year required-entry">
+                <?php endif ?>
+                <input type="hidden" id="<?= $_code ?>_cc_exp_month" name="payment[cc_exp_month]">
+                <input type="hidden" id="<?= $_code ?>_cc_exp_year" name="payment[cc_exp_year]">
+            </div>
+
+            <div id="ccv">
+                <label for="<?= $_code ?>_cvv_number"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label>
+                <?php if ($use_iframes): ?>
+                    <div id="<?= $_code ?>_cc_cvv_iframe"></div>
+                <?php else: ?>
+                    <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="input-text required-entry validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number">
+                <?php endif ?>
+            </div>
+
+            <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
+                <div class="save-card-checkbox">
+                    <input type="checkbox" id="<?= $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
+                    <label id="ss-save-text" for="<?= $_code ?>_cc_save_future"><?= $this->__('&nbsp; &nbsp;Save this card for future use?') ?></label>
+                </div>
             <?php endif ?>
-            <div id="<?= $_code ?>_cc_form" <?php if (!$checked): ?>style="display: none;"<?php endif ?>>
-              <div id="cc-number">
-                  <label for="<?= $_code ?>_cc_number"><?= $this->__('Credit Card Number') ?> <span class="required">&nbsp;</span></label>
-                        <?php if ($use_iframes): ?>
-                            <div id="<?= $_code ?>_cc_number_iframe"></div>
-                              <?php else: ?>
-                                  <input type="tel" id="<?= $_code ?>_cc_number" title="<?= $this->__('Credit Card Number') ?>" class="input-text validate-cc-number" autocomplete="off" placeholder="•••• •••• •••• ••••" />
-                              <?php endif ?>
-                                  <input type="hidden" id="<?= $_code ?>_token" name="payment[securesubmit_token]">
-                                    <input type="hidden" id="<?= $_code ?>_cc_last_four" name="payment[cc_last_four]">
-                                      <input type="hidden" id="<?= $_code ?>_cc_type" name="payment[cc_type]">
-              </div>
+        </div>
+    </li>
 
-
-              <div id="expiration-date">
-                  <label for="<?= $_code ?>_expiration"><?= $this->__('Expiration Date') ?> <span class="required">&nbsp;</span></label>
-                        <?php if ($use_iframes): ?>
-                            <div id="<?= $_code ?>_cc_exp_iframe"></div>
-                              <?php else: ?>
-                                  <input type="tel" name="payment[cc_exp]" placeholder="MM / YYYY" id="<?= $_code ?>_exp_date" class="input-text year required-entry">
-                              <?php endif ?>
-                                  <input type="hidden" id="<?= $_code ?>_cc_exp_month" name="payment[cc_exp_month]">
-                                    <input type="hidden" id="<?= $_code ?>_cc_exp_year" name="payment[cc_exp_year]">
-              </div>
-
-              <div id="ccv">
-                  <label for="<?= $_code ?>_cvv_number"><?= $this->__('Card Verification Number') ?> <span class="required">&nbsp;</span></label>
-                      <?php if ($use_iframes): ?>
-                          <div id="<?= $_code ?>_cc_cvv_iframe"></div>
-                             <?php else: ?>
-                                  <input type="tel" title="<?= $this->__('Card Verification Number') ?>" class="input-text required-entry validate-cc-cvn" autocomplete="off" placeholder="CVV" id="<?= $_code ?>_cvv_number">
-                              <?php endif ?>
-              </div>
-                        <?php if ($_loggedIn && $allow_card_saving && $public_key): ?>
-                          <div class="save-card-checkbox">
-                                <input type="checkbox" id="<?= $_code ?>_cc_save_future" name="payment[cc_save_future]" value="Y" autocomplete="off" />
-                                <label id="ss-save-text" for="<?= $_code ?>_cc_save_future"><?= $this->__('&nbsp; &nbsp;Save this card for future use?') ?></label>
-                          </div>
-                        <?php endif ?>
-          </div>
-      </li>
-
-<!-- START GIFT CARD -->
+    <!-- START GIFT CARD -->
     <?php if ($allow_heartland_gift): ?>
         <li id="<?= $_code; ?>_gift_card">
-          <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label><br>
-                <input type="tel" id="<?= $_code; ?>_giftcard_number" title="<?= $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" autocomplete="off" name="payment[giftcard_number]" placeholder="<?= $this->__('GIFT CARD NUMBER') ?>" />
-                    <input type="tel" id="<?= $_code; ?>_giftcard_pin" title="<?= $this->__('Gift Card Pin') ?>" class="input-text " placeholder="<?= $this->__('PIN') ?>" autocomplete="off" name="payment[giftcard_pin]" />
-                        <input type="hidden" id="<?= $_code; ?>_giftcard_skip_cc" name="payment[giftcard_skip_cc]" value="false" />
-                          <label id="gift-card-number-label" style="display: none;"></label>
-                              <a id="remove-gift-card" class="button" style="display: none;"><?= $this->__('Remove Gift Card') ?></a>
-                                <a id="apply-gift-card" class="button"><?= $this->__('Apply Gift Card') ?></a>
+            <label for="<?= $_code ?>_giftcard_number"><?= $this->__('Optional Gift Card Number') ?></label><br>
+            <input type="tel" id="<?= $_code; ?>_giftcard_number" title="<?= $this->__('Gift Card Number') ?>" class="input-text validate-gift-number" autocomplete="off" name="payment[giftcard_number]" placeholder="<?= $this->__('GIFT CARD NUMBER') ?>" />
+            <input type="tel" id="<?= $_code; ?>_giftcard_pin" title="<?= $this->__('Gift Card Pin') ?>" class="input-text " placeholder="<?= $this->__('PIN') ?>" autocomplete="off" name="payment[giftcard_pin]" />
+            <input type="hidden" id="<?= $_code; ?>_giftcard_skip_cc" name="payment[giftcard_skip_cc]" value="false" />
+            <label id="gift-card-number-label" style="display: none;"></label>
+            <a id="remove-gift-card" class="button" style="display: none;"><?= $this->__('Remove Gift Card') ?></a>
+            <a id="apply-gift-card" class="button"><?= $this->__('Apply Gift Card') ?></a>
         </li>
-<!-- END GIFT CARD -->
-      </ul>
+    <!-- END GIFT CARD -->
     <?php endif ?>
+</ul>
 
 <?php if ($cca) : ?>
     <?php
@@ -156,17 +152,23 @@ SecureSubmitMagento.init({
         }
     <?php endif; ?>
 });
+
+<?php if ($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
+$$('.saved-card-selector input').each(function(element){
+    element.addEventListener('click', function(e) {
+        $$('.saved-card-selector').each(function(element){
+            element.removeClassName('selected');
+        });
+        e.srcElement.parentNode.addClassName('selected');
+    });
+});
+<?php endif ?>
+
+if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+    $ji('ul#payment_form_<?= $_code ?>').css('display','block');
+    // Remove the `required-entry` class from the input fields to prevent IWD Checkotu Suite
+    // from validating the fields before the consumer has a chance to even enter data
+    $ji('#payment_form_<?= $_code ?> .required-entry').removeClass('required-entry');
+}
 //]]>
 </script>
-<?php if ($_loggedIn && $allow_card_saving && count($customerStoredCards)): ?>
-<script type="text/javascript">$$('.saved-card-selector input').each(function(element){
-        element.addEventListener('click', function(e) {
-            $$('.saved-card-selector').each(function(element){
-                element.removeClassName('selected');
-            });
-            e.srcElement.parentNode.addClassName('selected');
-        });
-    });
-</script>
-
-<?php endif ?>
