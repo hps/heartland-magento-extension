@@ -41,8 +41,8 @@
 
             // Latest Version of IWD One page Checkou
             if ((typeof iwdOpcConfig !== 'undefined') && (typeof OnePage !== 'undefined') && (typeof PaymentMethod !== 'undefined')) {
-                jQueryIWD.prototype.secureSubmitPublicKey = THIS.options.publicKey;
-                jQueryIWD.prototype.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
+                PaymentMethod.prototype.secureSubmitPublicKey = THIS.options.publicKey;
+                PaymentMethod.prototype.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
             }
 
             // AheadWorks OneStepCheckout
@@ -322,7 +322,7 @@
         isOnePageCheckout: function () {
             return typeof OPC !== 'undefined'
                 || (typeof IWD !== 'undefined' && typeof IWD.OPC !== 'undefined')
-                || (typeof jQueryIWD !== 'undefined' && typeof iwdOpcConfig !== 'undefined')
+                || (typeof iwdOpcConfig !== 'undefined') && (typeof OnePage !== 'undefined') && (typeof PaymentMethod !== 'undefined')
                 || window.secureSubmitAmastyCompleteCheckoutOriginal
                 || window.oscPlaceOrderOriginal
                 || window.awOSCForm;
@@ -1304,7 +1304,7 @@ document.observe('dom:loaded', function () {
                 var radio = $$('[name="hps_securesubmit_stored_card_select"]:checked')[0];
                 var storedcardId = radio.value;
                 var storedcardType = $(radio.id + '_card_type').value;
-                new Ajax.Request(jQueryIWD.prototype.secureSubmitGetTokenDataUrl, {
+                new Ajax.Request(PaymentMethod.prototype.secureSubmitGetTokenDataUrl, {
                     method: 'post',
                     parameters: {storedcard_id: storedcardId},
                     onSuccess: function (response) {
@@ -1346,7 +1346,7 @@ document.observe('dom:loaded', function () {
                         }
 
                         (new Heartland.HPS({
-                            publicKey: jQueryIWD.prototype.secureSubmitPublicKey,
+                            publicKey: PaymentMethod.prototype.secureSubmitPublicKey,
                             cardNumber: $('hps_securesubmit_cc_number').value,
                             cardCvv: $('hps_securesubmit_cvv_number').value,
                             cardExpMonth: $('hps_securesubmit_cc_exp_month').value,
