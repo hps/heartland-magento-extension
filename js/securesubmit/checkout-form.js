@@ -40,7 +40,7 @@
             }
 
             // Latest Version of IWD One page Checkou
-            if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+            if ((typeof iwdOpcConfig !== 'undefined') && (typeof OnePage !== 'undefined') && (typeof PaymentMethod !== 'undefined')) {
                 jQueryIWD.prototype.secureSubmitPublicKey = THIS.options.publicKey;
                 jQueryIWD.prototype.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
             }
@@ -274,7 +274,7 @@
                             checkout.setLoadWaiting(false);
                         } else if (typeof OPC !== 'undefined' && window.checkout) {
                             checkout.setLoadWaiting(false);
-                        } else if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+                        } else if ((typeof iwdOpcConfig !== 'undefined') && (typeof OnePage !== 'undefined') && (typeof PaymentMethod !== 'undefined')) {
                             $ji('.iwd_opc_loader_wrapper.active').hide();
                         }
 
@@ -343,7 +343,7 @@
                     IWD.OPC.preparePaymentResponse,
                     'json'
                 );
-            } else if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+            } else if ((typeof iwdOpcConfig !== 'undefined') && (typeof OnePage !== 'undefined') && (typeof PaymentMethod !== 'undefined')) {
                 $ji('.iwd_opc_loader_wrapper.active').show();
                 Singleton.get(OnePage).saveOrder();
             } else if (window.secureSubmitAmastyCompleteCheckoutOriginal) {
@@ -1227,7 +1227,7 @@ document.observe('dom:loaded', function () {
     }
 
     // Latest Version of IWD One page Checkou
-    if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+    if ((typeof iwdOpcConfig !== 'undefined') && (typeof OnePage !== 'undefined') && (typeof PaymentMethod !== 'undefined')) {
 
         PaymentMethod.prototype.initPaymentMethods = function () {
             Singleton.get(PaymentMethodIWD).init();
