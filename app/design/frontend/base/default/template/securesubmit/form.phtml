@@ -164,7 +164,7 @@ $$('.saved-card-selector input').each(function(element){
 });
 <?php endif ?>
 
-if ((typeof jQueryIWD !== 'undefined') && (typeof iwdOpcConfig !== 'undefined')) {
+if ((typeof iwdOpcConfig !== 'undefined') && (typeof OnePage !== 'undefined') && (typeof PaymentMethod !== 'undefined')) {
     $ji('ul#payment_form_<?= $_code ?>').css('display','block');
     // Remove the `required-entry` class from the input fields to prevent IWD Checkotu Suite
     // from validating the fields before the consumer has a chance to even enter data
