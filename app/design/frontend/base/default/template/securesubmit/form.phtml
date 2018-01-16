@@ -112,7 +112,7 @@ if ($_loggedIn && $allow_card_saving) {
 
 <?php if ($cca) : ?>
     <?php
-    $url = -1 !== strpos($publicKey, '_cert_')
+    $url = false !== strpos($public_key, '_cert_')
         ? 'https://includestest.ccdc02.com/cardinalcruise/v1/songbird.js'
         : 'https://includes.ccdc02.com/cardinalcruise/v1/songbird.js';
     ?>
