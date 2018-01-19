@@ -488,23 +488,32 @@ if (!String.prototype.trim) {
           makeField('action_code', data.ActionCode);
           makeField(
             'cavv',
-            data.Payment && data.Payment.ExtendedData
+            data.Payment &&
+            data.Payment.ExtendedData &&
+            data.Payment.ExtendedData.CAVV
               ? data.Payment.ExtendedData.CAVV
               : ''
           );
           makeField(
             'eci',
-            data.Payment && data.Payment.ExtendedData
+            data.Payment &&
+            data.Payment.ExtendedData &&
+            data.Payment.ExtendedData.ECIFlag
               ? data.Payment.ExtendedData.ECIFlag
               : ''
           );
           makeField(
             'xid',
-            data.Payment && data.Payment.ExtendedData
+            data.Payment &&
+            data.Payment.ExtendedData &&
+            data.Payment.ExtendedData.XID
               ? data.Payment.ExtendedData.XID
               : ''
           );
-          makeField('token', data.Token ? data.Token.Token : '');
+          makeField(
+            'token',
+            data.Token && data.Token.Token ? data.Token.Token : ''
+          );
           if (callback) {
             callback();
           }
