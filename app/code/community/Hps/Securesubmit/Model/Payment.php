@@ -361,13 +361,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $dataSource = 'AMEX 3DSecure';
                 break;
             }
-            $cavv = isset($ccaData['cavv'])
+            $cavv = !empty($ccaData['cavv'])
                 ? $ccaData['cavv']
                 : '';
-            $eciFlag = isset($ccaData['eci'])
+            $eciFlag = !empty($ccaData['eci'])
                 ? substr($ccaData['eci'], 1)
                 : '';
-            $xid = isset($ccaData['xid'])
+            $xid = !empty($ccaData['xid'])
                 ? $ccaData['xid']
                 : '';
             $secureEcommerce = new HpsSecureEcommerce();
