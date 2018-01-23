@@ -343,9 +343,8 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     protected function getSecureEcommerce($ccaData, $cardType)
     {
         if ($this->getConfigData('enable_threedsecure')
-            && false !== ($data = json_decode($ccaData))
-            && isset($data) && isset($data->ActionCode)
-            && in_array($data->ActionCode, array('SUCCESS', 'NOACTION'))
+            && !empty($ccaData) && !empty($ccaData['actionCode'])
+            && in_array($ccaData['actionCode'], array('SUCCESS', 'NOACTION'))
         ) {
             $dataSource = '';
             switch ($cardType) {
@@ -362,14 +361,14 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 $dataSource = 'AMEX 3DSecure';
                 break;
             }
-            $cavv = isset($data->Payment->ExtendedData->CAVV)
-                ? $data->Payment->ExtendedData->CAVV
+            $cavv = !empty($ccaData['cavv'])
+                ? $ccaData['cavv']
                 : '';
-            $eciFlag = isset($data->Payment->ExtendedData->ECIFlag)
-                ? substr($data->Payment->ExtendedData->ECIFlag, 1)
+            $eciFlag = !empty($ccaData['eci'])
+                ? substr($ccaData['eci'], 1)
                 : '';
-            $xid = isset($data->Payment->ExtendedData->XID)
-                ? $data->Payment->ExtendedData->XID
+            $xid = !empty($ccaData['xid'])
+                ? $ccaData['xid']
                 : '';
             $secureEcommerce = new HpsSecureEcommerce();
             $secureEcommerce->type       = '3DSecure';
@@ -766,8 +765,30 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
             $details['customer_id'] = $data->getData('customer_id');
         }
 
-        if ($data->getData('cca_data')) {
-            $details['cca_data'] = $data->getData('cca_data');
+        $ccaData = array();
+
+        if ($data->getData('cca_data_action_code')) {
+            $ccaData['actionCode'] = $data->getData('cca_data_action_code');
+        }
+
+        if ($data->getData('cca_data_cavv')) {
+            $ccaData['cavv'] = $data->getData('cca_data_cavv');
+        }
+
+        if ($data->getData('cca_data_eci')) {
+            $ccaData['eci'] = $data->getData('cca_data_eci');
+        }
+
+        if ($data->getData('cca_data_xid')) {
+            $ccaData['xid'] = $data->getData('cca_data_xid');
+        }
+
+        if ($data->getData('cca_data_token')) {
+            $ccaData['token'] = $data->getData('cca_data_token');
+        }
+
+        if (array() !== $ccaData) {
+            $details['cca_data'] = $ccaData;
         }
 
         if (!empty($details)) {

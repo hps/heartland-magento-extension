@@ -19,7 +19,7 @@ if (!String.prototype.trim) {
         payment.secureSubmitGetTokenDataUrl = THIS.options.tokenDataUrl;
       } else if (document.getElementById('multishipping-billing-form')) {
         THIS.secureSubmitMS = securesubmitMultishipping(
-          document.getElementById('multishipping-billing-form'),
+          document.getElementById('multishipping-billing-form')
         );
         THIS.secureSubmitMS.secureSubmitPublicKey = THIS.options.publicKey;
         THIS.secureSubmitMS.secureSubmitGetTokenDataUrl =
@@ -82,7 +82,7 @@ if (!String.prototype.trim) {
 
               if (!THIS.options.useIframes) {
                 $(THIS.options.code + '_cc_number').toggleClassName(
-                  'validate-cc-number',
+                  'validate-cc-number'
                 );
               }
 
@@ -91,14 +91,14 @@ if (!String.prototype.trim) {
                   $(element)
                     .up(2)
                     .removeClassName('active');
-                },
+                }
               );
 
               $(el)
                 .up(2)
                 .addClassName('active');
             });
-          },
+          }
         );
       }
     },
@@ -124,7 +124,7 @@ if (!String.prototype.trim) {
                 $j('#gift-card-number-label').text(
                   $j('#' + THIS.options.code + '_giftcard_number').val() +
                     ' - $' +
-                    data.balance,
+                    data.balance
                 );
                 $j('#gift-card-number-label').show();
                 $j('#remove-gift-card').show();
@@ -315,14 +315,14 @@ if (!String.prototype.trim) {
 
             $(THIS.options.code + '_token').value = heartland.token_value;
             $(
-              THIS.options.code + '_cc_last_four',
+              THIS.options.code + '_cc_last_four'
             ).value = heartland.card.number.substr(-4);
             $(THIS.options.code + '_cc_type').value = heartland.card_type;
             $(
-              THIS.options.code + '_cc_exp_month',
+              THIS.options.code + '_cc_exp_month'
             ).value = heartland.exp_month.trim();
             $(
-              THIS.options.code + '_cc_exp_year',
+              THIS.options.code + '_cc_exp_year'
             ).value = heartland.exp_year.trim();
 
             if (resp.cardinal) {
@@ -396,10 +396,10 @@ if (!String.prototype.trim) {
         }
       } else {
         Heartland.Card.attachNumberEvents(
-          '#' + THIS.options.code + '_cc_number',
+          '#' + THIS.options.code + '_cc_number'
         );
         Heartland.Card.attachExpirationEvents(
-          '#' + THIS.options.code + '_exp_date',
+          '#' + THIS.options.code + '_exp_date'
         );
         Heartland.Card.attachCvvEvents('#' + THIS.options.code + '_cvv_number');
       }
@@ -430,7 +430,7 @@ if (!String.prototype.trim) {
           IWD.OPC.Checkout.config.baseUrl + 'onepage/json/savePayment',
           $j_opc('#co-payment-form').serializeArray(),
           IWD.OPC.preparePaymentResponse,
-          'json',
+          'json'
         );
       } else if (
         typeof iwdOpcConfig !== 'undefined' &&
@@ -444,10 +444,10 @@ if (!String.prototype.trim) {
       } else if (window.oscPlaceOrderOriginal) {
         $('onestepcheckout-place-order-loading').show();
         $('onestepcheckout-button-place-order').removeClassName(
-          'onestepcheckout-btn-checkout',
+          'onestepcheckout-btn-checkout'
         );
         $('onestepcheckout-button-place-order').addClassName(
-          'place-order-loader',
+          'place-order-loader'
         );
         oscPlaceOrderOriginal(btn);
       } else if (typeof Payment !== 'undefined') {
@@ -478,12 +478,42 @@ if (!String.prototype.trim) {
           jwt: THIS.options.cca.jwt,
         });
         Cardinal.on('payments.validated', function(data, jwt) {
-          var el = document.createElement('input');
-          data.jwt = jwt;
-          el.value = Object.toJSON(data);
-          el.type = 'hidden';
-          el.name = 'payment[cca_data]';
-          $('payment_form_' + THIS.options.code).appendChild(el);
+          var makeField = function(name, value) {
+            var el = document.createElement('input');
+            el.value = value;
+            el.type = 'hidden';
+            el.name = 'payment[cca_data_' + name + ']';
+            $('payment_form_' + THIS.options.code).appendChild(el);
+          };
+          makeField('action_code', data.ActionCode);
+          makeField(
+            'cavv',
+            data.Payment &&
+            data.Payment.ExtendedData &&
+            data.Payment.ExtendedData.CAVV
+              ? data.Payment.ExtendedData.CAVV
+              : ''
+          );
+          makeField(
+            'eci',
+            data.Payment &&
+            data.Payment.ExtendedData &&
+            data.Payment.ExtendedData.ECIFlag
+              ? data.Payment.ExtendedData.ECIFlag
+              : ''
+          );
+          makeField(
+            'xid',
+            data.Payment &&
+            data.Payment.ExtendedData &&
+            data.Payment.ExtendedData.XID
+              ? data.Payment.ExtendedData.XID
+              : ''
+          );
+          makeField(
+            'token',
+            data.Token && data.Token.Token ? data.Token.Token : ''
+          );
           if (callback) {
             callback();
           }
@@ -504,11 +534,11 @@ if (!String.prototype.trim) {
           Token: $(THIS.options.code + '_cardinal_token').value,
           ExpirationMonth: $('hps_securesubmit_cc_exp_month').value.replace(
             /\D/g,
-            '',
+            ''
           ),
           ExpirationYear: $('hps_securesubmit_cc_exp_year').value.replace(
             /\D/g,
-            '',
+            ''
           ),
         };
       } else {
@@ -516,16 +546,16 @@ if (!String.prototype.trim) {
           Account: {
             AccountNumber: $('hps_securesubmit_cc_number').value.replace(
               /\D/g,
-              '',
+              ''
             ),
             CardCode: $('hps_securesubmit_cvv_number').value.replace(/\D/g, ''),
             ExpirationMonth: $('hps_securesubmit_cc_exp_month').value.replace(
               /\D/g,
-              '',
+              ''
             ),
             ExpirationYear: $('hps_securesubmit_cc_exp_year').value.replace(
               /\D/g,
-              '',
+              ''
             ),
           },
         };
@@ -563,7 +593,7 @@ if (!String.prototype.trim) {
       ) {
         ClearValue();
       }
-    },
+    }
   );
 
   function ClearValue() {
@@ -586,7 +616,7 @@ function securesubmitMultishipping(multiForm) {
       // Use stored card checked, get existing token data
       if (this.secureSubmitUseStoredCard()) {
         var radio = $$(
-          '[name="hps_securesubmit_stored_card_select"]:checked',
+          '[name="hps_securesubmit_stored_card_select"]:checked'
         )[0];
         var storedcardId = radio.value;
         var storedcardType = $(radio.id + '_card_type').value;
@@ -598,7 +628,7 @@ function securesubmitMultishipping(multiForm) {
             var data = response.responseJSON;
             if (data && data.token) {
               $('hps_securesubmit_cc_exp_month').value = parseInt(
-                data.token.cc_exp_month,
+                data.token.cc_exp_month
               );
               $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
             }
@@ -625,7 +655,7 @@ function securesubmitMultishipping(multiForm) {
               action: 'tokenize',
               data: SecureSubmitMagento.tokenizeOptions,
             },
-            'cardNumber',
+            'cardNumber'
           );
         } else {
           var validator = new Validation(multiForm);
@@ -702,7 +732,7 @@ Event.observe(document, 'aw_osc:onestepcheckout_form_init_before', function(e) {
 
   form.placeOrder = function() {
     var checkedPaymentMethod = $$(
-      '[name="' + awOSCForm.paymentMethodName + '"]:checked',
+      '[name="' + awOSCForm.paymentMethodName + '"]:checked'
     );
     if (
       checkedPaymentMethod.length !== 1 ||
@@ -724,7 +754,7 @@ Event.observe(document, 'aw_osc:onestepcheckout_form_init_before', function(e) {
           var data = response.responseJSON;
           if (data && data.token) {
             $('hps_securesubmit_cc_exp_month').value = parseInt(
-              data.token.cc_exp_month,
+              data.token.cc_exp_month
             );
             $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
           }
@@ -754,7 +784,7 @@ Event.observe(document, 'aw_osc:onestepcheckout_form_init_before', function(e) {
             action: 'tokenize',
             data: window.SecureSubmitMagento.tokenizeOptions,
           },
-          'cardNumber',
+          'cardNumber'
         );
       } else {
         if (
@@ -815,7 +845,7 @@ Event.observe(document, 'aw_osc:onestepcheckout_form_init_before', function(e) {
         function() {
           // Continue Magento checkout steps
           form._secureSubmitOldPlaceOrder();
-        }.bind(this),
+        }.bind(this)
       );
     } else {
       alert('Unexpected error.');
@@ -842,7 +872,7 @@ document.observe('dom:loaded', function() {
         // Use stored card checked, get existing token data
         if (this.secureSubmitUseStoredCard()) {
           var radio = $$(
-            '[name="hps_securesubmit_stored_card_select"]:checked',
+            '[name="hps_securesubmit_stored_card_select"]:checked'
           )[0];
           var storedcardId = radio.value;
           var storedcardType = $(radio.id + '_card_type').value;
@@ -854,7 +884,7 @@ document.observe('dom:loaded', function() {
               var data = response.responseJSON;
               if (data && data.token) {
                 $('hps_securesubmit_cc_exp_month').value = parseInt(
-                  data.token.cc_exp_month,
+                  data.token.cc_exp_month
                 );
                 $('hps_securesubmit_cc_exp_year').value =
                   data.token.cc_exp_year;
@@ -884,7 +914,7 @@ document.observe('dom:loaded', function() {
                 action: 'tokenize',
                 data: SecureSubmitMagento.tokenizeOptions,
               },
-              'cardNumber',
+              'cardNumber'
             );
           } else {
             var validator = new Validation(this.form);
@@ -957,7 +987,7 @@ document.observe('dom:loaded', function() {
                 onFailure: checkout.ajaxFailure.bind(checkout),
                 parameters: Form.serialize(this.form),
               });
-            }.bind(this),
+            }.bind(this)
           );
         } else {
           alert('Unexpected error.');
@@ -984,7 +1014,7 @@ document.observe('dom:loaded', function() {
               action: 'tokenize',
               data: SecureSubmitMagento.tokenizeOptions,
             },
-            'cardNumber',
+            'cardNumber'
           );
         } else {
           if (
@@ -1071,7 +1101,7 @@ document.observe('dom:loaded', function() {
     document.getElementById('amscheckout-onepage')
   ) {
     secureSubmitAmastyCompleteCheckoutOriginal = cloneFunction(
-      completeCheckout,
+      completeCheckout
     );
 
     try {
@@ -1079,7 +1109,7 @@ document.observe('dom:loaded', function() {
       ele = document.createElement('div');
       ele.id = 'co-payment-form-update';
       var pEle = document.querySelector(
-        '#amscheckout-main > div.amscheckout > div > div.second-column > div:nth-child(3) > div.payment-method',
+        '#amscheckout-main > div.amscheckout > div > div.second-column > div:nth-child(3) > div.payment-method'
       );
       pEle.insertBefore(ele, pEle.childNodes[2]);
     } catch (e) {}
@@ -1111,7 +1141,7 @@ document.observe('dom:loaded', function() {
 
         if (secureSubmitUseStoredCardAOSC()) {
           var radio = $$(
-            '[name="hps_securesubmit_stored_card_select"]:checked',
+            '[name="hps_securesubmit_stored_card_select"]:checked'
           )[0];
           var storedcardId = radio.value;
           var storedcardType = $(radio.id + '_card_type').value;
@@ -1130,7 +1160,7 @@ document.observe('dom:loaded', function() {
                     number: data.token.cc_last4,
                   },
                 },
-                btn,
+                btn
               );
             },
             onFailure: function() {
@@ -1145,7 +1175,7 @@ document.observe('dom:loaded', function() {
                 action: 'tokenize',
                 data: SecureSubmitMagento.tokenizeOptions,
               },
-              'cardNumber',
+              'cardNumber'
             );
           } else {
             new Heartland.HPS({
@@ -1221,14 +1251,14 @@ document.observe('dom:loaded', function() {
         }
         $('onestepcheckout-place-order-loading').hide();
         $('onestepcheckout-button-place-order').removeClassName(
-          'place-order-loader',
+          'place-order-loader'
         );
         $('onestepcheckout-button-place-order').addClassName(
-          'onestepcheckout-btn-checkout',
+          'onestepcheckout-btn-checkout'
         );
         if (secureSubmitUseStoredCardOSC()) {
           var radio = $$(
-            '[name="hps_securesubmit_stored_card_select"]:checked',
+            '[name="hps_securesubmit_stored_card_select"]:checked'
           )[0];
           var storedcardId = radio.value;
           var storedcardType = $(radio.id + '_card_type').value;
@@ -1239,7 +1269,7 @@ document.observe('dom:loaded', function() {
               var data = response.responseJSON;
               if (data && data.token) {
                 $('hps_securesubmit_expiration').value = parseInt(
-                  data.token.cc_exp_month,
+                  data.token.cc_exp_month
                 );
                 $('hps_securesubmit_expiration_yr').value =
                   data.token.cc_exp_year;
@@ -1254,17 +1284,17 @@ document.observe('dom:loaded', function() {
                     number: data.token.cc_last4,
                   },
                 },
-                btn,
+                btn
               );
             },
             onFailure: function() {
               alert('Unknown error. Please try again.');
               $('onestepcheckout-place-order-loading').show();
               $('onestepcheckout-button-place-order').removeClassName(
-                'onestepcheckout-btn-checkout',
+                'onestepcheckout-btn-checkout'
               );
               $('onestepcheckout-button-place-order').addClassName(
-                'place-order-loader',
+                'place-order-loader'
               );
             },
           });
@@ -1276,7 +1306,7 @@ document.observe('dom:loaded', function() {
                 action: 'tokenize',
                 data: SecureSubmitMagento.tokenizeOptions,
               },
-              'cardNumber',
+              'cardNumber'
             );
           } else {
             if (
@@ -1338,10 +1368,10 @@ document.observe('dom:loaded', function() {
 
         $('onestepcheckout-place-order-loading').hide();
         $('onestepcheckout-button-place-order').removeClassName(
-          'place-order-loader',
+          'place-order-loader'
         );
         $('onestepcheckout-button-place-order').addClassName(
-          'onestepcheckout-btn-checkout',
+          'onestepcheckout-btn-checkout'
         );
       } else if (response && response.token_value) {
         tokenField.value = response.token_value;
@@ -1350,20 +1380,20 @@ document.observe('dom:loaded', function() {
 
         $('onestepcheckout-place-order-loading').show();
         $('onestepcheckout-button-place-order').removeClassName(
-          'onestepcheckout-btn-checkout',
+          'onestepcheckout-btn-checkout'
         );
         $('onestepcheckout-button-place-order').addClassName(
-          'place-order-loader',
+          'place-order-loader'
         );
         oscPlaceOrderOriginal(btn);
       } else {
         alert('Unexpected error.');
         $('onestepcheckout-place-order-loading').show();
         $('onestepcheckout-button-place-order').removeClassName(
-          'onestepcheckout-btn-checkout',
+          'onestepcheckout-btn-checkout'
         );
         $('onestepcheckout-button-place-order').addClassName(
-          'place-order-loader',
+          'place-order-loader'
         );
       }
     };
@@ -1393,7 +1423,7 @@ document.observe('dom:loaded', function() {
               action: 'tokenize',
               data: SecureSubmitMagento.tokenizeOptions,
             },
-            'cardNumber',
+            'cardNumber'
           );
         } else {
           if (
@@ -1451,7 +1481,7 @@ document.observe('dom:loaded', function() {
             IWD.OPC.Checkout.config.baseUrl + 'onepage/json/savePayment',
             form,
             IWD.OPC.preparePaymentResponse,
-            'json',
+            'json'
           );
         } else {
           IWD.OPC.Checkout.hideLoader();
@@ -1506,7 +1536,7 @@ document.observe('dom:loaded', function() {
       var code = $ji('#iwd_opc_payment_method_select').val();
       if (code == 'hps_securesubmit') {
         $ji(
-          '.iwd_opc_payment_method_forms .iwd_opc_payment_method_form ul#payment_form_hps_securesubmit',
+          '.iwd_opc_payment_method_forms .iwd_opc_payment_method_form ul#payment_form_hps_securesubmit'
         ).show();
       }
       this.initChangeCard();
@@ -1523,13 +1553,13 @@ document.observe('dom:loaded', function() {
           if (code == 'hps_securesubmit') {
             $ji(
               _this.sectionContainer +
-                ' .iwd_opc_payment_method_forms .iwd_opc_payment_method_form ul#payment_form_hps_securesubmit',
+                ' .iwd_opc_payment_method_forms .iwd_opc_payment_method_form ul#payment_form_hps_securesubmit'
             ).show();
             setTimeout(function() {
               $ji('ul#payment_form_hps_securesubmit .validation-advice').hide();
             }, 100);
           }
-        },
+        }
       );
     };
 
@@ -1546,14 +1576,14 @@ document.observe('dom:loaded', function() {
       // Add the `required-entry` class back to the fields to ensure they are present
       if ($ji('#payment_form_' + this.code + ' .required-entry').length === 0) {
         $ji('#payment_form_' + this.code + ' .input-text').addClass(
-          'required-entry',
+          'required-entry'
         );
       }
 
       // Use stored card checked, get existing token data
       if (this.secureSubmitUseStoredCard()) {
         var radio = $$(
-          '[name="hps_securesubmit_stored_card_select"]:checked',
+          '[name="hps_securesubmit_stored_card_select"]:checked'
         )[0];
         var storedcardId = radio.value;
         var storedcardType = $(radio.id + '_card_type').value;
@@ -1564,7 +1594,7 @@ document.observe('dom:loaded', function() {
             var data = response.responseJSON;
             if (data && data.token) {
               $('hps_securesubmit_cc_exp_month').value = parseInt(
-                data.token.cc_exp_month,
+                data.token.cc_exp_month
               );
               $('hps_securesubmit_cc_exp_year').value = data.token.cc_exp_year;
             }
@@ -1591,7 +1621,7 @@ document.observe('dom:loaded', function() {
               action: 'tokenize',
               data: SecureSubmitMagento.tokenizeOptions,
             },
-            'cardNumber',
+            'cardNumber'
           );
         } else {
           var validator = new Validation('hps_securesubmit_cc_form');
@@ -1627,7 +1657,7 @@ document.observe('dom:loaded', function() {
     };
 
     PaymentMethodIWD.prototype.secureSubmitResponseHandler = function(
-      response,
+      response
     ) {
       var tokenField = $('hps_securesubmit_token'),
         typeField = $('hps_securesubmit_cc_type'),
