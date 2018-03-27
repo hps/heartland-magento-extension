@@ -494,13 +494,9 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
 
     protected function getRemoteIP()
     {
-        static $remoteIP = '';
-        if ($remoteIP !== '') {
-            return $remoteIP;
-        }
-        if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)
-            && $_SERVER['HTTP_X_FORWARDED_FOR'] != ''
-        ) {
+        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+            $remoteIP = $_SERVER['HTTP_CF_CONNECTING_IP'];
+        } else if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $remoteIPArray = array_values(
                 array_filter(
                     explode(
