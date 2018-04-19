@@ -38,7 +38,7 @@ if ($_loggedIn && $allow_card_saving) {
     <?php endif ?>
 
     <!-- START NEW CARD -->
-    <?php $checked = !$_loggedIn || (isset($customerStoredCards) && !count($customerStoredCards));?>
+    <?php $checked = !$_loggedIn || !(isset($customerStoredCards) && count($customerStoredCards));?>
     <li id="new-card-section">
         <?php if (!$checked): ?>
             <label for="<?= $_code ?>_stored_card_select_new" class="<?= $_code ?>_stored_card_label" style="padding:0px 0px;">
