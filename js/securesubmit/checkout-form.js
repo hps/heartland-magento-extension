@@ -1696,4 +1696,40 @@ document.observe('dom:loaded', function() {
       }
     };
   }
+    // FireCheckout
+    if (typeof FireCheckout !== 'undefined') {
+        Object.extend(FireCheckout.prototype, {
+            save: function (urlSuffix, forceSave) {
+                if (this.loadWaiting != false) {
+                    return;
+                }
+
+                if (!this.validate()) {
+                    return;
+                }
+
+                if (payment.currentMethod) {
+                    // HPS heartland
+                    if (!forceSave && payment.currentMethod.indexOf("hps_securesubmit") === 0) {
+                        payment.save();
+                        return;
+                    }
+                    // HPS heartland
+                }
+
+                checkout.setLoadWaiting(true);
+                var params = Form.serialize(this.form, true);
+                $('review-please-wait').show();
+
+                urlSuffix = urlSuffix || '';
+                var request = new Ajax.Request(this.urls.save + urlSuffix, {
+                    method: 'post',
+                    parameters: params,
+                    onSuccess: this.setResponse.bind(this),
+                    onFailure: this.ajaxFailure.bind(this)
+                });
+            },
+        });
+    }
+    // FireCheckout  
 });
