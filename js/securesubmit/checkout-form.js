@@ -1239,7 +1239,7 @@ document.observe('dom:loaded', function() {
 
   // MageStore One Step Checkout
   if (typeof oscPlaceOrder === 'function') {
-    var oscPlaceOrderOriginal = cloneFunction(oscPlaceOrder);
+    window.oscPlaceOrderOriginal = cloneFunction(oscPlaceOrder);
     oscPlaceOrder = function(btn) {
       var validator = new Validation('one-step-checkout-form');
       var form = $('one-step-checkout-form');
