@@ -444,6 +444,9 @@ body.checkout-onepage-index #ss-banner {
 #payment_form_hps_securesubmit .input-text {
   height:45px;
 }
+.onestepcheckout-index-index #payment_form_hps_securesubmit .input-text {
+  height: 45px !important;
+}
 @media only screen and (min-width: 767px) {
   .checkout-onepage-index #expiration-date input {
     width:99%;
