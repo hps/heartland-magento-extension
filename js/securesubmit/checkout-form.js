@@ -7,6 +7,7 @@ if (!String.prototype.trim) {
 (function(window, document, undefined) {
   var opcTokenSubmits = {};
   var THIS = {
+    __data: {},
     skipCreditCard: false,
     init: function(options) {
       THIS.options = options;
@@ -449,7 +450,7 @@ if (!String.prototype.trim) {
         $('onestepcheckout-button-place-order').addClassName(
           'place-order-loader'
         );
-        oscPlaceOrderOriginal(btn);
+        oscPlaceOrderOriginal(THIS.__data.btn);
       } else if (typeof Payment !== 'undefined') {
         new Ajax.Request(payment.saveUrl, {
           method: 'post',
@@ -1243,6 +1244,7 @@ document.observe('dom:loaded', function() {
     oscPlaceOrder = function(btn) {
       var validator = new Validation('one-step-checkout-form');
       var form = $('one-step-checkout-form');
+      SecureSubmitMagento.__data.btn = btn;
       if (validator.validate()) {
         var currentPayment = $RF(form, 'payment[method]');
         if (currentPayment != 'hps_securesubmit') {
@@ -1731,5 +1733,5 @@ document.observe('dom:loaded', function() {
             },
         });
     }
-    // FireCheckout  
+    // FireCheckout
 });
