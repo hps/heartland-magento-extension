@@ -1387,7 +1387,12 @@ document.observe('dom:loaded', function() {
         $('onestepcheckout-button-place-order').addClassName(
           'place-order-loader'
         );
-        oscPlaceOrderOriginal(btn);
+        window.SecureSubmitMagento.initializeCCA(
+          function() {
+            // Continue Magento checkout steps
+            oscPlaceOrderOriginal(btn);
+          }.bind(this)
+        );
       } else {
         alert('Unexpected error.');
         $('onestepcheckout-place-order-loading').show();
