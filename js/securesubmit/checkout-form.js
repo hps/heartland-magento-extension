@@ -1270,10 +1270,10 @@ document.observe('dom:loaded', function() {
             onSuccess: function(response) {
               var data = response.responseJSON;
               if (data && data.token) {
-                $('hps_securesubmit_expiration').value = parseInt(
+                $('hps_securesubmit_cc_exp_month').value = parseInt(
                   data.token.cc_exp_month
                 );
-                $('hps_securesubmit_expiration_yr').value =
+                $('hps_securesubmit_cc_exp_year').value =
                   data.token.cc_exp_year;
               }
               secureSubmitResponseHandlerOSC(
@@ -1339,8 +1339,8 @@ document.observe('dom:loaded', function() {
     };
 
     secureSubmitUseStoredCardOSC = function() {
-      var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
-      return storedCheckbox && storedCheckbox.checked;
+      var newRadio = $('hps_securesubmit_stored_card_select_new');
+        return !newRadio.checked;
     };
 
     secureSubmitResponseHandlerOSC = function(response, btn) {
