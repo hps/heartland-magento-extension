@@ -298,6 +298,12 @@ if (!String.prototype.trim) {
           onTokenSuccess: function(resp) {
             var heartland = resp.heartland || resp;
 
+            // TODO: Need to investigate why this is necessary
+            if (heartland.error) {
+              options.onTokenError(heartland);
+              return;
+            }
+
             // BEGIN: AheadWorks OneStepCheckout fix
             // This is required in order to work around a limitation with AW OSC and our
             // iframes' `message` event handler. Because of how AW OSC refreshes the payment
@@ -1340,7 +1346,7 @@ document.observe('dom:loaded', function() {
 
     secureSubmitUseStoredCardOSC = function() {
       var newRadio = $('hps_securesubmit_stored_card_select_new');
-        return !newRadio.checked;
+      return !newRadio.checked;
     };
 
     secureSubmitResponseHandlerOSC = function(response, btn) {
