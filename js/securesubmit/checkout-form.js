@@ -7,6 +7,7 @@ if (!String.prototype.trim) {
 (function(window, document, undefined) {
   var opcTokenSubmits = {};
   var THIS = {
+    __data: {},
     skipCreditCard: false,
     init: function(options) {
       THIS.options = options;
@@ -297,6 +298,12 @@ if (!String.prototype.trim) {
           onTokenSuccess: function(resp) {
             var heartland = resp.heartland || resp;
 
+            // TODO: Need to investigate why this is necessary
+            if (heartland.error) {
+              options.onTokenError(heartland);
+              return;
+            }
+
             // BEGIN: AheadWorks OneStepCheckout fix
             // This is required in order to work around a limitation with AW OSC and our
             // iframes' `message` event handler. Because of how AW OSC refreshes the payment
@@ -449,7 +456,7 @@ if (!String.prototype.trim) {
         $('onestepcheckout-button-place-order').addClassName(
           'place-order-loader'
         );
-        oscPlaceOrderOriginal(btn);
+        oscPlaceOrderOriginal(THIS.__data.btn);
       } else if (typeof Payment !== 'undefined') {
         new Ajax.Request(payment.saveUrl, {
           method: 'post',
@@ -1239,10 +1246,11 @@ document.observe('dom:loaded', function() {
 
   // MageStore One Step Checkout
   if (typeof oscPlaceOrder === 'function') {
-    var oscPlaceOrderOriginal = cloneFunction(oscPlaceOrder);
+    window.oscPlaceOrderOriginal = cloneFunction(oscPlaceOrder);
     oscPlaceOrder = function(btn) {
       var validator = new Validation('one-step-checkout-form');
       var form = $('one-step-checkout-form');
+      SecureSubmitMagento.__data.btn = btn;
       if (validator.validate()) {
         var currentPayment = $RF(form, 'payment[method]');
         if (currentPayment != 'hps_securesubmit') {
@@ -1268,10 +1276,10 @@ document.observe('dom:loaded', function() {
             onSuccess: function(response) {
               var data = response.responseJSON;
               if (data && data.token) {
-                $('hps_securesubmit_expiration').value = parseInt(
+                $('hps_securesubmit_cc_exp_month').value = parseInt(
                   data.token.cc_exp_month
                 );
-                $('hps_securesubmit_expiration_yr').value =
+                $('hps_securesubmit_cc_exp_year').value =
                   data.token.cc_exp_year;
               }
               secureSubmitResponseHandlerOSC(
@@ -1337,8 +1345,8 @@ document.observe('dom:loaded', function() {
     };
 
     secureSubmitUseStoredCardOSC = function() {
-      var storedCheckbox = $('hps_securesubmit_stored_card_checkbox');
-      return storedCheckbox && storedCheckbox.checked;
+      var newRadio = $('hps_securesubmit_stored_card_select_new');
+      return !newRadio.checked;
     };
 
     secureSubmitResponseHandlerOSC = function(response, btn) {
@@ -1385,7 +1393,12 @@ document.observe('dom:loaded', function() {
         $('onestepcheckout-button-place-order').addClassName(
           'place-order-loader'
         );
-        oscPlaceOrderOriginal(btn);
+        window.SecureSubmitMagento.initializeCCA(
+          function() {
+            // Continue Magento checkout steps
+            oscPlaceOrderOriginal(btn);
+          }.bind(this)
+        );
       } else {
         alert('Unexpected error.');
         $('onestepcheckout-place-order-loading').show();
@@ -1731,5 +1744,5 @@ document.observe('dom:loaded', function() {
             },
         });
     }
-    // FireCheckout  
+    // FireCheckout
 });
