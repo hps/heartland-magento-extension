@@ -58,11 +58,6 @@
                 </securesubmit_use_stored_card>
             </sales_convert_quote_payment>
         </fieldsets>
-        <payment>
-            <groups>
-                <hps_paypal>HPS PayPal</hps_paypal>
-            </groups>
-        </payment>
     </global>
     <default>
         <payment>
@@ -80,28 +75,6 @@
                 <use_http_proxy>0</use_http_proxy>
                 <debug>0</debug>
             </hps_securesubmit>
-            <hps_paypal>
-                <model>hps_securesubmit/paypal</model>
-                <payment_action>authorize_capture</payment_action>
-                <title>PayPal</title>
-                <secretapikey backend_model="adminhtml/system_config_backend_encrypted" />
-                <publicapikey backend_model="adminhtml/system_config_backend_encrypted" />
-                <use_sandbox>0</use_sandbox>
-                <username backend_model="adminhtml/system_config_backend_encrypted" />
-                <password backend_model="adminhtml/system_config_backend_encrypted" />
-                <device_id backend_model="adminhtml/system_config_backend_encrypted" />
-                <license_id backend_model="adminhtml/system_config_backend_encrypted" />
-                <site_id backend_model="adminhtml/system_config_backend_encrypted" />
-                <use_http_proxy>0</use_http_proxy>
-                <debug>0</debug>
-                <paypal_credit>1</paypal_credit>
-                <group>hps_paypal</group>
-            </hps_paypal>
-            <hps_paypal_credit>
-                <model>hps_securesubmit/paypal_credit</model>
-                <title>PayPal Credit</title>
-                <group>hps_paypal</group>
-            </hps_paypal_credit>
             <hps_masterpass>
                 <model>hps_securesubmit/masterpass</model>
                 <payment_action>authorize_capture</payment_action>
