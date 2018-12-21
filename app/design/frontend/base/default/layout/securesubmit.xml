@@ -68,7 +68,7 @@
             <path>securesubmit/storedcard/index</path>
             <label>Manage Cards</label>
           </action>
-          <action method="addLink">
+          <action method="addLink" translate="label" module="hps_securesubmit" ifconfig="payment/hps_masterpass/active">
             <name>masterpass_connect</name>
             <path>securesubmit/masterpass/connect</path>
             <label>MasterPass</label>
