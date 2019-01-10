@@ -522,7 +522,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     {
         $transactionDetails = $this->getTransactionDetails($payment);
         if ($this->canVoid($payment) && $this->transactionActiveOnGateway($transactionDetails)) {
-            if ($transactionDetails->settlementAmt > $amount) {
+            if ($this->getCurrentAuthorizationAmount($transactionDetails) > $amount) {
                 $this->_reversal($payment, $transactionDetails, $amount);
             } else {
                 $this->void($payment);
@@ -534,6 +534,13 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         return $this;
     }
 
+    public function getCurrentAuthorizationAmount($transactionDetails)
+    {
+        if (floatval($transactionDetails->settlementAmount) > 0) {
+            return floatval($transactionDetails->settlementAmount);
+        }
+        return floatval($transactionDetails->authorizedAmount);
+    }
 
     public function getTransactionDetails(Varien_Object $payment)
     {
@@ -665,7 +672,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         } else {
             $transactionId = $payment->getCcTransId();
         }
-        $newAuthAmount = $transactionDetails->settlementAmt-$newAuthAmount;
+        $newAuthAmount = $this->getCurrentAuthorizationAmount($transactionDetails) - $newAuthAmount;
         $order = $payment->getOrder();
         /* @var $order Mage_Sales_Model_Order */
         $chargeService = $this->_getChargeService();
@@ -684,7 +691,6 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                 ->setIsTransactionClosed(1)
                 ->setShouldCloseParentTransaction(1);
         } catch (HpsException $e) {
-
             $this->_debugChargeService($chargeService, $e);
             $this->throwUserError($e->getMessage());
         } catch (Exception $e) {
