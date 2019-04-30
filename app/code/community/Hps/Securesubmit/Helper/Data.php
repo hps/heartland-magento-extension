@@ -28,7 +28,7 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
      * @param HpsCreditCard $cardData
      * @param string        $cardType
      * @param integer|null  $customerId
-     * @return Hps_Securesubmit_Model_Storedcard
+     * @return Hps_Securesubmit_Model_Storedcard|null
      */
     public function saveMultiToken($token,$cardData,$cardType, $customerId = null)
     {
@@ -37,20 +37,18 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
 
         if($_loggedIn || $customerId != null){
             if($customerId == null){
-                $_customerId = $_session->getCustomer()->getId();
-            }else{
-                $_customerId = $customerId;
+                $customerId = $_session->getCustomer()->getId();
             }
             $storedCard = Mage::getModel('hps_securesubmit/storedcard');
+            $storedCard->loadByCustomerIdTokenValue($customerId, $token);
             $storedCard->setDt(Varien_Date::now())
-                ->setCustomerId($_customerId)
+                ->setCustomerId($customerId)
                 ->setTokenValue($token)
                 ->setCcType($cardType)
                 ->setCcLast4($cardData->number)
                 ->setCcExpMonth(str_pad($cardData->expMonth, 2, '0', STR_PAD_LEFT))
                 ->setCcExpYear($cardData->expYear);
             try{
-                $storedCard->removeDuplicates();
                 $storedCard->save();
                 return $storedCard;
             }catch (Exception $e){
@@ -60,5 +58,7 @@ class Hps_Securesubmit_Helper_Data extends Mage_Core_Helper_Abstract
                 Mage::throwException($e->getMessage());
             }
         }
+
+        return null;
     }
 }

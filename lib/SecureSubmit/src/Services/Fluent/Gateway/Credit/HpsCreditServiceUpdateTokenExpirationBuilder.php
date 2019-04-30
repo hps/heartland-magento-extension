@@ -1,10 +1,10 @@
 <?php
 
-/*
- * @method HpsCreditServiceChargeBuilder withToken( $token)
-* @method HpsCreditServiceUpdateTokenExpirationBuilder withExpMonth(string $transactionId)
-* @method HpsCreditServiceUpdateTokenExpirationBuilder withExpYear(string $transactionId)
-*/
+/**
+ * @method HpsCreditServiceUpdateTokenExpirationBuilder withToken( $token)
+ * @method HpsCreditServiceUpdateTokenExpirationBuilder withExpMonth(string $transactionId)
+ * @method HpsCreditServiceUpdateTokenExpirationBuilder withExpYear(string $transactionId)
+ */
 class HpsCreditServiceUpdateTokenExpirationBuilder extends HpsBuilderAbstract
 {
 
