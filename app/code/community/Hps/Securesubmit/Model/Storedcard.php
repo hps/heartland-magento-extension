@@ -31,6 +31,21 @@ class Hps_Securesubmit_Model_Storedcard  extends Mage_Core_Model_Abstract
         $this->_init('hps_securesubmit/storedcard');
     }
 
+    /**
+     * @param int $customerId
+     * @param string $tokenValue
+     * @return $this
+     */
+    public function loadByCustomerIdTokenValue($customerId, $tokenValue)
+    {
+        $this->getResource()->loadByCustomerIdTokenValue($this, $customerId, $tokenValue);
+        return $this;
+    }
+
+    /**
+     * @deprecated
+     * @return $this
+     */
     public function removeDuplicates()
     {
         $this->getResource()->removeDuplicates($this);

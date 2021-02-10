@@ -186,6 +186,21 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $cardOrToken->tokenValue = $secureToken;
         $secureEcommerce = $this->getSecureEcommerce($ccaData, $cardType);
 
+        // Always update multi-use token expiration *before* charge in case it was not updated
+        // on last purchase - previous version had bug so no cards were updated causing cards
+        // with updated expirations to always be declined
+        if ($secureToken && $customerId && ! preg_match('/^supt_/', $secureToken)) {
+            try {
+                $this->_getChargeService()->updateTokenExpiration()
+                    ->withToken($secureToken)
+                    ->withExpMonth($payment->getCcExpMonth())
+                    ->withExpYear($payment->getCcExpYear())
+                    ->execute();
+            } catch (Exception $e) {
+                Mage::logException($e);
+            }
+        }
+
         try {
             $this->checkVelocity();
 
@@ -324,19 +339,10 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
         $tokenData = $response->tokenData; /* @var $tokenData HpsTokenData */
 
         if ($tokenData->responseCode == '0') {
-            try {
-                $this->_getChargeService()->updateTokenExpiration($tokenData->tokenValue, $cardData->expMonth, $cardData->expYear);
-            } catch (Exception $e) {
-                Mage::logException($e);
-            }
-
-            if ($customerId > 0) {
-                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $cardType, $customerId);
-            } else {
-                Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $cardType);
-            }
+            return Mage::helper('hps_securesubmit')->saveMultiToken($tokenData->tokenValue, $cardData, $cardType, $customerId);
         } else {
             Mage::log('Requested multi token has not been generated for the transaction # ' . $response->transactionId, Zend_Log::WARN);
+            return null;
         }
     }
 
@@ -830,7 +836,7 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
     }
 
     /**
-     * @return HpsCreditService
+     * @return HpsFluentCreditService
      */
     protected function _getChargeService()
     {
