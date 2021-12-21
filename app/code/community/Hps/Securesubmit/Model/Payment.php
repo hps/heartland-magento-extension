@@ -151,14 +151,18 @@ class Hps_Securesubmit_Model_Payment extends Mage_Payment_Model_Method_Cc
                     $this->checkVelocity();
 
                     $giftresp = $giftService->sale($giftcard, $giftResponse->balanceAmount);
-                    $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $giftResponse->balanceAmount . '. [partial payment]')->save();
+                    $processedAmount = isset($giftresp->splitTenderCardAmount) ? $giftresp->splitTenderCardAmount :
+                                        $giftResponse->balanceAmount;
+                    $balanceDueAmount = isset($giftresp->splitTenderBalanceDue) ? $giftresp->splitTenderBalanceDue :
+                                        ($amount - $processedAmount); // remainder
+                    $order->addStatusHistoryComment('Used Heartland Gift Card ' . $giftCardNumber . ' for amount $' . $processedAmount . '. [partial payment]')->save();
                     $payment->setTransactionAdditionalInfo(Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,
                         array(
                             'gift_card_number' => $giftCardNumber,
                             'gift_card_transaction' => $giftresp->transactionId,
-                            'gift_card_amount_charged' => $giftResponse->balanceAmount));
-                    $payment->setAmount($giftResponse->balanceAmount)->save();
-                    $amount = $amount - $giftResponse->balanceAmount; // remainder
+                            'gift_card_amount_charged' => $processedAmount));
+                    $payment->setAmount($processedAmount)->save();
+                    $amount = $balanceDueAmount; // remainder
                 } catch (Exception $e) {
                     $this->updateVelocity($e);
 
