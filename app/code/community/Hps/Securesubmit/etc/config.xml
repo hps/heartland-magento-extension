@@ -75,6 +75,17 @@
                 <use_http_proxy>0</use_http_proxy>
                 <debug>0</debug>
             </hps_securesubmit>
+            <hps_masterpass>
+                <model>hps_securesubmit/masterpass</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>MasterPass</title>
+                <processor_id backend_model="adminhtml/system_config_backend_encrypted" />
+                <merchant_id backend_model="adminhtml/system_config_backend_encrypted" />
+                <transaction_pwd backend_model="adminhtml/system_config_backend_encrypted" />
+                <merchant_checkout_id backend_model="adminhtml/system_config_backend_encrypted" />
+                <use_sandbox>0</use_sandbox>
+                <debug>0</debug>
+            </hps_masterpass>
         </payment>
     </default>
     <frontend>
