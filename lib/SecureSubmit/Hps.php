@@ -161,7 +161,6 @@ if (!defined('HPS_SDK_LOADED')) {
     require_once 'Services/Gateway/HpsAttachmentService.php';
     require_once 'Services/Gateway/AltPayment/HpsAltPaymentService.php';
     require_once 'Services/Gateway/AltPayment/HpsPayPalService.php';
-    require_once 'Services/Gateway/AltPayment/HpsMasterPassService.php';
     require_once 'Services/Gateway/PayPlan/HpsPayPlanCustomerService.php';
     require_once 'Services/Gateway/PayPlan/HpsPayPlanPaymentMethodService.php';
     require_once 'Services/Gateway/PayPlan/HpsPayPlanScheduleService.php';
