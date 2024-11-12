@@ -1,3 +1,5 @@
+## *** This library is no longer maintained! Its functionality is offered in Global Payments’ current library which can be found [here](https://github.com/globalpayments/globalpayments-js). ***
+
 ## SecureSubmit Magento Payment Gateway
 
 This extension allows Magento to use the Heartland Payment Systems Gateway. All card data is tokenized using Heartland's SecureSubmit product.
