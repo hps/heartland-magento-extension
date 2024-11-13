@@ -1,4 +1,4 @@
-## *** This library is no longer maintained! Its functionality is offered in Global Payments’ current library which can be found [here](https://github.com/globalpayments/globalpayments-js). ***
+## *** This library is no longer maintained! ***
 
 ## SecureSubmit Magento Payment Gateway
 
